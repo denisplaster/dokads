@@ -1,9 +1,22 @@
 import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import { EventPage } from '@/views/EventPage'
-import { STATUS_META, events, formatEventDate, getEvent } from '@/data/events'
+import { STATUS_META, formatEventDate } from '@/data/events'
+import type { EventStatus } from '@/data/events'
+import { getEventBySlug, getPublicEvents, getPublishedRegion } from '@/db/queries'
+import { toEvent, toRegion } from '@/lib/adapt'
 
-export function generateStaticParams() {
-  return events.map((e) => ({ slug: e.slug }))
+/**
+ * Content comes from the database, so these pages are ISR rather than baked
+ * at build time. Admin writes call revalidatePath, which makes an edit appear
+ * immediately; the hourly window is only a backstop.
+ */
+export const revalidate = 3600
+
+
+export async function generateStaticParams() {
+  const rows = await getPublicEvents()
+  return rows.map((e) => ({ slug: e.slug }))
 }
 
 export async function generateMetadata({
@@ -12,22 +25,26 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  const event = getEvent(slug)
-  if (!event) return { title: 'Event not found' }
-  // the status belongs in the link preview too — a shared link should not
+  const row = await getEventBySlug(slug)
+  if (!row) return { title: 'Event not found' }
+  // the status belongs in the link preview too — a shared link must not
   // imply an event is confirmed when it is not
-  const status = STATUS_META[event.status].label
+  const status = STATUS_META[row.status as EventStatus].label
   return {
-    title: `${event.title} — ${status}`,
-    description: `${formatEventDate(event.date, { long: true })} · ${event.location}. ${event.blurb}`,
+    title: `${row.title} — ${status}`,
+    description: `${formatEventDate(row.date, { long: true })} · ${row.location}. ${row.blurb}`,
     openGraph: {
-      title: event.title,
-      description: `${status} · ${formatEventDate(event.date, { long: true })} · ${event.location}`,
+      title: row.title,
+      description: `${status} · ${formatEventDate(row.date, { long: true })} · ${row.location}`,
     },
   }
 }
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
-  return <EventPage slug={slug} />
+  const row = await getEventBySlug(slug)
+  // drafts are admin-only; they must not be reachable by guessing the URL
+  if (!row || row.status === 'draft') notFound()
+  const region = await getPublishedRegion(row.regionSlug)
+  return <EventPage event={toEvent(row)} region={region ? toRegion(region) : undefined} />
 }

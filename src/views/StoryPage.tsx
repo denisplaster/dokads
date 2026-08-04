@@ -14,14 +14,11 @@ import {
   ZineArticleCard,
   ZineSection,
 } from '../components/zine'
-import { STORY_KINDS, getStory, relatedStories } from '../data/stories'
+import { STORY_KINDS } from '../data/stories'
+import type { Story } from '../data/stories'
 
-export function StoryPage({ slug }: { slug: string }) {
-  const story = getStory(slug)
-  if (!story) notFound()
-
+export function StoryPage({ story, related }: { story: Story; related: Story[] }) {
   const kind = STORY_KINDS[story.kind]
-  const related = relatedStories(slug)
 
   return (
     <>

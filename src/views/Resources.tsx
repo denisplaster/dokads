@@ -13,10 +13,10 @@ import {
   ZineSection,
   rot,
 } from '../components/zine'
-import { AUDIENCES, FORMATS, resources } from '../data/resources'
-import type { Audience, ResourceFormat } from '../data/resources'
+import { AUDIENCES, FORMATS } from '../data/resources'
+import type { Audience, Resource, ResourceFormat } from '../data/resources'
 
-export function Resources() {
+export function Resources({ resources }: { resources: Resource[] }) {
   const [format, setFormat] = useState<ResourceFormat | 'all'>('all')
   const [audience, setAudience] = useState<Audience | 'all'>('all')
 
@@ -27,7 +27,7 @@ export function Resources() {
           (format === 'all' || r.format === format) &&
           (audience === 'all' || r.audience.includes(audience)),
       ),
-    [format, audience],
+    [resources, format, audience],
   )
 
   return (

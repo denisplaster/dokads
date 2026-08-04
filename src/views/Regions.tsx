@@ -10,16 +10,18 @@ import {
   ZineSection,
   rot,
 } from '../components/zine'
-import {
-  REGION_STATUS_META,
-  interestRegions,
-  publishedRegions,
-} from '../data/regions'
-import { eventsInRegion } from '../data/events'
+import { REGION_STATUS_META } from '../data/regions'
+import type { Region } from '../data/regions'
 
-export function Regions() {
-  const live = publishedRegions()
-  const waiting = interestRegions()
+export function Regions({
+  regions,
+  eventCounts,
+}: {
+  regions: Region[]
+  eventCounts: Record<string, number>
+}) {
+  const live = regions.filter((r) => r.status !== 'interest')
+  const waiting = regions.filter((r) => r.status === 'interest')
 
   return (
     <>
@@ -50,7 +52,7 @@ export function Regions() {
           <div className="grid grid--2">
             {live.map((r, i) => {
               const meta = REGION_STATUS_META[r.status]
-              const count = eventsInRegion(r.slug).length
+              const count = eventCounts[r.slug] ?? 0
               return (
                 <PaperCard
                   key={r.slug}

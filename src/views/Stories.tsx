@@ -13,15 +13,15 @@ import {
   ZineSection,
   rot,
 } from '../components/zine'
-import { STORY_KINDS, stories } from '../data/stories'
-import type { StoryKind } from '../data/stories'
+import { STORY_KINDS } from '../data/stories'
+import type { Story, StoryKind } from '../data/stories'
 
 const KIND_ORDER = Object.keys(STORY_KINDS) as StoryKind[]
 
 /** Deliberately irregular — the blog must not read as a grid of clones. */
 const LAYOUTS = ['standard', 'text', 'quote', 'boxed', 'standard', 'note', 'text', 'boxed'] as const
 
-export function Stories() {
+export function Stories({ stories }: { stories: Story[] }) {
   const [kind, setKind] = useState<StoryKind | 'all'>('all')
   const featured = stories.find((s) => s.featured)
   const list = stories.filter((s) => (kind === 'all' ? true : s.kind === kind))

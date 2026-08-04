@@ -18,16 +18,16 @@ import {
 } from '../components/zine'
 import { DokadDefinition } from '../components/DokadDefinition'
 import { pillars } from '../data/pillars'
-import { stories } from '../data/stories'
-import { publicEvents } from '../data/events'
+import type { Story } from '../data/stories'
+import type { DokEvent } from '../data/events'
 import { COMMUNITY_LED_PRINCIPLE } from '../data/community'
 import { CollageFrame } from '../components/zine/CollageFrame'
 import { RotatingPhrase } from '../components/RotatingPhrase'
 
-export function Home() {
+export function Home({ stories, events }: { stories: Story[]; events: DokEvent[] }) {
   const featured = stories.filter((s) => s.featured)
   const rest = stories.filter((s) => !s.featured).slice(0, 4)
-  const nextEvents = publicEvents().slice(0, 3)
+  const nextEvents = events.slice(0, 3)
 
   return (
     <>

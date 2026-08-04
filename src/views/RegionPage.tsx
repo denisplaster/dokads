@@ -13,16 +13,15 @@ import {
   TapeStrip,
   ZineSection,
 } from '../components/zine'
-import { REGION_STATUS_META, getRegion } from '../data/regions'
-import { eventsInRegion, formatEventDate } from '../data/events'
+import { REGION_STATUS_META } from '../data/regions'
+import type { Region } from '../data/regions'
+import { formatEventDate } from '../data/events'
+import type { DokEvent } from '../data/events'
 import { COMMUNITY_LED_PRINCIPLE } from '../data/community'
 
-export function RegionPage({ slug }: { slug: string }) {
-  const region = getRegion(slug)
-  if (!region || region.status === 'interest') notFound()
-
+export function RegionPage({ region, events }: { region: Region; events: DokEvent[] }) {
   const meta = REGION_STATUS_META[region.status]
-  const list = eventsInRegion(region.slug)
+  const list = events
   const isMinnesota = region.slug === 'minnesota'
 
   return (

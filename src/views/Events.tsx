@@ -14,20 +14,15 @@ import {
   ZineSection,
   rot,
 } from '../components/zine'
-import {
-  AUDIENCE_META,
-  EVENT_TYPES,
-  STATUS_META,
-  formatEventDate,
-  publicEvents,
-} from '../data/events'
-import type { EventAudience, EventType } from '../data/events'
-import { getRegion } from '../data/regions'
+import { AUDIENCE_META, EVENT_TYPES, STATUS_META, formatEventDate } from '../data/events'
+import type { DokEvent, EventAudience, EventType } from '../data/events'
+import type { Region } from '../data/regions'
 
 type FormatFilter = 'all' | 'online' | 'in person'
 
-export function Events() {
-  const all = publicEvents()
+export function Events({ events, regions }: { events: DokEvent[]; regions: Region[] }) {
+  const all = events
+  const regionName = (slug: string) => regions.find((r) => r.slug === slug)?.name ?? 'Online'
   const [type, setType] = useState<EventType | 'all'>('all')
   const [format, setFormat] = useState<FormatFilter>('all')
   const [audience, setAudience] = useState<EventAudience | 'all'>('all')
@@ -246,7 +241,7 @@ export function Events() {
                 <Link key={e.id} href={`/events/${e.slug}`} className="home-events__link">
                   <FlyerEventCard event={e} index={i} />
                   <span className="events-wall__region">
-                    {getRegion(e.region)?.name ?? 'Online'}
+                    {regionName(e.region)}
                   </span>
                 </Link>
               ))}

@@ -11,22 +11,13 @@ import {
   TapeStrip,
   ZineSection,
 } from '../components/zine'
-import {
-  AUDIENCE_META,
-  EVENT_TYPES,
-  STATUS_META,
-  formatEventDate,
-  getEvent,
-} from '../data/events'
-import { getRegion } from '../data/regions'
+import { AUDIENCE_META, EVENT_TYPES, STATUS_META, formatEventDate } from '../data/events'
+import type { DokEvent } from '../data/events'
+import type { Region } from '../data/regions'
 import { RegistrationForm } from '../components/forms/RegistrationForm'
 
-export function EventPage({ slug }: { slug: string }) {
-  const event = getEvent(slug)
-  if (!event) notFound()
-
+export function EventPage({ event, region }: { event: DokEvent; region?: Region }) {
   const status = STATUS_META[event.status]
-  const region = getRegion(event.region)
   const registrationOpen =
     event.status === 'registration open' || event.status === 'waitlist'
 
