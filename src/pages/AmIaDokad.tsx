@@ -269,7 +269,7 @@ export function AmIaDokad() {
 
       <ZineSection tone="ink" torn="top" className="aiad-close">
         <div className="wrap">
-          <EditorialHeadline size={1} className="aiad-close__head">
+          <EditorialHeadline size={1} sentence className="aiad-close__head">
             There is no test you need to pass and no single way to identify as a DoKAD.
           </EditorialHeadline>
           <p className="lead" style={{ marginTop: 'var(--s-5)' }}>

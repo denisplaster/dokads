@@ -223,9 +223,24 @@
   max-width: 60ch;
   margin-bottom: var(--s-4);
 }
+/* Two tiers inside one headline: the premise sets it up quietly, the question
+   is the thing that actually lands. Keeps the hero editorial without a wall
+   of caps. */
 .hero__headline {
   grid-column: 1 / -1;
   margin-bottom: var(--s-6);
+  max-width: 20ch;
+}
+.hero__headline-premise {
+  display: block;
+  font-size: 0.62em;
+  line-height: 1.08;
+  color: var(--ink-soft);
+  margin-bottom: 0.28em;
+  max-width: 26ch;
+}
+.hero__headline-ask {
+  display: block;
 }
 .hero__body {
   display: flex;

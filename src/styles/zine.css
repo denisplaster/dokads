@@ -102,6 +102,13 @@
 .ed-head--3 {
   font-size: var(--t-h3);
 }
+/* Sentence case for long headlines. Anton's lowercase is tall and narrow, so
+   it stays every bit as editorial while dropping the shout. */
+.ed-head--sentence {
+  text-transform: none;
+  letter-spacing: -0.012em;
+  line-height: 1.02;
+}
 /* outline treatment for one word in a headline */
 .ed-head .outline {
   -webkit-text-stroke: 2px currentColor;
@@ -133,7 +140,10 @@
   background: var(--blue);
   color: #fff;
 }
-/* the printed-misregistration trick, used sparingly */
+/* The printed-misregistration trick. Currently unused on purpose — it was in
+   the hero and read as noisy at display size. Kept in the vocabulary for
+   small, deliberate moments (an issue cover, a single word). Never on a
+   headline that someone has to read to understand the site. */
 .misprint {
   position: relative;
   display: inline-block;
@@ -175,6 +185,8 @@
   background-position: 0 78%;
   padding-inline: 0.1em;
   color: var(--ink);
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 .highlight--pink {
   --hl: var(--pink);

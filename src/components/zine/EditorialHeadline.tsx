@@ -10,6 +10,7 @@ type Size = 'mega' | 'display' | 1 | 2 | 3
 export function EditorialHeadline({
   children,
   size = 1,
+  sentence = false,
   as,
   id,
   className = '',
@@ -17,6 +18,12 @@ export function EditorialHeadline({
 }: {
   children: ReactNode
   size?: Size
+  /**
+   * Set in sentence case instead of all caps. Use for any headline longer than
+   * a few words — a full sentence in caps at display size reads as shouting,
+   * which is the wrong register for most of what this site talks about.
+   */
+  sentence?: boolean
   as?: ElementType
   id?: string
   className?: string
@@ -24,7 +31,11 @@ export function EditorialHeadline({
 }) {
   const Tag: ElementType = as ?? (size === 'mega' || size === 'display' || size === 1 ? 'h1' : 'h2')
   return (
-    <Tag id={id} className={`ed-head ed-head--${size} ${className}`} style={style}>
+    <Tag
+      id={id}
+      className={`ed-head ed-head--${size} ${sentence ? 'ed-head--sentence' : ''} ${className}`}
+      style={style}
+    >
       {children}
     </Tag>
   )

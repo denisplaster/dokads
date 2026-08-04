@@ -72,12 +72,12 @@ export function Home() {
             Your parent’s adoption story may be part of your story too.
           </p>
 
-          <EditorialHeadline size="display" className="hero__headline">
-            Your parent or grandparent was <span className="knock-blue">adopted</span> from
-            Korea.{' '}
-            <br />
-            So, what does <span className="misprint" data-text="that mean">that mean</span> for
-            you?
+          <EditorialHeadline size="display" sentence className="hero__headline">
+            <span className="hero__headline-premise">
+              Your parent or grandparent was{' '}
+              <span className="highlight">adopted from Korea</span>.
+            </span>{' '}
+            <span className="hero__headline-ask">So, what does that mean for you?</span>
           </EditorialHeadline>
 
           <div className="hero__body">
@@ -306,7 +306,9 @@ export function Home() {
           <PaperCard tilt="hair" shadow="slab" className="principle__card">
             <TapeStrip position="top-center" variant="kraft" width={140} />
             <span className="eyebrow">Our one non-negotiable</span>
-            <EditorialHeadline size={2} className="principle__head">
+            {/* sentence case is required here, not stylistic — uppercase would
+                flatten the deliberate “DoKAD” / “DoKADs” casing */}
+            <EditorialHeadline size={2} sentence className="principle__head">
               {COMMUNITY_LED_PRINCIPLE.headline}
             </EditorialHeadline>
             <p className="measure">{COMMUNITY_LED_PRINCIPLE.body}</p>
