@@ -17,6 +17,25 @@ if (!process.env.BETTER_AUTH_SECRET) {
  * access. That script builds its own instance with `allowSignUp` — the public
  * HTTP surface never has it.
  */
+/**
+ * Where this instance thinks it is running.
+ *
+ * Better Auth needs an absolute base URL for cookies and callbacks. Defaulting
+ * to localhost meant a deployment with no BETTER_AUTH_URL set would silently
+ * issue sign-in requests against localhost and fail. Vercel already tells us
+ * the answer, so derive it rather than requiring one more thing to configure.
+ */
+function resolveBaseURL(): string {
+  if (process.env.BETTER_AUTH_URL) return process.env.BETTER_AUTH_URL
+  // stable across deploys — the production domain
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  }
+  // preview deployments get their own immutable URL
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
+  return 'http://localhost:5190'
+}
+
 export function makeAuth({ allowSignUp = false }: { allowSignUp?: boolean } = {}) {
   return betterAuth({
     database: drizzleAdapter(db, {
@@ -44,7 +63,7 @@ export function makeAuth({ allowSignUp = false }: { allowSignUp?: boolean } = {}
       updateAge: 60 * 60 * 24,
     },
     secret: process.env.BETTER_AUTH_SECRET,
-    baseURL: process.env.BETTER_AUTH_URL ?? 'http://localhost:5190',
+    baseURL: resolveBaseURL(),
     plugins: [nextCookies()],
   })
 }
