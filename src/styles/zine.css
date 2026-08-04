@@ -1,0 +1,1059 @@
+/* ==========================================================================
+   DOKADS — ZINE COMPONENT SYSTEM
+   Every decorative device lives here as a reusable class. Pages compose
+   these; pages do not invent new decoration.
+   ========================================================================== */
+
+/* ==========================================================================
+   ZineSection — a coloured/​papered band with optional torn edges
+   ========================================================================== */
+.zsec {
+  position: relative;
+  background: var(--surface);
+  color: var(--on-surface);
+  padding-block: var(--section-y);
+  isolation: isolate;
+}
+.zsec > * {
+  position: relative;
+  z-index: var(--z-content);
+}
+.zsec--flush {
+  padding-block: 0;
+}
+.zsec--tight {
+  padding-block: clamp(2rem, 5vw, 3.5rem);
+}
+
+/* torn edge — an SVG shape sitting on the section boundary */
+.torn-edge {
+  position: absolute;
+  left: -1px;
+  width: calc(100% + 2px);
+  height: clamp(18px, 3vw, 34px);
+  display: block;
+  z-index: 2;
+  color: var(--surface);
+  pointer-events: none;
+}
+.torn-edge--top {
+  top: -1px;
+  transform: translateY(-99%);
+}
+.torn-edge--bottom {
+  bottom: -1px;
+  transform: translateY(99%) scaleY(-1);
+}
+
+/* section header block: number + kicker + rule */
+.sec-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-4);
+  margin-bottom: var(--s-6);
+  flex-wrap: wrap;
+}
+.sec-num {
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  line-height: 0.8;
+  letter-spacing: -0.03em;
+  -webkit-text-stroke: 2px currentColor;
+  -webkit-text-fill-color: transparent;
+}
+.sec-kicker {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: var(--t-micro);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}
+.sec-rule {
+  flex: 1 1 60px;
+  height: var(--bd-thick);
+  background: currentColor;
+  align-self: center;
+  min-width: 40px;
+}
+
+/* ==========================================================================
+   EditorialHeadline
+   ========================================================================== */
+.ed-head {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-display);
+  text-wrap: balance;
+  margin: 0;
+}
+.ed-head--mega {
+  font-size: var(--t-mega);
+}
+.ed-head--display {
+  font-size: var(--t-display);
+}
+.ed-head--1 {
+  font-size: var(--t-h1);
+}
+.ed-head--2 {
+  font-size: var(--t-h2);
+}
+.ed-head--3 {
+  font-size: var(--t-h3);
+}
+/* outline treatment for one word in a headline */
+.ed-head .outline {
+  -webkit-text-stroke: 2px currentColor;
+  -webkit-text-fill-color: transparent;
+}
+/* A headline containing any knock-out span gets looser leading so the
+   inline background never overlaps the neighbouring line. */
+.ed-head:has(.knock),
+.ed-head:has(.knock-red),
+.ed-head:has(.knock-blue) {
+  line-height: var(--lh-knock);
+}
+.ed-head .knock,
+.ed-head .knock-red,
+.ed-head .knock-blue {
+  padding: 0.04em 0.16em 0.02em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+.ed-head .knock {
+  background: var(--ink);
+  color: var(--paper);
+}
+.ed-head .knock-red {
+  background: var(--red);
+  color: #fff;
+}
+.ed-head .knock-blue {
+  background: var(--blue);
+  color: #fff;
+}
+/* the printed-misregistration trick, used sparingly */
+.misprint {
+  position: relative;
+  display: inline-block;
+}
+.misprint::before {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  color: var(--red-bright);
+  transform: translate(3px, -2px);
+  mix-blend-mode: multiply;
+  z-index: -1;
+  opacity: 0.85;
+}
+.misprint::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  color: var(--blue);
+  transform: translate(-3px, 2px);
+  mix-blend-mode: multiply;
+  z-index: -1;
+  opacity: 0.7;
+}
+
+/* ==========================================================================
+   Highlighter marker
+   ========================================================================== */
+.highlight {
+  background-image: linear-gradient(
+    100deg,
+    transparent 0.5%,
+    var(--hl, var(--yellow)) 0.9%,
+    var(--hl, var(--yellow)) 98.5%,
+    transparent 99.4%
+  );
+  background-repeat: no-repeat;
+  background-size: 100% 62%;
+  background-position: 0 78%;
+  padding-inline: 0.1em;
+  color: var(--ink);
+}
+.highlight--pink {
+  --hl: var(--pink);
+}
+.highlight--acid {
+  --hl: var(--yellow-acid);
+}
+.highlight--green {
+  --hl: var(--green);
+}
+
+/* ==========================================================================
+   PaperCard — the workhorse container
+   ========================================================================== */
+.paper-card {
+  position: relative;
+  background: var(--paper-bright);
+  color: var(--ink);
+  border: var(--bd) solid var(--ink);
+  padding: var(--s-5);
+  box-shadow: var(--sh-card);
+  transform: rotate(var(--rot, 0deg));
+  transition:
+    transform var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+.paper-card--flat {
+  box-shadow: none;
+}
+.paper-card--lift {
+  box-shadow: var(--sh-lift);
+}
+.paper-card--slab {
+  box-shadow: var(--sh-slab);
+}
+.paper-card--soft {
+  border-radius: var(--r-md);
+}
+/* torn bottom edge on a card */
+.paper-card--torn {
+  border-bottom: 0;
+  padding-bottom: var(--s-6);
+  clip-path: polygon(
+    0 0,
+    100% 0,
+    100% 96%,
+    96% 99%,
+    91% 95.5%,
+    85% 99%,
+    79% 96%,
+    72% 99.4%,
+    65% 95.8%,
+    58% 99%,
+    51% 96%,
+    44% 99.3%,
+    37% 96%,
+    30% 99%,
+    23% 95.6%,
+    16% 99%,
+    9% 96%,
+    4% 99%,
+    0 96.4%
+  );
+  box-shadow: none;
+}
+/* pick-it-up-off-the-desk hover */
+.paper-card--pickup:hover,
+.paper-card--pickup:focus-within {
+  transform: rotate(var(--rot, 0deg)) translate(-3px, -4px);
+  box-shadow: var(--sh-slab);
+}
+
+/* index-card ruling */
+.ruled {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 27px,
+    color-mix(in srgb, var(--blue) 26%, transparent) 27px 28px
+  );
+}
+
+/* ==========================================================================
+   TornPaperPanel — a colour field with ragged edges, layered over a surface
+   ========================================================================== */
+.torn-panel {
+  position: relative;
+  background: var(--surface);
+  color: var(--on-surface);
+  transform: rotate(var(--rot, 0deg));
+  isolation: isolate;
+  clip-path: polygon(
+    0 4%,
+    6% 1%,
+    14% 3.5%,
+    23% 0.6%,
+    32% 3%,
+    41% 0.4%,
+    50% 3.2%,
+    59% 0.5%,
+    68% 3%,
+    77% 0.8%,
+    86% 3.4%,
+    94% 1%,
+    100% 4%,
+    100% 96%,
+    93% 99%,
+    85% 96.5%,
+    76% 99.4%,
+    67% 96.8%,
+    58% 99.5%,
+    49% 96.6%,
+    40% 99.4%,
+    31% 96.8%,
+    22% 99.2%,
+    13% 96.4%,
+    5% 99%,
+    0 96%
+  );
+}
+.torn-panel__inner {
+  padding: clamp(var(--s-5), 4vw, var(--s-7));
+  position: relative;
+  z-index: var(--z-content);
+}
+
+/* ==========================================================================
+   Sticker
+   ========================================================================== */
+.sticker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: var(--t-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 0.5em 0.85em;
+  border: var(--bd) solid var(--ink);
+  border-radius: var(--r-pill);
+  background: var(--yellow);
+  color: var(--ink);
+  transform: rotate(var(--rot, -2deg));
+  box-shadow: var(--sh-lift);
+  transition:
+    transform var(--dur-quick) var(--ease-snap),
+    box-shadow var(--dur-quick) var(--ease-out);
+  white-space: nowrap;
+}
+.sticker--square {
+  border-radius: var(--r-sm);
+}
+.sticker--marker {
+  font-family: var(--font-marker);
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.95rem;
+  font-weight: 400;
+}
+.sticker--flat {
+  box-shadow: none;
+}
+.sticker--lg {
+  font-size: var(--t-small);
+  padding: 0.65em 1.1em;
+}
+.sticker--red {
+  background: var(--red);
+  color: #fff;
+}
+.sticker--blue {
+  background: var(--blue);
+  color: #fff;
+}
+.sticker--ink {
+  background: var(--ink);
+  color: var(--paper);
+}
+.sticker--pink {
+  background: var(--pink);
+}
+.sticker--green {
+  background: var(--green);
+}
+.sticker--lavender {
+  background: var(--lavender);
+}
+.sticker--peach {
+  background: var(--peach);
+}
+.sticker--acid {
+  background: var(--yellow-acid);
+}
+.sticker--paper {
+  background: var(--paper-bright);
+}
+a.sticker:hover,
+button.sticker:hover {
+  transform: rotate(calc(var(--rot, -2deg) * -0.5)) scale(1.05);
+  box-shadow: var(--sh-card);
+}
+
+/* ==========================================================================
+   Buttons — physical labels that depress
+   ========================================================================== */
+.btn {
+  --btn-bg: var(--ink);
+  --btn-fg: var(--paper);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 1.6vw, 1.2rem);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 0.72em 1.35em;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  border: var(--bd-thick) solid var(--ink);
+  border-radius: var(--r-sm);
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: var(--sh-lift);
+  transform: translate(0, 0) rotate(var(--rot, 0deg));
+  transition:
+    transform var(--dur-instant) var(--ease-out),
+    box-shadow var(--dur-instant) var(--ease-out),
+    background var(--dur-quick) var(--ease-out);
+}
+.btn:hover {
+  box-shadow: 5px 5px 0 var(--ink);
+  transform: translate(-2px, -2px) rotate(var(--rot, 0deg));
+}
+.btn:active {
+  box-shadow: 0 0 0 var(--ink);
+  transform: translate(3px, 3px) rotate(var(--rot, 0deg));
+}
+.btn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+.btn--red {
+  --btn-bg: var(--red);
+  --btn-fg: #fff;
+}
+.btn--blue {
+  --btn-bg: var(--blue);
+  --btn-fg: #fff;
+}
+.btn--yellow {
+  --btn-bg: var(--yellow);
+  --btn-fg: var(--ink);
+}
+.btn--paper {
+  --btn-bg: var(--paper-bright);
+  --btn-fg: var(--ink);
+}
+.btn--ghost {
+  --btn-bg: transparent;
+  --btn-fg: currentColor;
+  border-color: currentColor;
+  box-shadow: none;
+}
+.btn--ghost:hover {
+  box-shadow: none;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+.btn--lg {
+  font-size: clamp(1.15rem, 2.2vw, 1.6rem);
+  padding: 0.7em 1.5em;
+}
+.btn--block {
+  width: 100%;
+}
+
+/* ==========================================================================
+   TapeStrip
+   ========================================================================== */
+.tape {
+  position: absolute;
+  width: var(--tape-w, 110px);
+  height: var(--tape-h, 30px);
+  /* a faint lengthwise sheen, not a barcode */
+  background:
+    linear-gradient(
+      to bottom,
+      rgb(255 255 255 / 0.3) 0 22%,
+      transparent 22% 78%,
+      rgb(19 17 16 / 0.06) 78% 100%
+    ),
+    var(--tape-color, rgb(255 213 30 / 0.62));
+  border-left: 1px dashed rgb(19 17 16 / 0.18);
+  border-right: 1px dashed rgb(19 17 16 / 0.18);
+  transform: rotate(var(--rot, -4deg));
+  box-shadow: 0 1px 3px rgb(19 17 16 / 0.18);
+  pointer-events: none;
+  z-index: 3;
+  mix-blend-mode: multiply;
+}
+.tape--kraft {
+  --tape-color: rgb(221 208 182 / 0.85);
+}
+.tape--blue {
+  --tape-color: rgb(31 60 224 / 0.28);
+}
+.tape--pink {
+  --tape-color: rgb(255 147 196 / 0.55);
+}
+.tape--clear {
+  --tape-color: rgb(255 255 255 / 0.42);
+  mix-blend-mode: normal;
+  backdrop-filter: saturate(1.4);
+}
+.tape--top-left {
+  top: -14px;
+  left: 8%;
+}
+.tape--top-right {
+  top: -14px;
+  right: 8%;
+  --rot: 5deg;
+}
+.tape--top-center {
+  top: -15px;
+  left: 50%;
+  margin-left: calc(var(--tape-w, 110px) / -2);
+  --rot: -2deg;
+}
+.tape--bottom-left {
+  bottom: -14px;
+  left: 10%;
+  --rot: 4deg;
+}
+.tape--bottom-right {
+  bottom: -14px;
+  right: 10%;
+  --rot: -5deg;
+}
+
+/* staple */
+.staple {
+  position: absolute;
+  width: 22px;
+  height: 9px;
+  border: 2.5px solid var(--warm-gray);
+  border-top-color: #8e887e;
+  border-bottom: none;
+  border-radius: 2px 2px 0 0;
+  transform: rotate(var(--rot, -8deg));
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   HandwrittenNote + arrows + scribbles
+   ========================================================================== */
+.hand-note {
+  font-family: var(--font-hand);
+  font-size: clamp(1.15rem, 2.1vw, 1.6rem);
+  line-height: 1.15;
+  color: var(--hand-color, var(--blue));
+  transform: rotate(var(--rot, -3deg));
+  display: inline-block;
+  max-width: 26ch;
+}
+.hand-note--red {
+  --hand-color: var(--red);
+}
+.hand-note--ink {
+  --hand-color: currentColor;
+}
+.hand-note--paper {
+  --hand-color: var(--paper);
+}
+
+.scribble {
+  display: block;
+  width: 100%;
+  height: auto;
+  color: var(--scribble-color, var(--red));
+  margin-top: -0.35em;
+  overflow: visible;
+}
+.scribble path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* draw-in when the element scrolls into view / on hover of a parent */
+.scribble--draw path {
+  stroke-dasharray: 300;
+  stroke-dashoffset: 300;
+}
+.is-drawn .scribble--draw path,
+.scribble--draw.is-drawn path {
+  animation: draw-underline var(--dur-slow) var(--ease-out) forwards;
+}
+
+.arrow-hand {
+  color: var(--arrow-color, var(--ink));
+  display: block;
+  overflow: visible;
+}
+.arrow-hand path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.arrow-nudge {
+  animation: nudge-right 1.4s var(--ease-out) infinite;
+}
+
+/* ==========================================================================
+   PullQuote
+   ========================================================================== */
+.pullquote {
+  position: relative;
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 4.4vw, 3.2rem);
+  line-height: 1.02;
+  letter-spacing: var(--track-display);
+  text-transform: uppercase;
+  max-width: 18ch;
+  margin: 0;
+}
+.pullquote--body {
+  font-family: var(--font-body);
+  font-weight: 800;
+  text-transform: none;
+  line-height: 1.16;
+  letter-spacing: -0.01em;
+  max-width: 24ch;
+}
+.pullquote__mark {
+  font-family: var(--font-display);
+  font-size: 2.4em;
+  line-height: 0.6;
+  display: block;
+  color: var(--red);
+}
+.pullquote__cite {
+  display: block;
+  margin-top: var(--s-4);
+  font-family: var(--font-body);
+  font-size: var(--t-micro);
+  font-weight: 700;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  font-style: normal;
+  opacity: 0.75;
+}
+
+/* ==========================================================================
+   IssueLabel
+   ========================================================================== */
+.issue-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: var(--t-nano);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding: 0.45em 0.7em;
+  border: var(--bd) solid currentColor;
+  border-radius: var(--r-sm);
+}
+.issue-label__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--red);
+  flex: none;
+}
+
+/* ==========================================================================
+   LocationStamp — rubber-stamp look
+   ========================================================================== */
+.stamp {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-family: var(--font-body);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: var(--t-nano);
+  color: var(--stamp-color, var(--red));
+  border: 2.5px solid currentColor;
+  border-radius: var(--r-sm);
+  padding: 0.4em 0.7em;
+  transform: rotate(var(--rot, -6deg));
+  opacity: 0.85;
+  line-height: 1.2;
+  text-align: center;
+}
+.stamp--round {
+  border-radius: 50%;
+  aspect-ratio: 1;
+  padding: 0.9em;
+}
+.stamp--blue {
+  --stamp-color: var(--blue);
+}
+.stamp--ink {
+  --stamp-color: var(--ink);
+}
+.stamp--green {
+  --stamp-color: var(--green);
+}
+
+/* ==========================================================================
+   CategorySticker — story/resource taxonomy chips
+   ========================================================================== */
+.cat-sticker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: var(--t-nano);
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  padding: 0.36em 0.66em;
+  border: var(--bd) solid var(--ink);
+  background: var(--cat-bg, var(--paper-bright));
+  color: var(--ink);
+  border-radius: var(--r-sm);
+  line-height: 1;
+}
+.cat--essay {
+  --cat-bg: var(--yellow);
+}
+.cat--interview {
+  --cat-bg: var(--lavender);
+}
+.cat--photo {
+  --cat-bg: var(--peach);
+}
+.cat--poetry {
+  --cat-bg: var(--pink);
+}
+.cat--audio {
+  --cat-bg: var(--green);
+}
+.cat--question {
+  --cat-bg: var(--yellow-acid);
+}
+.cat--explainer {
+  --cat-bg: var(--paper-kraft);
+}
+
+/* ==========================================================================
+   CollageFrame — stands in for photography until real images exist
+   ========================================================================== */
+.collage-frame {
+  position: relative;
+  border: var(--bd) solid var(--ink);
+  background: var(--frame-bg, var(--paper-shade));
+  overflow: hidden;
+  aspect-ratio: var(--ratio, 4 / 3);
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+}
+.collage-frame > svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.collage-frame__caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 4;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: var(--t-nano);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.5em 0.7em;
+}
+/* magazine caption that sits *below* a frame */
+.caption {
+  font-size: var(--t-micro);
+  line-height: 1.35;
+  margin-top: var(--s-2);
+  opacity: 0.82;
+  max-width: 42ch;
+}
+.caption strong {
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: var(--t-nano);
+}
+
+/* ==========================================================================
+   Marquee
+   ========================================================================== */
+.marquee {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface);
+  color: var(--on-surface);
+  border-block: var(--bd-thick) solid var(--rule);
+  padding-block: 0.45em;
+}
+.marquee__track {
+  display: flex;
+  width: max-content;
+  animation: marquee-slide var(--speed, 34s) linear infinite;
+}
+.marquee:hover .marquee__track {
+  animation-play-state: paused;
+}
+.marquee__item {
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 2.6vw, 2rem);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  padding-inline: 0.6em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  white-space: nowrap;
+}
+.marquee__sep {
+  color: var(--red-bright);
+}
+[data-tone='red'] .marquee__sep,
+[data-tone='blue'] .marquee__sep,
+[data-tone='ink'] .marquee__sep {
+  color: var(--yellow);
+}
+
+/* ==========================================================================
+   FlyerEventCard
+   ========================================================================== */
+.flyer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--flyer-bg, var(--paper-bright));
+  color: var(--flyer-fg, var(--ink));
+  border: var(--bd-thick) solid var(--ink);
+  box-shadow: var(--sh-card);
+  transform: rotate(var(--rot, 0deg));
+  transition:
+    transform var(--dur-base) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+  height: 100%;
+}
+.flyer:hover,
+.flyer:focus-within {
+  transform: rotate(calc(var(--rot, 0deg) * 0.3)) translate(-3px, -4px);
+  box-shadow: var(--sh-slab);
+}
+.flyer__date {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4em;
+  padding: var(--s-4) var(--s-4) var(--s-2);
+  font-family: var(--font-display);
+  line-height: 0.85;
+}
+.flyer__day {
+  font-size: clamp(3rem, 7vw, 4.6rem);
+  letter-spacing: -0.03em;
+}
+.flyer__mo {
+  font-size: clamp(1.1rem, 2vw, 1.5rem);
+  text-transform: uppercase;
+}
+.flyer__body {
+  padding: 0 var(--s-4) var(--s-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  flex: 1;
+}
+.flyer__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+  line-height: 1;
+  text-transform: uppercase;
+}
+.flyer__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+  font-size: var(--t-small);
+  border-top: var(--bd) dashed currentColor;
+  padding-top: var(--s-3);
+  margin-top: auto;
+}
+.flyer__meta dt {
+  font-weight: 800;
+  font-size: var(--t-nano);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+.flyer__row {
+  display: flex;
+  gap: 0.5em;
+  align-items: baseline;
+}
+.flyer__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+/* ticket-stub perforation */
+.flyer--stub::before,
+.flyer--stub::after {
+  content: '';
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  background: var(--surface);
+  border: var(--bd-thick) solid var(--ink);
+  border-radius: 50%;
+  top: calc(50% - 11px);
+  z-index: 2;
+}
+.flyer--stub::before {
+  left: -13px;
+}
+.flyer--stub::after {
+  right: -13px;
+}
+
+/* ==========================================================================
+   ZineArticleCard
+   ========================================================================== */
+.zcard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+  transition: transform var(--dur-base) var(--ease-out);
+}
+.zcard__frame {
+  position: relative;
+  overflow: hidden;
+  border: var(--bd) solid var(--ink);
+}
+.zcard__frame > * {
+  transition: transform var(--dur-slow) var(--ease-out);
+}
+.zcard:hover .zcard__frame > * {
+  transform: scale(1.04);
+}
+.zcard__kicker {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+}
+.zcard__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 2.3vw, 1.9rem);
+  line-height: 1.02;
+  text-transform: uppercase;
+  letter-spacing: var(--track-display);
+}
+.zcard:hover .zcard__title {
+  text-decoration: underline;
+  text-decoration-thickness: 3px;
+  text-underline-offset: 4px;
+  text-decoration-color: var(--red);
+}
+.zcard__dek {
+  font-size: var(--t-small);
+  line-height: 1.5;
+  max-width: 48ch;
+}
+.zcard__byline {
+  margin-top: auto;
+  padding-top: var(--s-2);
+  display: flex;
+  gap: var(--s-3);
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: var(--t-nano);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.75;
+  border-top: var(--bd-hair) solid currentColor;
+}
+/* variants */
+.zcard--boxed {
+  background: var(--paper-bright);
+  border: var(--bd) solid var(--ink);
+  padding: var(--s-4);
+  box-shadow: var(--sh-lift);
+}
+.zcard--boxed:hover {
+  transform: translate(-2px, -3px);
+  box-shadow: var(--sh-card);
+}
+.zcard--quote {
+  background: var(--ink);
+  color: var(--paper);
+  padding: var(--s-5);
+  justify-content: space-between;
+}
+.zcard--note {
+  background: var(--yellow);
+  border: var(--bd) solid var(--ink);
+  padding: var(--s-4);
+  box-shadow: var(--sh-lift);
+  transform: rotate(var(--rot, -1.2deg));
+}
+
+/* ==========================================================================
+   Shared small parts
+   ========================================================================== */
+.eyebrow {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: var(--t-nano);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}
+.lead {
+  font-size: var(--t-lead);
+  line-height: 1.45;
+  max-width: 46ch;
+}
+.dashed-rule {
+  border: 0;
+  border-top: var(--bd) dashed currentColor;
+  opacity: 0.5;
+  margin-block: var(--s-6);
+}
+.slab-rule {
+  border: 0;
+  border-top: var(--bd-slab) solid currentColor;
+  margin-block: var(--s-5);
+}
+
+/* halftone corner blob used as cheap decoration */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: var(--z-deco);
+}
+
+/* grid helpers */
+.grid {
+  display: grid;
+  gap: var(--s-5);
+}
+.grid--2 {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+}
+.grid--3 {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+}
+.grid--4 {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+}

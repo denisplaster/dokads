@@ -1,0 +1,216 @@
+/* ==========================================================================
+   DOKADS — DESIGN TOKENS
+   The whole zine aesthetic is built from this file. Components consume
+   tokens; they never hard-code a hex, a rotation, or a shadow.
+   ========================================================================== */
+
+:root {
+  /* ---------- INK ---------------------------------------------------- */
+  --ink: #131110;
+  --ink-soft: #37322e;
+  --ink-faint: #6f675f;
+  --ink-ghost: #a49c92;
+
+  /* ---------- PAPER -------------------------------------------------- */
+  --paper: #f6f1e6; /* warm paper white — the default canvas */
+  --paper-bright: #fdfaf3; /* fresh sheet, for cards on colour */
+  --paper-shade: #ebe3d2; /* the sheet underneath */
+  --paper-kraft: #ddd0b6; /* envelope / packing-tape brown */
+
+  /* ---------- PRIMARY ------------------------------------------------ */
+  --blue: #1f3ce0; /* electric cobalt */
+  --blue-deep: #14259a;
+  /* Tomato red comes in three calibrated weights. The bright one is
+     decoration only — it does not carry text at either end.
+       --red        surface + accent. White on it = 4.8:1 (AA).
+       --red-text   small red type on paper. 5.1:1 on --paper (AA).
+       --red-bright pure decoration: scribbles, dots, rules. */
+  --red: #dc2812;
+  --red-text: #c81f0c;
+  --red-bright: #f0361f;
+  --red-deep: #a81806;
+  --yellow: #ffd51e; /* acid yellow */
+  --yellow-acid: #e8f43c; /* the sharper, greener one */
+
+  /* ---------- SUPPORTING ACCENTS ------------------------------------- */
+  --pink: #ff93c4;
+  --green: #22b473;
+  --lavender: #b7a5f2;
+  --peach: #ffc39b;
+  --warm-gray: #b6afa4;
+
+  /* ---------- SEMANTIC SURFACES -------------------------------------- */
+  /* Each surface pairs a background with the ink that is legible on it.
+     Sections set these two and everything inside inherits correctly. */
+  --surface: var(--paper);
+  --on-surface: var(--ink);
+  --rule: var(--ink);
+
+  /* ---------- TYPE --------------------------------------------------- */
+  --font-display: 'Anton', 'Archivo', 'Haettenschweiler', 'Arial Narrow', sans-serif;
+  --font-body: 'Archivo', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-hand: 'Caveat', 'Bradley Hand', cursive;
+  --font-marker: 'Permanent Marker', 'Caveat', cursive;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* fluid display scale */
+  --t-mega: clamp(3.2rem, 12vw, 9rem);
+  --t-display: clamp(2.4rem, 7.2vw, 5.4rem);
+  --t-h1: clamp(2.2rem, 6vw, 4.4rem);
+  --t-h2: clamp(1.7rem, 4vw, 3rem);
+  --t-h3: clamp(1.3rem, 2.4vw, 1.9rem);
+  --t-lead: clamp(1.1rem, 1.9vw, 1.45rem);
+  --t-body: 1.0625rem;
+  --t-small: 0.9375rem;
+  --t-micro: 0.8125rem;
+  --t-nano: 0.6875rem;
+
+  --lh-tight: 0.95;
+  --lh-snug: 1.08;
+  /* headlines that carry an inline `.knock` background need extra leading,
+     or the block bleeds into the line above */
+  --lh-knock: 1.14;
+  --lh-body: 1.6;
+
+  --track-display: -0.02em;
+  --track-label: 0.14em;
+
+  /* ---------- SPACE -------------------------------------------------- */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4rem;
+  --s-9: 6rem;
+  --s-10: 8rem;
+
+  --section-y: clamp(3.5rem, 9vw, 7rem);
+  --gutter: clamp(1.15rem, 4vw, 2.5rem);
+
+  /* ---------- MEASURE / WIDTH ---------------------------------------- */
+  --w-full: 1440px;
+  --w-wide: 1220px;
+  --w-page: 1080px;
+  --w-text: 68ch; /* readable paragraph width, enforced */
+  --w-narrow: 620px;
+
+  /* ---------- BORDERS ------------------------------------------------ */
+  --bd-hair: 1px;
+  --bd: 2px;
+  --bd-thick: 3px;
+  --bd-slab: 5px;
+  --r-none: 0px;
+  --r-sm: 3px;
+  --r-md: 8px;
+  --r-lg: 18px;
+  --r-pill: 999px;
+
+  /* ---------- ROTATION (never improvise an angle) --------------------- */
+  --rot-hair: 0.4deg;
+  --rot-nudge: 1deg;
+  --rot-tilt: 2deg;
+  --rot-lean: 3.5deg;
+  --rot-wild: 6deg;
+
+  /* ---------- SHADOW (hard offsets — printed, not blurred) ------------ */
+  --sh-lift: 3px 3px 0 var(--ink);
+  --sh-card: 6px 6px 0 var(--ink);
+  --sh-slab: 10px 10px 0 var(--ink);
+  --sh-soft: 0 10px 24px -12px rgb(19 17 16 / 0.45);
+  --sh-paper: 0 2px 0 rgb(19 17 16 / 0.12), 0 12px 22px -16px rgb(19 17 16 / 0.6);
+
+  /* ---------- TEXTURE ------------------------------------------------ */
+  --tex-grain: 0.055; /* photocopier noise over colour fields */
+  --tex-grain-strong: 0.1;
+  --tex-halftone: 0.16;
+  --halftone-size: 7px;
+
+  /* ---------- MOTION -------------------------------------------------- */
+  --dur-instant: 90ms;
+  --dur-quick: 160ms;
+  --dur-base: 240ms;
+  --dur-slow: 420ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-snap: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ---------- Z ------------------------------------------------------- */
+  --z-deco: 0;
+  --z-content: 1;
+  --z-sticky: 50;
+  --z-nav: 100;
+  --z-overlay: 200;
+}
+
+/* ---------- SURFACE THEMES -------------------------------------------
+   Applied by <ZineSection tone="…"> and usable on any container.
+   Measured body contrast (WCAG AA needs 4.5:1 for normal text):
+     ink/paper 16.4  ·  blue/white 7.2  ·  red/white 4.8
+     yellow/ink 13.1 ·  acid/ink 16.1  ·  green/ink 6.9
+     pink/ink 10.9   ·  lavender/ink 8.9 ·  peach/ink 12.4
+     kraft/ink 9.9   ·  paper/ink 15.2  ·  bright/ink 16.6
+   Red is the tightest pairing — if it ever needs to go lighter, move
+   body copy off it rather than keeping the tone.
+   -------------------------------------------------------------------- */
+[data-tone='paper'] {
+  --surface: var(--paper);
+  --on-surface: var(--ink);
+  --rule: var(--ink);
+}
+[data-tone='bright'] {
+  --surface: var(--paper-bright);
+  --on-surface: var(--ink);
+  --rule: var(--ink);
+}
+[data-tone='ink'] {
+  --surface: var(--ink);
+  --on-surface: var(--paper);
+  --rule: var(--paper);
+}
+[data-tone='blue'] {
+  --surface: var(--blue);
+  --on-surface: #ffffff;
+  --rule: #ffffff;
+}
+[data-tone='red'] {
+  --surface: var(--red);
+  --on-surface: #ffffff;
+  --rule: #ffffff;
+}
+[data-tone='yellow'] {
+  --surface: var(--yellow);
+  --on-surface: var(--ink);
+  --rule: var(--ink);
+}
+[data-tone='acid'] {
+  --surface: var(--yellow-acid);
+  --on-surface: var(--ink);
+  --rule: var(--ink);
+}
+[data-tone='pink'] {
+  --surface: var(--pink);
+  --on-surface: var(--ink);
+  --rule: var(--ink);
+}
+[data-tone='green'] {
+  --surface: var(--green);
+  --on-surface: var(--ink);
+  --rule: var(--ink);
+}
+[data-tone='lavender'] {
+  --surface: var(--lavender);
+  --on-surface: var(--ink);
+  --rule: var(--ink);
+}
+[data-tone='peach'] {
+  --surface: var(--peach);
+  --on-surface: var(--ink);
+  --rule: var(--ink);
+}
+[data-tone='kraft'] {
+  --surface: var(--paper-kraft);
+  --on-surface: var(--ink);
+  --rule: var(--ink);
+}
