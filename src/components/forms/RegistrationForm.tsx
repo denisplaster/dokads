@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { EditorialHeadline, PaperCard, TapeStrip } from '../zine'
 import { AUDIENCE_META } from '../../data/events'
 import { AGE_CHOICES, CONNECTION_CHOICES, MINOR_AGES, MINOR_NOTICE } from '../../data/joinForm'
 import { GUIDELINES_CHECKBOX } from '../../data/community'
+import { submitRegistration } from '../../app/actions/public'
 
 export function RegistrationForm({
   eventSlug,
@@ -23,6 +24,8 @@ export function RegistrationForm({
   const [age, setAge] = useState('')
   const [agreed, setAgreed] = useState(false)
   const [done, setDone] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [pending, startTransition] = useTransition()
   const isMinor = MINOR_AGES.has(age)
 
   if (done) {
@@ -34,7 +37,7 @@ export function RegistrationForm({
         </EditorialHeadline>
         <p style={{ marginTop: 'var(--s-4)' }}>
           {open
-            ? 'Look for a confirmation email. If anything changes about the venue or timing, we will tell you before you travel.'
+            ? 'You are on the list. If anything changes about the venue or timing, we will tell you before you travel.'
             : 'This one is not confirmed yet. As soon as the date and venue are locked in, you will hear from us — and you can change your mind at any point.'}
         </p>
         <div style={{ marginTop: 'var(--s-5)', display: 'flex', gap: 'var(--s-3)', flexWrap: 'wrap' }}>
@@ -54,7 +57,25 @@ export function RegistrationForm({
       className="reg-form"
       onSubmit={(e) => {
         e.preventDefault()
-        setDone(true)
+        const form = new FormData(e.currentTarget)
+        setError(null)
+        startTransition(async () => {
+          const res = await submitRegistration({
+            eventSlug,
+            firstName: String(form.get('first') ?? ''),
+            lastName: String(form.get('last') ?? ''),
+            email: String(form.get('email') ?? ''),
+            ageRange: age,
+            city: String(form.get('city') ?? ''),
+            connection: String(form.get('connection') ?? ''),
+            accessibility: String(form.get('access') ?? ''),
+            dietary: String(form.get('diet') ?? ''),
+            wantsUpdates: form.get('updates') === 'on',
+            agreedGuidelines: agreed,
+          })
+          if (res.ok) setDone(true)
+          else setError(res.error)
+        })
       }}
       aria-labelledby={`reg-${eventSlug}`}
     >
@@ -90,7 +111,7 @@ export function RegistrationForm({
           <label htmlFor="reg-age">
             Age range <span className="field__opt">optional</span>
           </label>
-          <select id="reg-age" value={age} onChange={(e) => setAge(e.target.value)}>
+          <select id="reg-age" name="age" value={age} onChange={(e) => setAge(e.target.value)}>
             <option value="">Prefer not to say</option>
             {AGE_CHOICES.filter((c) => c.value !== 'no-answer').map((c) => (
               <option key={c.value} value={c.value}>
@@ -175,13 +196,19 @@ export function RegistrationForm({
         </label>
       </div>
 
-      <button type="submit" className="btn btn--red btn--lg btn--block">
-        {open ? 'Register' : 'Keep me posted'}
+      {error && (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      )}
+
+      <button type="submit" className="btn btn--red btn--lg btn--block" disabled={pending}>
+        {pending ? 'Sending…' : open ? 'Register' : 'Keep me posted'}
       </button>
 
       <p className="reg-form__foot">
-        This is a demonstration form — it does not send anywhere yet. Once it does, you will be
-        able to delete everything you gave us by replying to any email.
+        We store what you enter here so we can run the event. Reply to any email from us and we
+        will delete it — no form, no reason needed.
       </p>
     </form>
   )

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import {
   EditorialHeadline,
@@ -30,6 +30,7 @@ import {
 import type { Choice } from '../data/joinForm'
 import { GUIDELINES_CHECKBOX } from '../data/community'
 import { regions } from '../data/regions'
+import { submitJoin } from '../app/actions/public'
 
 const STEPS = [
   { n: 1, title: 'So, what brings you here?', tone: 'yellow' },
@@ -111,6 +112,13 @@ export function Join() {
   const [age, setAge] = useState('')
   const [agreed, setAgreed] = useState(false)
   const [done, setDone] = useState(false)
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [wantsUpdates, setWantsUpdates] = useState(true)
+  const [wantsLocal, setWantsLocal] = useState(false)
+  const [wantsVolunteer, setWantsVolunteer] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [pending, startTransition] = useTransition()
 
   const isMinor = MINOR_AGES.has(age)
   const pct = Math.round(((step - 1) / STEPS.length) * 100)
@@ -164,8 +172,9 @@ export function Join() {
           </PaperCard>
 
           <p className="join-done__foot">
-            This is a demonstration form and nothing was sent anywhere. Once it is live, you
-            will be able to change or delete everything you gave us by replying to any email.
+            Your answers are stored so we can plan around them. Individual answers never appear
+            publicly. Reply to any email from us and we will delete everything — no form, no
+            reason needed.
           </p>
         </div>
       </ZineSection>
@@ -239,8 +248,30 @@ export function Join() {
             data-tone={STEPS[step - 1].tone}
             onSubmit={(e) => {
               e.preventDefault()
-              if (step < STEPS.length) next()
-              else setDone(true)
+              if (step < STEPS.length) {
+                next()
+                return
+              }
+              setError(null)
+              startTransition(async () => {
+                const res = await submitJoin({
+                  name,
+                  email,
+                  connection,
+                  description,
+                  interests,
+                  timing,
+                  venues,
+                  regionSlug: region,
+                  ageRange: age,
+                  wantsUpdates,
+                  wantsLocal,
+                  wantsVolunteer,
+                  agreedGuidelines: agreed,
+                })
+                if (res.ok) setDone(true)
+                else setError(res.error)
+              })
             }}
           >
             {/* ---------- STEP 1 ---------- */}
@@ -346,11 +377,25 @@ export function Join() {
                 <div className="field-row">
                   <div className="field">
                     <label htmlFor="join-name">First name or what you go by</label>
-                    <input id="join-name" type="text" autoComplete="given-name" required />
+                    <input
+                      id="join-name"
+                      type="text"
+                      autoComplete="given-name"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
                   </div>
                   <div className="field">
                     <label htmlFor="join-email">Email</label>
-                    <input id="join-email" type="email" autoComplete="email" required />
+                    <input
+                      id="join-email"
+                      type="email"
+                      autoComplete="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
                   </div>
                 </div>
 
@@ -403,19 +448,34 @@ export function Join() {
                 )}
 
                 <div className="check">
-                  <input id="join-updates" type="checkbox" defaultChecked />
+                  <input
+                    id="join-updates"
+                    type="checkbox"
+                    checked={wantsUpdates}
+                    onChange={(e) => setWantsUpdates(e.target.checked)}
+                  />
                   <label htmlFor="join-updates">
                     Email me about DOKADS events and new stories.
                   </label>
                 </div>
                 <div className="check">
-                  <input id="join-local" type="checkbox" />
+                  <input
+                    id="join-local"
+                    type="checkbox"
+                    checked={wantsLocal}
+                    onChange={(e) => setWantsLocal(e.target.checked)}
+                  />
                   <label htmlFor="join-local">
                     Email me about things happening in my region specifically.
                   </label>
                 </div>
                 <div className="check">
-                  <input id="join-volunteer" type="checkbox" />
+                  <input
+                    id="join-volunteer"
+                    type="checkbox"
+                    checked={wantsVolunteer}
+                    onChange={(e) => setWantsVolunteer(e.target.checked)}
+                  />
                   <label htmlFor="join-volunteer">
                     I might want to help organise something.
                   </label>
@@ -437,6 +497,12 @@ export function Join() {
               </fieldset>
             )}
 
+            {error && (
+              <p className="form-error" role="alert">
+                {error}
+              </p>
+            )}
+
             {/* nav */}
             <div className="join-nav">
               {step > 1 ? (
@@ -452,8 +518,8 @@ export function Join() {
                     Skip this question
                   </button>
                 )}
-                <button type="submit" className="btn btn--red btn--lg">
-                  {step < STEPS.length ? 'Next →' : 'Join DOKADS'}
+                <button type="submit" className="btn btn--red btn--lg" disabled={pending}>
+                  {step < STEPS.length ? 'Next →' : pending ? 'Sending…' : 'Join DOKADS'}
                 </button>
               </div>
             </div>

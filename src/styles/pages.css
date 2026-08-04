@@ -2486,3 +2486,15 @@
     transform: none;
   }
 }
+
+/* form error, shown after a server-side rejection */
+.form-error {
+  margin-top: var(--s-4);
+  padding: var(--s-3) var(--s-4);
+  background: var(--red);
+  color: #fff;
+  border: var(--bd) solid var(--ink);
+  box-shadow: var(--sh-lift);
+  font-size: var(--t-small);
+  font-weight: 600;
+}
