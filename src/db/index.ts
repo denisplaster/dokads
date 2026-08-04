@@ -51,4 +51,12 @@ function createDb(): NeonHttpDatabase<typeof schema> {
 
 const g = globalThis as unknown as { __dokadsDb?: NeonHttpDatabase<typeof schema> }
 export const db = (g.__dokadsDb ??= createDb())
+
+/**
+ * If a page throws Postgres error 42P01 ("undefined table"), the migrations
+ * have not been applied to that database. Fix:
+ *   DATABASE_URL="<neon url>" npm run db:migrate
+ *   DATABASE_URL="<neon url>" npm run db:seed
+ */
+
 export { schema }

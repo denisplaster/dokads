@@ -46,7 +46,7 @@ Then sign in at `/admin/sign-in`, and unset `ADMIN_PASSWORD` from your shell.
 | `npm run typecheck` | Types only |
 | `npm run db:generate` | Generate a migration from schema changes |
 | `npm run db:migrate` | Apply migrations (Neon) |
-| `npm run db:seed` | Seed content; idempotent, never touches personal data |
+| `npm run db:seed` | Seed content. Leaves existing rows alone; `-- --force` overwrites them |
 | `npm run db:verify` | Run schema + queries against in-process Postgres |
 | `npm run db:studio` | Drizzle Studio |
 | `npm run admin:create` | Create or promote an admin |
@@ -57,9 +57,26 @@ Then sign in at `/admin/sign-in`, and unset `ADMIN_PASSWORD` from your shell.
 2. Storage → add the **Neon** integration. It injects `DATABASE_URL`.
 3. Set `BETTER_AUTH_SECRET` (`openssl rand -base64 32`) and `BETTER_AUTH_URL`
    (your production URL).
-4. `npm run db:migrate` then `npm run db:seed` against the production
-   `DATABASE_URL`.
-5. `npm run admin:create` to make your account.
+4. Deploy. **The build does not touch the database**, so this succeeds before
+   the schema exists.
+5. Create the schema and content — once, from your machine, against the Neon
+   connection string from the Vercel dashboard:
+
+   ```bash
+   export DATABASE_URL="postgresql://…neon.tech/neondb?sslmode=require"
+   npm run db:migrate
+   npm run db:seed
+   ADMIN_EMAIL="you@example.com" ADMIN_PASSWORD="a-long-passphrase" npm run admin:create
+   unset DATABASE_URL ADMIN_PASSWORD
+   ```
+
+Until step 5 runs, the static pages work and anything reading content returns
+a Postgres `42P01` ("undefined table") — that error always means migrations
+have not been applied to that database.
+
+**Migrations are deliberately not part of the build.** Running them on every
+deploy races across concurrent builds, and seeding on every deploy would fight
+the admin. Run them when the schema actually changes.
 
 Deploying with `DATABASE_URL` still set to `pglite://` is blocked with an
 explicit error rather than failing mysteriously.
@@ -209,6 +226,24 @@ planning. Adoptees, parents, organisations, and allies support; descendants lead
 **AK Connection and any other organisation** is named as a partner only once that
 relationship is formally agreed, and the site never implies visitors are connected to
 another organisation.
+
+---
+
+## Rendering
+
+Content pages (`/`, `/events`, `/stories`, `/regions`, `/resources` and their
+detail routes) are **server-rendered per request**. They were prerendered at
+build time originally, which coupled every deploy to the database being both
+reachable and migrated — a first deploy or a paused Neon branch failed the
+build outright. A build should not depend on a database it does not own.
+
+They are still server-rendered HTML, so nothing is lost for search engines or
+link previews, and CMS edits appear with no revalidation to reason about. If
+traffic ever justifies caching, add it back deliberately.
+
+Everything without a database dependency — `/start`, `/am-i-a-dokad`,
+`/learn`, `/about`, `/guidelines`, `/privacy`, `/share`, `/join` — is fully
+static.
 
 ---
 

@@ -7,11 +7,18 @@ import { getAllRegions, getEventsInRegion, getPublishedRegion } from '@/db/queri
 import { toEvent, toRegion } from '@/lib/adapt'
 
 /**
- * Content comes from the database, so these pages are ISR rather than baked
- * at build time. Admin writes call revalidatePath, which makes an edit appear
- * immediately; the hourly window is only a backstop.
+ * Rendered per request, not at build time.
+ *
+ * These pages read from Postgres. Prerendering them coupled every deploy to
+ * the database being reachable AND migrated — a first deploy, a paused Neon
+ * branch, or a transient outage failed the build outright. A build should
+ * never depend on a database it does not own.
+ *
+ * Still server-rendered HTML, so nothing is lost for search engines or link
+ * previews, and CMS edits appear immediately with no revalidation to reason
+ * about. If traffic ever justifies caching, add it here deliberately.
  */
-export const revalidate = 3600
+export const dynamic = 'force-dynamic'
 
 
 /**

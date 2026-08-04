@@ -4,7 +4,10 @@
  *
  *   npm run db:seed
  *
- * Idempotent: re-running updates existing rows rather than duplicating them.
+ * Safe to re-run: existing rows are LEFT ALONE, so seeding again never reverts
+ * something edited in the admin. Pass --force to overwrite existing rows with
+ * the file contents instead — that discards admin edits, so it is opt-in.
+ *
  * Only touches content tables — never members, registrations, or submissions.
  *
  * Against Neon, run `npm run db:migrate` first; drizzle-kit owns migrations
@@ -17,10 +20,23 @@ import { dirname, join } from 'node:path'
 import * as schema from '../src/db/schema'
 import { eventRows, regionRows, resourceRows, storyRows } from '../src/db/seed-data'
 
+const FORCE = process.argv.includes('--force')
+
 type AnyDb = {
   insert: (t: unknown) => {
-    values: (v: unknown) => { onConflictDoUpdate: (c: unknown) => Promise<unknown> }
+    values: (v: unknown) => {
+      onConflictDoUpdate: (c: unknown) => Promise<unknown>
+      onConflictDoNothing: (c?: unknown) => Promise<unknown>
+    }
   }
+}
+
+/** Insert, and only clobber an existing row when --force was passed. */
+async function upsert(db: AnyDb, table: unknown, row: object, target: unknown) {
+  const q = db.insert(table).values(row)
+  return FORCE
+    ? q.onConflictDoUpdate({ target, set: { ...row, updatedAt: new Date() } })
+    : q.onConflictDoNothing({ target })
 }
 
 async function connect() {
@@ -62,40 +78,33 @@ async function main() {
 
   // regions first — events reference a region slug
   for (const row of regionRows) {
-    await db
-      .insert(schema.regions)
-      .values(row)
-      .onConflictDoUpdate({ target: schema.regions.slug, set: { ...row, updatedAt: new Date() } })
+    await upsert(db, schema.regions, row, schema.regions.slug)
   }
   console.log(`✓ ${regionRows.length} regions`)
 
   for (const row of eventRows) {
-    await db
-      .insert(schema.events)
-      .values(row)
-      .onConflictDoUpdate({ target: schema.events.slug, set: { ...row, updatedAt: new Date() } })
+    await upsert(db, schema.events, row, schema.events.slug)
   }
   console.log(`✓ ${eventRows.length} events`)
 
   for (const row of storyRows) {
-    await db
-      .insert(schema.stories)
-      .values(row)
-      .onConflictDoUpdate({ target: schema.stories.slug, set: { ...row, updatedAt: new Date() } })
+    await upsert(db, schema.stories, row, schema.stories.slug)
   }
   console.log(`✓ ${storyRows.length} stories (all flagged as placeholder copy)`)
 
   for (const row of resourceRows) {
-    await db
-      .insert(schema.resources)
-      .values(row)
-      .onConflictDoUpdate({ target: schema.resources.id, set: { ...row, updatedAt: new Date() } })
+    await upsert(db, schema.resources, row, schema.resources.id)
   }
   console.log(`✓ ${resourceRows.length} resources (all 'open call')`)
 
   console.log(
     `\nSeed complete${local ? ' (local pglite database)' : ''}. ` +
       'Content tables only — no personal data was touched.',
+  )
+  console.log(
+    FORCE
+      ? 'Ran with --force: existing rows were overwritten with the file contents.'
+      : 'Existing rows were left untouched. Use --force to overwrite them.',
   )
   process.exit(0)
 }
