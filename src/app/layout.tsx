@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Anton, Archivo, Caveat, Permanent_Marker } from 'next/font/google'
+import { siteUrl } from '@/lib/site-url'
 import '@/styles/tokens.css'
 import '@/styles/base.css'
 import '@/styles/zine.css'
@@ -31,10 +32,8 @@ const marker = Permanent_Marker({
   display: 'swap',
 })
 
-const SITE = 'https://dokads.com'
-
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE),
+  metadataBase: new URL(siteUrl()),
   title: {
     default: 'DOKADS — For the next generation of Korean adoption stories',
     template: '%s — DOKADS',
