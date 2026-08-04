@@ -4,6 +4,8 @@ import { nextCookies } from 'better-auth/next-js'
 import { db } from '@/db'
 import * as schema from '@/db/schema'
 import { siteUrl } from './site-url'
+import { send } from './email/send'
+import { resetPasswordEmail } from './email/templates'
 
 if (!process.env.BETTER_AUTH_SECRET) {
   throw new Error('BETTER_AUTH_SECRET is not set. Generate one with: openssl rand -base64 32')
@@ -33,6 +35,16 @@ export function makeAuth({ allowSignUp = false }: { allowSignUp?: boolean } = {}
       enabled: true,
       disableSignUp: !allowSignUp,
       minPasswordLength: 12,
+      /**
+       * Without this an admin who forgets their password has no way back in
+       * except shell access to re-run admin:create. Awaited rather than
+       * fire-and-forget: if the mail fails, the request should fail too, so
+       * nobody sits waiting for a link that was never sent.
+       */
+      sendResetPassword: async ({ user, url }) => {
+        const { subject, html, text } = resetPasswordEmail({ url, site: siteUrl() })
+        await send({ to: user.email, subject, html, text })
+      },
     },
     user: {
       additionalFields: {

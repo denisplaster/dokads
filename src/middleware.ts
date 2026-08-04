@@ -17,5 +17,5 @@ export function middleware(req: NextRequest) {
 
 export const config = {
   // everything under /admin except the sign-in page itself
-  matcher: ['/admin/((?!sign-in).*)', '/admin'],
+  matcher: ['/admin/((?!sign-in|forgot-password|reset-password).*)', '/admin'],
 }

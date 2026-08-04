@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import Link from 'next/link'
 import { SignInForm } from './form'
 
 export const metadata: Metadata = {
@@ -20,6 +21,9 @@ export default function SignInPage() {
         <Suspense fallback={<p className="adm-field__help">Loading…</p>}>
           <SignInForm />
         </Suspense>
+        <p style={{ marginTop: 'var(--s-5)', fontSize: 'var(--t-small)' }}>
+          <Link href="/admin/forgot-password">Forgot your password?</Link>
+        </p>
       </div>
     </div>
   )

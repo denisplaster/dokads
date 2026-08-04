@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getAdminCounts, getPlanningTallies } from '@/db/queries'
 import { INTEREST_CHOICES, TIMING_CHOICES, VENUE_CHOICES } from '@/data/joinForm'
+import { emailConfigured } from '@/lib/email/send'
 import type { Tally } from '@/db/queries'
 
 export const dynamic = 'force-dynamic'
@@ -51,6 +52,8 @@ function TallyBlock({
 
 export default async function AdminHome() {
   const [counts, tallies] = await Promise.all([getAdminCounts(), getPlanningTallies()])
+  const mailOn = emailConfigured()
+  const notifyOn = Boolean(process.env.ADMIN_NOTIFY_EMAIL)
 
   return (
     <>
@@ -90,6 +93,23 @@ export default async function AdminHome() {
           <div className="adm-stat__label">Unread submissions</div>
         </div>
       </div>
+
+      {!mailOn && (
+        <p className="adm-note">
+          <strong>Email is not configured, so nobody is being notified.</strong> Registrations
+          and joins are still recorded and everything below is accurate — but the people signing
+          up receive no confirmation, and admin password reset will not work. Set{' '}
+          <code>RESEND_API_KEY</code> and <code>EMAIL_FROM</code> to turn it on.
+        </p>
+      )}
+
+      {mailOn && !notifyOn && (
+        <p className="adm-note">
+          <strong>People get confirmations, but you do not get notified.</strong> Set{' '}
+          <code>ADMIN_NOTIFY_EMAIL</code> if you want an email when someone registers, joins, or
+          sends something to the inbox.
+        </p>
+      )}
 
       {tallies.totals.minors > 0 && (
         <p className="adm-note">

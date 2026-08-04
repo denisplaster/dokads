@@ -7,6 +7,34 @@ import { revalidatePath } from 'next/cache'
 import { db } from '@/db'
 import { eventRegistrations, events, members, submissions } from '@/db/schema'
 import { MINOR_AGES } from '@/data/joinForm'
+import { sendQuietly } from '@/lib/email/send'
+import {
+  adminNotifyEmail,
+  joinWelcomeEmail,
+  registrationEmail,
+} from '@/lib/email/templates'
+import { siteUrl } from '@/lib/site-url'
+
+/**
+ * Cache invalidation is best-effort. It runs after the row is committed, so a
+ * failure here must not tell someone their registration did not go through —
+ * they would try again, hit the unique constraint, and get nothing.
+ */
+function safeRevalidate(path: string) {
+  try {
+    revalidatePath(path)
+  } catch (err) {
+    console.error(`[action] revalidatePath("${path}") failed after a successful write`, err)
+  }
+}
+
+/**
+ * Where organiser notifications go. Unset means nobody is notified — the data
+ * is still recorded and visible in the admin.
+ */
+function organiserInbox(): string | null {
+  return process.env.ADMIN_NOTIFY_EMAIL?.trim() || null
+}
 
 export type ActionResult = { ok: true } | { ok: false; error: string }
 
@@ -116,6 +144,31 @@ export async function submitJoin(input: unknown): Promise<ActionResult> {
           wantsVolunteer: data.wantsVolunteer,
         },
       })
+
+    // ---- committed. nothing below may turn this into a failure. ----
+    const site = siteUrl()
+    const isMinor = minorFromAge(data.ageRange)
+    const welcome = joinWelcomeEmail({ name: data.name, site, isMinor })
+    sendQuietly({ to: data.email, ...welcome })
+
+    const inbox = organiserInbox()
+    if (inbox) {
+      sendQuietly({
+        to: inbox,
+        ...adminNotifyEmail({
+          kind: 'member',
+          summary: 'Someone new joined',
+          detail: [
+            `Region: ${data.regionSlug ?? 'not said'}`,
+            `Age range: ${data.ageRange ?? 'not said'}${isMinor ? ' (under 18)' : ''}`,
+            `Interested in: ${data.interests.join(', ') || 'not said'}`,
+            data.wantsVolunteer ? 'Offered to help organise' : 'Did not offer to volunteer',
+          ],
+          site,
+        }),
+      })
+    }
+
     return { ok: true }
   } catch (err) {
     return fail(err)
@@ -206,7 +259,37 @@ export async function submitRegistration(input: unknown): Promise<ActionResult> 
         target: [eventRegistrations.eventId, eventRegistrations.email],
       })
 
-    revalidatePath(`/events/${event.slug}`)
+    // ---- committed. nothing below may turn this into a failure. ----
+    safeRevalidate(`/events/${event.slug}`)
+
+    const site = siteUrl()
+    const confirmation = registrationEmail({
+      firstName: data.firstName,
+      event,
+      status,
+      site,
+    })
+    sendQuietly({ to: data.email, ...confirmation })
+
+    const inbox = organiserInbox()
+    if (inbox) {
+      sendQuietly({
+        to: inbox,
+        ...adminNotifyEmail({
+          kind: 'registration',
+          summary: `New sign-up: ${event.title}`,
+          detail: [
+            `${data.firstName} ${data.lastName ?? ''}`.trim() + ` — ${data.email}`,
+            `Status: ${status}`,
+            `Age range: ${data.ageRange ?? 'not said'}${isMinor ? ' (under 18)' : ''}`,
+            data.accessibility ? `Accommodation: ${data.accessibility}` : 'No accommodation request',
+            data.dietary ? `Dietary: ${data.dietary}` : '',
+          ].filter(Boolean),
+          site,
+        }),
+      })
+    }
+
     return { ok: true }
   } catch (err) {
     return fail(err)
@@ -238,6 +321,24 @@ export async function submitToInbox(input: unknown): Promise<ActionResult> {
       message: data.message,
       payload: data.payload,
     })
+
+    const inbox = organiserInbox()
+    if (inbox) {
+      sendQuietly({
+        to: inbox,
+        ...adminNotifyEmail({
+          kind: 'submission',
+          summary: `New ${data.kind} submission`,
+          detail: [
+            `From: ${data.name ?? 'Anonymous'}${data.email ? ` (${data.email})` : ''}`,
+            `Subject: ${data.subject}`,
+            data.message.slice(0, 300),
+          ],
+          site: siteUrl(),
+        }),
+      })
+    }
+
     return { ok: true }
   } catch (err) {
     return fail(err)

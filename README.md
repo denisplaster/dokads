@@ -49,6 +49,8 @@ Then sign in at `/admin/sign-in`, and unset `ADMIN_PASSWORD` from your shell.
 | `npm run db:setup` | `db:migrate` then `db:seed` — first-time setup |
 | `npm run db:seed` | Seed content. Leaves existing rows alone; `-- --force` overwrites them |
 | `npm run db:verify` | Run schema + queries against in-process Postgres |
+| `npm run email:verify` | Prove email failures cannot lose a registration |
+| `npm run email:test` | Send one real email to check a new configuration |
 | `npm run db:studio` | Drizzle Studio |
 | `npm run admin:create` | Create or promote an admin |
 
@@ -299,10 +301,51 @@ their event.
 
 ---
 
+## Email
+
+Transactional only, via [Resend](https://resend.com). Set these and it turns on;
+leave them unset and the site works exactly as it does without them.
+
+```bash
+RESEND_API_KEY="re_..."
+EMAIL_FROM="DOKADS <hello@dokads.com>"     # sender domain must be verified
+EMAIL_REPLY_TO="hello@dokads.com"          # a mailbox someone reads
+ADMIN_NOTIFY_EMAIL="you@example.com"       # optional organiser notifications
+```
+
+Then `EMAIL_TEST_TO="you@example.com" npm run email:test` sends one real message.
+The admin overview shows a banner whenever email is off, so "nobody got a
+confirmation" is never a silent failure.
+
+What gets sent:
+
+| When | To | Contains |
+| --- | --- | --- |
+| Event registration | The person | Status, date, location, and — while tentative — exactly what is not settled yet |
+| Waitlisted | The person | Says waitlist plainly, and that they hear first if a place opens |
+| Join | The person | Welcome, where to go next, and the minors notice if under 18 |
+| Any of the above | Organisers | A summary and a link into the admin (needs `ADMIN_NOTIFY_EMAIL`) |
+| Admin password reset | The admin | A one-hour link |
+
+**A failed send can never lose data.** Every write commits first, and everything
+after that boundary — cache invalidation included — is best-effort and cannot
+turn a successful registration into an error. `npm run email:verify` proves it
+against a real database with the provider both absent and actively throwing.
+
+**`EMAIL_REPLY_TO` has to be a real mailbox.** Every email says replying is
+enough to have your data deleted, and the site promises the same thing.
+
+Newsletters are not built. Everything above is transactional, which is why
+there is no unsubscribe link — the opt-in checkboxes are recorded but nothing
+sends to them yet.
+
+---
+
 ## Not built yet
 
-- **Email.** Nothing is sent — no confirmations, no newsletter, no password
-  reset. Registrations and joins are recorded but nobody is notified.
+- **Newsletter / bulk email.** The `wantsUpdates` and `wantsLocal` opt-ins are
+  recorded, but nothing sends to them. That needs an unsubscribe mechanism
+  before it ships.
 - **QR codes.** `/share` leaves a slot; generate against the live domain.
 - **Regional organiser accounts.** The role and scoping helper exist and are
   wired; no second account has been created yet.
