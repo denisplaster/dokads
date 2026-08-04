@@ -14,10 +14,11 @@ import { toStory } from '@/lib/adapt'
 export const revalidate = 3600
 
 
-export async function generateStaticParams() {
-  const rows = await getPublishedStories()
-  return rows.map((s) => ({ slug: s.slug }))
-}
+/**
+ * No generateStaticParams on purpose. Content is CMS-driven, so a page created
+ * in the admin must get a URL without a redeploy — these render on first
+ * request and are then ISR-cached. It also means a build needs no database.
+ */
 
 export async function generateMetadata({
   params,

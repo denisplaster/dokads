@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module'
 import { neon } from '@neondatabase/serverless'
 import { drizzle } from 'drizzle-orm/neon-http'
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http'
@@ -34,8 +35,6 @@ function createDb(): NeonHttpDatabase<typeof schema> {
           'database. Connect Neon (Storage → Neon) so DATABASE_URL is injected.',
       )
     }
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { createRequire } = require('node:module') as typeof import('node:module')
     const req = createRequire(import.meta.url)
     const { PGlite } = req('@electric-sql/pglite')
     const { drizzle: pgliteDrizzle } = req('drizzle-orm/pglite')

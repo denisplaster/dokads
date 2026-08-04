@@ -1,7 +1,5 @@
 import type { Metadata, Viewport } from 'next'
 import { Anton, Archivo, Caveat, Permanent_Marker } from 'next/font/google'
-import { Nav } from '@/components/layout/Nav'
-import { Footer } from '@/components/layout/Footer'
 import '@/styles/tokens.css'
 import '@/styles/base.css'
 import '@/styles/zine.css'
@@ -64,14 +62,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       className={`${anton.variable} ${archivo.variable} ${caveat.variable} ${marker.variable}`}
     >
-      <body>
-        <a className="skip-link" href="#main">
-          Skip to content
-        </a>
-        <Nav />
-        <main id="main">{children}</main>
-        <Footer />
-      </body>
+      <body>{children}</body>
     </html>
   )
 }

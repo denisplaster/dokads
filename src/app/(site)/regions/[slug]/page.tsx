@@ -14,11 +14,11 @@ import { toEvent, toRegion } from '@/lib/adapt'
 export const revalidate = 3600
 
 
-/** Only regions with real organisers get a page — see data/regions.ts. */
-export async function generateStaticParams() {
-  const rows = await getAllRegions()
-  return rows.filter((r) => r.status !== 'interest').map((r) => ({ slug: r.slug }))
-}
+/**
+ * No generateStaticParams on purpose. Content is CMS-driven, so a page created
+ * in the admin must get a URL without a redeploy — these render on first
+ * request and are then ISR-cached. It also means a build needs no database.
+ */
 
 export async function generateMetadata({
   params,

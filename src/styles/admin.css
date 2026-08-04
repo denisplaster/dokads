@@ -1,0 +1,433 @@
+/* ==========================================================================
+   DOKADS — ADMIN
+   Uses the same tokens, deliberately quieter. This is a work surface: dense,
+   scannable, no rotation, no tape. The zine lives on the public side.
+   ========================================================================== */
+
+.adm {
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.adm-bar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-nav);
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  flex-wrap: wrap;
+  background: var(--ink);
+  color: var(--paper);
+  padding: var(--s-3) var(--gutter);
+  border-bottom: var(--bd-thick) solid var(--ink);
+}
+.adm-bar__brand {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--yellow);
+}
+.adm-bar__nav {
+  display: flex;
+  gap: var(--s-3);
+  flex-wrap: wrap;
+  margin-left: var(--s-4);
+}
+.adm-bar__nav a {
+  font-size: var(--t-micro);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+  padding: 0.3em 0.55em;
+  border-radius: var(--r-sm);
+  opacity: 0.75;
+}
+.adm-bar__nav a:hover {
+  opacity: 1;
+  background: rgb(255 255 255 / 0.12);
+}
+.adm-bar__nav a.is-on {
+  opacity: 1;
+  background: var(--yellow);
+  color: var(--ink);
+}
+.adm-bar__who {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  font-size: var(--t-micro);
+}
+.adm-bar__role {
+  border: 1px solid currentColor;
+  border-radius: var(--r-pill);
+  padding: 0.15em 0.55em;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  font-size: var(--t-nano);
+}
+
+.adm-main {
+  padding: var(--s-6) var(--gutter) var(--s-9);
+  max-width: 1180px;
+  margin-inline: auto;
+}
+.adm-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--s-5);
+  padding-bottom: var(--s-3);
+  border-bottom: var(--bd-thick) solid var(--ink);
+}
+.adm-head h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  text-transform: uppercase;
+  line-height: 1;
+}
+.adm-head p {
+  font-size: var(--t-small);
+  max-width: 62ch;
+  margin-top: var(--s-2);
+}
+
+/* ---------- cards + stats ---------- */
+.adm-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--s-4);
+  margin-bottom: var(--s-6);
+}
+.adm-stat {
+  background: var(--paper-bright);
+  border: var(--bd) solid var(--ink);
+  padding: var(--s-4);
+  box-shadow: var(--sh-lift);
+}
+.adm-stat__n {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  line-height: 1;
+}
+.adm-stat__label {
+  font-size: var(--t-nano);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  margin-top: var(--s-2);
+}
+.adm-card {
+  background: var(--paper-bright);
+  border: var(--bd) solid var(--ink);
+  padding: var(--s-5);
+  margin-bottom: var(--s-5);
+}
+.adm-card > h2 {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  text-transform: uppercase;
+  margin-bottom: var(--s-3);
+}
+
+/* ---------- tables ---------- */
+.adm-table-wrap {
+  overflow-x: auto;
+  border: var(--bd) solid var(--ink);
+  background: var(--paper-bright);
+}
+.adm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t-small);
+  min-width: 640px;
+}
+.adm-table th,
+.adm-table td {
+  text-align: left;
+  padding: var(--s-3);
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+  vertical-align: top;
+}
+.adm-table th {
+  font-size: var(--t-nano);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: var(--paper-shade);
+  position: sticky;
+  top: 0;
+}
+.adm-table tr:last-child td {
+  border-bottom: 0;
+}
+.adm-table tbody tr:hover {
+  background: color-mix(in srgb, var(--yellow) 22%, transparent);
+}
+.adm-table__main {
+  font-weight: 700;
+}
+.adm-table__sub {
+  display: block;
+  font-size: var(--t-nano);
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
+/* ---------- controls ---------- */
+.adm-btn {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: var(--t-micro);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.45em 0.8em;
+  background: var(--ink);
+  color: var(--paper);
+  border: var(--bd) solid var(--ink);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+}
+.adm-btn:hover {
+  background: var(--blue);
+  border-color: var(--blue);
+}
+.adm-btn--ghost {
+  background: transparent;
+  color: var(--ink);
+}
+.adm-btn--ghost:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+.adm-btn--danger {
+  background: transparent;
+  color: var(--red-text);
+  border-color: var(--red-text);
+}
+.adm-btn--danger:hover {
+  background: var(--red);
+  border-color: var(--red);
+  color: #fff;
+}
+.adm-btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.adm-actions {
+  display: flex;
+  gap: var(--s-2);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.adm-select {
+  font-size: var(--t-micro);
+  font-weight: 700;
+  padding: 0.35em 0.5em;
+  border: var(--bd) solid var(--ink);
+  border-radius: var(--r-sm);
+  background: var(--paper-bright);
+  max-width: 100%;
+}
+
+/* ---------- forms ---------- */
+.adm-form {
+  display: grid;
+  gap: var(--s-4);
+}
+.adm-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: var(--s-4);
+}
+.adm-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.adm-field > label {
+  font-size: var(--t-micro);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.adm-field input[type='text'],
+.adm-field input[type='email'],
+.adm-field input[type='number'],
+.adm-field input[type='url'],
+.adm-field input[type='password'],
+.adm-field select,
+.adm-field textarea {
+  width: 100%;
+  padding: 0.55em 0.65em;
+  border: var(--bd) solid var(--ink);
+  border-radius: var(--r-sm);
+  background: var(--paper-bright);
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+.adm-field textarea {
+  min-height: 8rem;
+  resize: vertical;
+  line-height: 1.5;
+}
+.adm-field__help {
+  font-size: var(--t-nano);
+  opacity: 0.7;
+  line-height: 1.4;
+}
+.adm-check {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-size: var(--t-small);
+}
+.adm-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--red);
+}
+
+.adm-error {
+  background: var(--red);
+  color: #fff;
+  border: var(--bd) solid var(--ink);
+  padding: var(--s-3);
+  font-size: var(--t-small);
+  font-weight: 600;
+}
+.adm-ok {
+  background: var(--green);
+  color: var(--ink);
+  border: var(--bd) solid var(--ink);
+  padding: var(--s-3);
+  font-size: var(--t-small);
+  font-weight: 700;
+}
+.adm-note {
+  background: var(--yellow);
+  border: var(--bd) solid var(--ink);
+  padding: var(--s-3) var(--s-4);
+  font-size: var(--t-small);
+  line-height: 1.5;
+  margin-bottom: var(--s-5);
+}
+.adm-note strong {
+  font-weight: 800;
+}
+.adm-empty {
+  padding: var(--s-6);
+  text-align: center;
+  font-size: var(--t-small);
+  opacity: 0.75;
+}
+
+/* ---------- privacy affordances ---------- */
+.adm-minor {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  background: var(--lavender);
+  border: 1px solid var(--ink);
+  border-radius: var(--r-pill);
+  padding: 0.1em 0.5em;
+  font-size: var(--t-nano);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.adm-redact {
+  font-family: var(--font-mono);
+  letter-spacing: 0.1em;
+  opacity: 0.55;
+}
+
+/* ---------- aggregate bars ---------- */
+.adm-tally {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.adm-tally__row {
+  display: grid;
+  grid-template-columns: minmax(120px, 200px) 1fr auto;
+  gap: var(--s-3);
+  align-items: center;
+  font-size: var(--t-small);
+}
+.adm-tally__bar {
+  height: 14px;
+  background: var(--paper-shade);
+  border: 1px solid var(--ink);
+  overflow: hidden;
+}
+.adm-tally__fill {
+  height: 100%;
+  background: var(--blue);
+}
+.adm-tally__n {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  min-width: 2.5ch;
+  text-align: right;
+}
+
+/* ---------- sign in ---------- */
+.adm-signin {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: var(--s-5);
+  background: var(--ink);
+}
+.adm-signin__box {
+  width: min(100%, 420px);
+  background: var(--paper-bright);
+  border: var(--bd-thick) solid var(--ink);
+  box-shadow: var(--sh-slab);
+  padding: var(--s-6);
+}
+.adm-signin__box h1 {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  text-transform: uppercase;
+  margin-bottom: var(--s-2);
+}
+.adm-signin__box p {
+  font-size: var(--t-small);
+  margin-bottom: var(--s-5);
+  opacity: 0.8;
+}
+
+.adm-repeat {
+  display: grid;
+  gap: var(--s-2);
+}
+.adm-repeat__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: var(--s-2);
+}
+@media (max-width: 640px) {
+  .adm-repeat__row {
+    grid-template-columns: 1fr;
+  }
+  .adm-tally__row {
+    grid-template-columns: 1fr;
+    gap: var(--s-1);
+  }
+}
