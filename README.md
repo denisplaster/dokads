@@ -46,6 +46,7 @@ Then sign in at `/admin/sign-in`, and unset `ADMIN_PASSWORD` from your shell.
 | `npm run typecheck` | Types only |
 | `npm run db:generate` | Generate a migration from schema changes |
 | `npm run db:migrate` | Apply migrations (Neon) |
+| `npm run db:setup` | `db:migrate` then `db:seed` — first-time setup |
 | `npm run db:seed` | Seed content. Leaves existing rows alone; `-- --force` overwrites them |
 | `npm run db:verify` | Run schema + queries against in-process Postgres |
 | `npm run db:studio` | Drizzle Studio |
@@ -59,16 +60,22 @@ Then sign in at `/admin/sign-in`, and unset `ADMIN_PASSWORD` from your shell.
    (your production URL).
 4. Deploy. **The build does not touch the database**, so this succeeds before
    the schema exists.
-5. Create the schema and content — once, from your machine, against the Neon
-   connection string from the Vercel dashboard:
+5. Create the schema and content — once, from your machine. Get the real
+   connection string from **Vercel → Storage → your Neon database → `.env.local`**
+   (or the Neon console). Note the `cd`: these scripts only exist inside the
+   project.
 
    ```bash
-   export DATABASE_URL="postgresql://…neon.tech/neondb?sslmode=require"
-   npm run db:migrate
-   npm run db:seed
-   ADMIN_EMAIL="you@example.com" ADMIN_PASSWORD="a-long-passphrase" npm run admin:create
+   cd ~/code/dokads
+   export DATABASE_URL="postgresql://USER:PASSWORD@ep-xxxx.us-east-2.aws.neon.tech/neondb?sslmode=require"
+   npm run db:setup
+   ADMIN_EMAIL="you@example.com" ADMIN_PASSWORD="choose-a-long-passphrase" npm run admin:create
    unset DATABASE_URL ADMIN_PASSWORD
    ```
+
+   `db:setup` runs `db:migrate` then `db:seed`. Pasting a connection string
+   that still contains placeholder text fails immediately with an explanation
+   rather than a confusing connection error.
 
 Until step 5 runs, the static pages work and anything reading content returns
 a Postgres `42P01` ("undefined table") — that error always means migrations

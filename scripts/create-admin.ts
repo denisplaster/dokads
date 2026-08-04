@@ -13,8 +13,11 @@ import { eq } from 'drizzle-orm'
 import { makeAuth } from '../src/lib/auth'
 import { db } from '../src/db'
 import { user } from '../src/db/schema'
+import { requireDatabaseUrl } from './db-url'
 
 async function main() {
+  requireDatabaseUrl()
+
   const email = process.env.ADMIN_EMAIL?.trim()
   const password = process.env.ADMIN_PASSWORD
   const name = process.env.ADMIN_NAME?.trim() || 'Admin'
