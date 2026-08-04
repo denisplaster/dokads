@@ -50,7 +50,28 @@ function createDb(): NeonHttpDatabase<typeof schema> {
 }
 
 const g = globalThis as unknown as { __dokadsDb?: NeonHttpDatabase<typeof schema> }
-export const db = (g.__dokadsDb ??= createDb())
+
+/**
+ * Connected on first query, not on import.
+ *
+ * Server actions are part of the module graph of pages that never touch the
+ * database — /join imports submitJoin, which imports this file — so an eager
+ * client meant every static page build opened a connection. Harmless against
+ * Neon, but the local pglite driver opens a real file handle and aborts when
+ * more than one process does it.
+ */
+function connection(): NeonHttpDatabase<typeof schema> {
+  return (g.__dokadsDb ??= createDb())
+}
+
+export const db = new Proxy({} as NeonHttpDatabase<typeof schema>, {
+  get(_target, prop) {
+    const inst = connection() as unknown as Record<string | symbol, unknown>
+    const value = inst[prop]
+    // bind so `this` stays the real client, not the proxy
+    return typeof value === 'function' ? value.bind(inst) : value
+  },
+})
 
 /**
  * If a page throws Postgres error 42P01 ("undefined table"), the migrations
