@@ -10,19 +10,59 @@ Built as a modern digital zine: bold, editorial, community-made, and readable.
 ## Run it
 
 ```bash
-npm install && npm run dev
+npm install
+cp .env.example .env      # then set DATABASE_URL + BETTER_AUTH_SECRET
+npm run db:seed           # applies migrations (local) and seeds content
+npm run dev
 ```
 
 Dev server: <http://localhost:5190>
 
+**Database.** Production runs on Neon. For local work you can either paste a
+Neon *branch* connection string into `.env`, or use the zero-setup option:
+
 ```bash
-npm run build      # typecheck + production build to dist/
-npm run typecheck  # types only
-npm run preview    # serve the production build
+DATABASE_URL="pglite://.data/dev"
 ```
 
-Deploying to Vercel: import the repo, take the detected Vite preset. `vercel.json`
-already rewrites all paths to `index.html` so client-side routes work on refresh.
+That runs Postgres in-process — no account, no daemon. One caveat: it is a
+single-process file database, so do not run `npm run dev` and `npm run build`
+at the same time. If the directory gets corrupted, `rm -rf .data && npm run
+db:seed` and you are back.
+
+**Admin account.** Choose your own password; it is hashed and never stored in
+plain text.
+
+```bash
+ADMIN_EMAIL="you@example.com" ADMIN_PASSWORD="a-long-passphrase" npm run admin:create
+```
+
+Then sign in at `/admin/sign-in`, and unset `ADMIN_PASSWORD` from your shell.
+
+| Command | Does |
+| --- | --- |
+| `npm run dev` | Dev server on :5190 |
+| `npm run build` / `start` | Production build and serve |
+| `npm run typecheck` | Types only |
+| `npm run db:generate` | Generate a migration from schema changes |
+| `npm run db:migrate` | Apply migrations (Neon) |
+| `npm run db:seed` | Seed content; idempotent, never touches personal data |
+| `npm run db:verify` | Run schema + queries against in-process Postgres |
+| `npm run db:studio` | Drizzle Studio |
+| `npm run admin:create` | Create or promote an admin |
+
+### Deploying to Vercel
+
+1. Import the repo. Next.js is detected automatically.
+2. Storage → add the **Neon** integration. It injects `DATABASE_URL`.
+3. Set `BETTER_AUTH_SECRET` (`openssl rand -base64 32`) and `BETTER_AUTH_URL`
+   (your production URL).
+4. `npm run db:migrate` then `npm run db:seed` against the production
+   `DATABASE_URL`.
+5. `npm run admin:create` to make your account.
+
+Deploying with `DATABASE_URL` still set to `pglite://` is blocked with an
+explicit error rather than failing mysteriously.
 
 ---
 
@@ -56,6 +96,33 @@ The site's first question is never *"Do you identify as a DoKAD?"* It is
 | `/join` | Four-step questionnaire |
 | `/about` · `/guidelines` · `/privacy` | Community-led principle, conduct, data handling |
 | `/share` | Outreach kit: copy snippets + four downloadable SVG assets |
+| `/admin` | Staff only — see below |
+
+## Admin
+
+Sign in at `/admin/sign-in`. There is no public sign-up.
+
+| Screen | Does |
+| --- | --- |
+| Overview | Counts and aggregate planning tallies — interests, timing, venues, regions, age brackets. Deliberately the anonymous view. |
+| Events | The status lifecycle, capacity, waitlist, age rules, and the "what is not settled yet" notes |
+| Registrations | Per-event sign-ups, accommodation requests, waitlist moves, CSV export |
+| Members | Join-form responses, CSV export, one-click delete |
+| Inbox | Resource suggestions and story pitches |
+| Stories / Resources / Regions | Content editing without a redeploy |
+
+**Authorisation.** Middleware redirects when a session cookie is missing, but
+it is not the security boundary — every admin page and every admin action
+calls `requireStaff()`, which validates the session against the database.
+`role` and `regionSlug` already exist on `user`, and `regionScope()` is wired,
+so scoping a Minnesota organiser to Minnesota data is a config change rather
+than a migration.
+
+**Enforced, not just documented.** A region cannot be set to *forming* or
+*active* without at least one organiser — the server refuses it, matching what
+the site says publicly. Draft events are invisible to the public, including by
+direct URL. Minors are badged, excluded from CSV exports unless you explicitly
+tick the box, and surfaced on the dashboard.
 
 ---
 
@@ -147,7 +214,21 @@ another organisation.
 
 ## Data
 
-Content lives in typed modules under `src/data/` — no CMS yet.
+Postgres via Drizzle is the source of truth. The modules under `src/data/` are
+now **seed material and the shared type vocabulary** — statuses, event types,
+audiences, and the join-form choice lists. Do not edit content in both places.
+
+`src/lib/adapt.ts` maps database rows onto the view types the components
+speak, which is why moving content into Postgres left the design system
+untouched.
+
+`npm run db:verify` runs the real migration and seed against in-process
+Postgres and asserts the rules that matter: drafts stay out of public reads,
+interest-only regions are not publishable, duplicate emails and double
+registrations are rejected, deletion works, and registrations cascade with
+their event.
+
+### Seed modules
 
 | File | Holds |
 | --- | --- |
@@ -178,7 +259,10 @@ Content lives in typed modules under `src/data/` — no CMS yet.
 
 ## Not built yet
 
-- Forms are front-end demonstrations — they do not submit anywhere.
-- QR codes: `/share` leaves a slot; generate against the live domain.
-- No CMS, no auth, no private social network (deliberately — the site is the permanent
-  searchable hub, social platforms handle day-to-day conversation).
+- **Email.** Nothing is sent — no confirmations, no newsletter, no password
+  reset. Registrations and joins are recorded but nobody is notified.
+- **QR codes.** `/share` leaves a slot; generate against the live domain.
+- **Regional organiser accounts.** The role and scoping helper exist and are
+  wired; no second account has been created yet.
+- **No private social network**, deliberately — the site is the permanent
+  searchable hub, and social platforms handle day-to-day conversation.
