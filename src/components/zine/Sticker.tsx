@@ -1,5 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import type { Route } from 'next'
+import Link from 'next/link'
 import { rot } from './Paper'
 
 export type StickerColor =
@@ -41,14 +42,14 @@ function classes({ color = 'yellow', square, marker, flat, large, className = ''
 }
 
 /** A sticker label. Renders as a span, a link, or a button. */
-export function Sticker(props: Base & { to?: string; href?: string; onClick?: () => void }) {
+export function Sticker(props: Base & { to?: Route; href?: string; onClick?: () => void }) {
   const { children, tiltDir = -1, style, to, href, onClick } = props
   const style_ = { ...rot('tilt', tiltDir), ...style }
   const cn = classes(props)
 
   if (to) {
     return (
-      <Link to={to} className={cn} style={style_}>
+      <Link href={to} className={cn} style={style_}>
         {children}
       </Link>
     )

@@ -1,10 +1,14 @@
+'use client'
+
 import { useEffect, useRef, useState } from 'react'
-import { Link, NavLink, useLocation } from 'react-router-dom'
+import type { Route } from 'next'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { Wordmark } from '../zine/Wordmark'
 import { HandwrittenNote, Sticker, IssueLabel } from '../zine'
 
 /** Primary nav — kept to five so it still scans at a glance. */
-const LINKS = [
+const LINKS: { to: Route; label: string; num: string; note?: string }[] = [
   { to: '/start', label: 'Start here', num: '01', note: 'new? this one' },
   { to: '/am-i-a-dokad', label: 'Am I a DoKAD?', num: '02', note: 'takes 30 seconds' },
   { to: '/stories', label: 'Stories', num: '03', note: 'the good stuff' },
@@ -13,7 +17,7 @@ const LINKS = [
 ]
 
 /** Secondary — full-screen menu only. */
-const MORE = [
+const MORE: { to: Route; label: string }[] = [
   { to: '/regions', label: 'Local groups' },
   { to: '/learn', label: 'Learn' },
   { to: '/about', label: 'About' },
@@ -23,14 +27,14 @@ const MORE = [
 
 export function Nav() {
   const [open, setOpen] = useState(false)
-  const location = useLocation()
+  const pathname = usePathname()
   const closeRef = useRef<HTMLButtonElement>(null)
   const toggleRef = useRef<HTMLButtonElement>(null)
 
   // close the menu on navigation
   useEffect(() => {
     setOpen(false)
-  }, [location.pathname])
+  }, [pathname])
 
   // lock scroll + trap escape while the full-screen menu is open
   useEffect(() => {
@@ -55,22 +59,24 @@ export function Nav() {
     <>
       <header className="site-nav">
         <div className="site-nav__inner wrap wrap--wide">
-          <Link to="/" className="site-nav__brand" aria-label="DOKADS — home">
+          <Link href="/" className="site-nav__brand" aria-label="DOKADS — home">
             <Wordmark size="sm" />
           </Link>
 
           <nav className="site-nav__links" aria-label="Main">
-            {LINKS.map((l) => (
-              <NavLink
-                key={l.to}
-                to={l.to}
-                className={({ isActive }) =>
-                  `site-nav__link ${isActive ? 'is-active' : ''}`
-                }
-              >
-                {l.label}
-              </NavLink>
-            ))}
+            {LINKS.map((l) => {
+              const active = pathname === l.to || pathname.startsWith(`${l.to}/`)
+              return (
+                <Link
+                  key={l.to}
+                  href={l.to}
+                  aria-current={active ? 'page' : undefined}
+                  className={`site-nav__link ${active ? 'is-active' : ''}`}
+                >
+                  {l.label}
+                </Link>
+              )
+            })}
           </nav>
 
           <div className="site-nav__actions">
@@ -118,7 +124,7 @@ export function Nav() {
           <ul className="zine-menu__list">
             {LINKS.map((l) => (
               <li key={l.to}>
-                <Link to={l.to} className="zine-menu__link">
+                <Link href={l.to} className="zine-menu__link">
                   <span className="zine-menu__num" aria-hidden="true">
                     {l.num}
                   </span>
@@ -132,7 +138,7 @@ export function Nav() {
               </li>
             ))}
             <li>
-              <Link to="/join" className="zine-menu__link zine-menu__link--accent">
+              <Link href="/join" className="zine-menu__link zine-menu__link--accent">
                 <span className="zine-menu__num" aria-hidden="true">
                   06
                 </span>
@@ -145,7 +151,7 @@ export function Nav() {
           <ul className="zine-menu__more">
             {MORE.map((m) => (
               <li key={m.to}>
-                <Link to={m.to}>{m.label}</Link>
+                <Link href={m.to}>{m.label}</Link>
               </li>
             ))}
           </ul>

@@ -47,10 +47,12 @@
   --rule: var(--ink);
 
   /* ---------- TYPE --------------------------------------------------- */
-  --font-display: 'Anton', 'Archivo', 'Haettenschweiler', 'Arial Narrow', sans-serif;
-  --font-body: 'Archivo', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-hand: 'Caveat', 'Bradley Hand', cursive;
-  --font-marker: 'Permanent Marker', 'Caveat', cursive;
+  /* families come from next/font (self-hosted); the fallbacks matter for the
+     brief window before the woff2 lands and for the downloadable SVG assets */
+  --font-display: var(--font-anton), 'Haettenschweiler', 'Arial Narrow', sans-serif;
+  --font-body: var(--font-archivo), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-hand: var(--font-caveat), 'Bradley Hand', cursive;
+  --font-marker: var(--font-marker-src), var(--font-caveat), cursive;
   --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
 
   /* fluid display scale */

@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import type { CSSProperties } from 'react'
 import type { DokEvent, EventStatus } from '../../data/events'
 import { AUDIENCE_META, EVENT_TYPES, STATUS_META } from '../../data/events'
@@ -120,7 +120,7 @@ export function ZineArticleCard({
   if (layout === 'quote') {
     return (
       <Link
-        to={`/stories/${story.slug}`}
+        href={`/stories/${story.slug}`}
         className="zcard zcard--quote"
         style={style}
         data-tone="ink"
@@ -149,7 +149,7 @@ export function ZineArticleCard({
   if (layout === 'note') {
     return (
       <Link
-        to={`/stories/${story.slug}`}
+        href={`/stories/${story.slug}`}
         className="zcard zcard--note"
         style={{ ...rot('nudge', dir), ...style }}
       >
@@ -171,7 +171,7 @@ export function ZineArticleCard({
 
   if (layout === 'text') {
     return (
-      <Link to={`/stories/${story.slug}`} className="zcard" style={style}>
+      <Link href={`/stories/${story.slug}`} className="zcard" style={style}>
         <span className="zcard__kicker">
           <CategorySticker kind={story.kind} label={kind.label} />
         </span>
@@ -189,7 +189,7 @@ export function ZineArticleCard({
 
   return (
     <Link
-      to={`/stories/${story.slug}`}
+      href={`/stories/${story.slug}`}
       className={`zcard ${layout === 'boxed' ? 'zcard--boxed' : ''}`}
       style={style}
     >

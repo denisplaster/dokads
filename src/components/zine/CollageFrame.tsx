@@ -1,3 +1,5 @@
+'use client'
+
 import { useId, useMemo } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import { COLLAGE_SIZE, makeCollage } from '../../lib/collage'

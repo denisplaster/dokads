@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { HandwrittenNote, PaperCard, Sticker, TapeStrip } from './zine'
 
 /**
@@ -31,7 +31,7 @@ export function DokadDefinition({
           <em>noun.</em> A descendant of a Korean adoptee. Say it “DOH-kad.”
         </span>
         {showCta && (
-          <Link to="/am-i-a-dokad" className="def-strip__link">
+          <Link href="/am-i-a-dokad" className="def-strip__link">
             Am I one? →
           </Link>
         )}

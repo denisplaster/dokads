@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { HandwrittenNote, IssueLabel, Sticker, TornEdge } from '../zine'
 import { Wordmark } from '../zine/Wordmark'
 
@@ -22,22 +22,22 @@ export function Footer() {
             <h2 className="eyebrow">The zine</h2>
             <ul className="stack-tight">
               <li>
-                <Link to="/start">Start here</Link>
+                <Link href="/start">Start here</Link>
               </li>
               <li>
-                <Link to="/am-i-a-dokad">Am I a DoKAD?</Link>
+                <Link href="/am-i-a-dokad">Am I a DoKAD?</Link>
               </li>
               <li>
-                <Link to="/learn">Learn</Link>
+                <Link href="/learn">Learn</Link>
               </li>
               <li>
-                <Link to="/stories">Stories</Link>
+                <Link href="/stories">Stories</Link>
               </li>
               <li>
-                <Link to="/events">Events</Link>
+                <Link href="/events">Events</Link>
               </li>
               <li>
-                <Link to="/resources">Resources</Link>
+                <Link href="/resources">Resources</Link>
               </li>
             </ul>
           </div>
@@ -45,19 +45,19 @@ export function Footer() {
             <h2 className="eyebrow">Take part</h2>
             <ul className="stack-tight">
               <li>
-                <Link to="/join">Join the community</Link>
+                <Link href="/join">Join the community</Link>
               </li>
               <li>
-                <Link to="/regions">Local groups</Link>
+                <Link href="/regions">Local groups</Link>
               </li>
               <li>
-                <Link to="/regions/minnesota">Minnesota DoKADs</Link>
+                <Link href="/regions/minnesota">Minnesota DoKADs</Link>
               </li>
               <li>
-                <Link to="/share">Share DOKADS</Link>
+                <Link href="/share">Share DOKADS</Link>
               </li>
               <li>
-                <Link to="/stories#submit">Tell us your story</Link>
+                <Link href="/stories#submit">Tell us your story</Link>
               </li>
             </ul>
           </div>
@@ -65,13 +65,13 @@ export function Footer() {
             <h2 className="eyebrow">The small print</h2>
             <ul className="stack-tight">
               <li>
-                <Link to="/about">About</Link>
+                <Link href="/about">About</Link>
               </li>
               <li>
-                <Link to="/guidelines">Community guidelines</Link>
+                <Link href="/guidelines">Community guidelines</Link>
               </li>
               <li>
-                <Link to="/privacy">Privacy</Link>
+                <Link href="/privacy">Privacy</Link>
               </li>
             </ul>
           </div>
