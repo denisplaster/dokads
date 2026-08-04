@@ -382,3 +382,32 @@ a:hover > .wordmark .wordmark__ltr,
     grid-template-columns: 1fr;
   }
 }
+
+/* organiser sign-in — deliberately the quietest thing in the footer */
+.site-footer__admin {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: var(--t-nano);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  opacity: 0.45;
+  padding: 0.35em 0.6em;
+  border: var(--bd-hair) solid currentColor;
+  border-radius: var(--r-pill);
+  transition:
+    opacity var(--dur-quick) var(--ease-out),
+    background var(--dur-quick) var(--ease-out);
+}
+.site-footer__admin svg {
+  width: 13px;
+  height: 13px;
+  flex: none;
+}
+.site-footer__admin:hover,
+.site-footer__admin:focus-visible {
+  opacity: 1;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}

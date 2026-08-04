@@ -86,6 +86,31 @@ export function Footer() {
         <p className="site-footer__legal">
           © {new Date().getFullYear()} DOKADS. Share only what feels comfortable.
         </p>
+
+        {/* Quiet on purpose: organisers need to find it, visitors do not need
+            to wonder what it is. Sits last in the tab order. */}
+        <Link href="/admin" className="site-footer__admin" title="Organiser sign-in">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path
+              d="M7 10V7a5 5 0 0 1 10 0v3"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+            <rect
+              x="4.5"
+              y="10"
+              width="15"
+              height="10.5"
+              rx="1.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            />
+          </svg>
+          <span>Organisers</span>
+        </Link>
       </div>
     </footer>
   )
