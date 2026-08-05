@@ -1,12 +1,15 @@
 import 'dotenv/config'
 import { defineConfig } from 'drizzle-kit'
-import { requireDatabaseUrl } from './scripts/db-url'
+import { describeDatabaseUrl, requireDatabaseUrl } from './scripts/db-url'
+
+const url = requireDatabaseUrl()
+console.log(`Target database: ${describeDatabaseUrl(url)}\n`)
 
 export default defineConfig({
   schema: './src/db/schema.ts',
   out: './drizzle',
   dialect: 'postgresql',
-  dbCredentials: { url: requireDatabaseUrl() },
+  dbCredentials: { url },
   strict: true,
   verbose: true,
 })

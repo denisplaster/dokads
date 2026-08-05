@@ -19,7 +19,7 @@ import { mkdirSync, readFileSync, readdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import * as schema from '../src/db/schema'
 import { eventRows, regionRows, resourceRows, storyRows } from '../src/db/seed-data'
-import { requireDatabaseUrl } from './db-url'
+import { describeDatabaseUrl, requireDatabaseUrl } from './db-url'
 
 const FORCE = process.argv.includes('--force')
 
@@ -42,6 +42,7 @@ async function upsert(db: AnyDb, table: unknown, row: object, target: unknown) {
 
 async function connect() {
   const url = requireDatabaseUrl()
+  console.log(`Target database: ${describeDatabaseUrl(url)}\n`)
 
   if (url.startsWith('pglite://')) {
     const { PGlite } = await import('@electric-sql/pglite')

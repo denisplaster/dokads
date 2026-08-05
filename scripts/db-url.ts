@@ -30,3 +30,22 @@ export function requireDatabaseUrl(): string {
 
   return url
 }
+
+/**
+ * A safe-to-print description of which database a URL points at — no
+ * credentials, just enough to tell "this is my laptop" from "this is
+ * production" at a glance. Scripts that mutate data should print this before
+ * doing anything, since a correct-looking command with the wrong DATABASE_URL
+ * in scope silently writes to the wrong place.
+ */
+export function describeDatabaseUrl(url: string): string {
+  if (url.startsWith('pglite://')) {
+    return `LOCAL file database (${url.replace('pglite://', '')})`
+  }
+  try {
+    const u = new URL(url)
+    return `${u.hostname}${u.pathname}`
+  } catch {
+    return '(unparseable URL)'
+  }
+}
