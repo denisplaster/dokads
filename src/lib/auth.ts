@@ -43,7 +43,16 @@ export function makeAuth({ allowSignUp = false }: { allowSignUp?: boolean } = {}
        */
       sendResetPassword: async ({ user, url }) => {
         const { subject, html, text } = resetPasswordEmail({ url, site: siteUrl() })
-        await send({ to: user.email, subject, html, text })
+        const res = await send({ to: user.email, subject, html, text })
+        // send() resolves rather than throws so a failed confirmation can never
+        // lose a registration. Reset is the opposite case: silently "succeeding"
+        // leaves someone waiting for a link that was never sent, with no way
+        // back into the admin. Throw so Better Auth surfaces a real error.
+        if (!res.sent) {
+          throw new Error(
+            `Could not send the password reset email (${res.reason}${res.detail ? `: ${res.detail}` : ''}).`,
+          )
+        }
       },
     },
     user: {

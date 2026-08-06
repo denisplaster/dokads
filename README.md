@@ -316,16 +316,16 @@ Transactional only, via [Resend](https://resend.com). Set these and it turns on;
 leave them unset and the site works exactly as it does without them.
 
 ```bash
-RESEND_API_KEY="re_..."
-EMAIL_FROM="DOKADS <hello@dokads.com>"       # sender domain must be verified in Resend
-EMAIL_REPLY_TO="dokads@akconnection.com"     # the default in code — a read mailbox
-ADMIN_NOTIFY_EMAIL="you@example.com"         # optional organiser notifications
+RESEND_API_KEY="re_..."                  # the only required variable
+ADMIN_NOTIFY_EMAIL="you@example.com"     # optional organiser notifications
 ```
 
-To send *from* `dokads@akconnection.com`, verify `akconnection.com` in Resend
-(whoever controls that DNS adds the records) and set `EMAIL_FROM` accordingly;
-otherwise verify `dokads.com` and send from there — replies go to the AK
-Connection mailbox either way.
+`akconnection.com` is verified in Resend, and the code defaults to sending from
+and replying to `dokads@akconnection.com` — so the API key alone is enough.
+
+`EMAIL_FROM` and `EMAIL_REPLY_TO` exist as overrides. **The FROM domain must be
+verified in Resend or every send is rejected with a 403**, so do not point
+`EMAIL_FROM` at `dokads.com` until that domain is verified too.
 
 Then `EMAIL_TEST_TO="you@example.com" npm run email:test` sends one real message.
 The admin overview shows a banner whenever email is off, so "nobody got a

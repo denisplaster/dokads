@@ -46,7 +46,10 @@ export function emailConfigured(): boolean {
 }
 
 export function emailFrom(): string {
-  return process.env.EMAIL_FROM ?? 'DOKADS <hello@dokads.com>'
+  // Must be a domain verified in Resend, or every send 403s. akconnection.com
+  // is the verified one, so it is the default — dokads.com would need its own
+  // DNS records added in Resend before it could be used here.
+  return process.env.EMAIL_FROM ?? 'DOKADS <dokads@akconnection.com>'
 }
 
 /**
