@@ -239,7 +239,9 @@ relationship alone. See `LEGAL_RULES` in `src/data/topics.ts`.
 DoKADs* — appears on About, the Minnesota page, and governs volunteer and event
 planning. Adoptees, parents, organisations, and allies support; descendants lead.
 
-**AK Connection and any other organisation** is named as a partner only once that
+**DOKADS is powered by AK Connection** — credited in the footer, the About page, the
+Minnesota page, and the email header, with `dokads@akconnection.com` as the public
+contact and reply-to address. Any *other* organisation is still named only once a
 relationship is formally agreed, and the site never implies visitors are connected to
 another organisation.
 
@@ -315,10 +317,15 @@ leave them unset and the site works exactly as it does without them.
 
 ```bash
 RESEND_API_KEY="re_..."
-EMAIL_FROM="DOKADS <hello@dokads.com>"     # sender domain must be verified
-EMAIL_REPLY_TO="hello@dokads.com"          # a mailbox someone reads
-ADMIN_NOTIFY_EMAIL="you@example.com"       # optional organiser notifications
+EMAIL_FROM="DOKADS <hello@dokads.com>"       # sender domain must be verified in Resend
+EMAIL_REPLY_TO="dokads@akconnection.com"     # the default in code — a read mailbox
+ADMIN_NOTIFY_EMAIL="you@example.com"         # optional organiser notifications
 ```
+
+To send *from* `dokads@akconnection.com`, verify `akconnection.com` in Resend
+(whoever controls that DNS adds the records) and set `EMAIL_FROM` accordingly;
+otherwise verify `dokads.com` and send from there — replies go to the AK
+Connection mailbox either way.
 
 Then `EMAIL_TEST_TO="you@example.com" npm run email:test` sends one real message.
 The admin overview shows a banner whenever email is off, so "nobody got a

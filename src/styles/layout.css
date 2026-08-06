@@ -411,3 +411,21 @@ a:hover > .wordmark .wordmark__ltr,
   opacity: 1;
   background: color-mix(in srgb, currentColor 12%, transparent);
 }
+
+
+/* organisation attribution — visible but quieter than the wordmark */
+.site-footer__powered {
+  display: inline-block;
+  margin-top: var(--s-3);
+  font-size: var(--t-nano);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--yellow);
+  border-bottom: 2px solid transparent;
+}
+.site-footer__powered:hover,
+.site-footer__powered:focus-visible {
+  border-bottom-color: var(--yellow);
+}

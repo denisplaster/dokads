@@ -74,8 +74,9 @@ export function Privacy() {
 
             <SectionHead number="06" kicker="Deleting your data" />
             <p>
-              Reply to any email from us and ask. No form, no reason needed, no follow-up
-              questions.
+              Reply to any email from us and ask — or write to{' '}
+              <a href="mailto:dokads@akconnection.com">dokads@akconnection.com</a>. No form, no
+              reason needed, no follow-up questions.
             </p>
           </div>
 

@@ -155,16 +155,24 @@ export function RegionPage({ region, events }: { region: Region; events: DokEven
               <div className="prose">
                 <p>
                   Minnesota has one of the largest Korean adoptee populations anywhere, and
-                  there are adoptee-led organisations here — including AK Connection — that have
-                  been doing this work far longer than we have.
+                  adoptee-led organisations here have been doing this work far longer than we
+                  have. One of them is why this site exists:{' '}
+                  <strong>
+                    DOKADS is powered by{' '}
+                    <a href="https://www.akconnection.com" target="_blank" rel="noreferrer">
+                      AK Connection
+                    </a>
+                  </strong>
+                  , the Minnesota community organisation for adult Korean adoptees.
                 </p>
                 <p>
-                  We would like to work alongside them. But we are not going to describe anyone
-                  as a partner before that relationship is actually agreed, and{' '}
+                  That support looks exactly like our community-led principle: adoptees backing
+                  the next generation’s space without directing it. DoKAD programming is still
+                  shaped and led by DoKADs, and{' '}
                   <strong>
-                    being here does not mean you are connected to any other organisation
-                  </strong>
-                  . Plenty of DoKADs have never heard of any of them.
+                    being here does not require any prior connection to AK Connection
+                  </strong>{' '}
+                  or any other organisation.
                 </p>
               </div>
             </div>

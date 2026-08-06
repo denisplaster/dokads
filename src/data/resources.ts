@@ -231,7 +231,7 @@ export const resources: Resource[] = [
     id: 'r-org-akconnection',
     title: 'AK Connection',
     blurb:
-      'The Minnesota-based community organisation for adult Korean adoptees — in the state with one of the largest Korean adoptee populations anywhere. Our closest neighbours.',
+      'The Minnesota-based community organisation for adult Korean adoptees — and the organisation that powers DOKADS. In the state with one of the largest Korean adoptee populations anywhere.',
     format: 'connect',
     audience: ['everyone', 'parents'],
     card: 'bookmark',

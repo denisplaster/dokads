@@ -40,6 +40,7 @@ function shell(title: string, bodyHtml: string, site: string): string {
   <tr><td style="background:${INK};padding:16px 24px;">
     <span style="font-family:${SANS};font-weight:bold;font-size:20px;letter-spacing:2px;color:${BRIGHT};">D</span><span style="font-family:${SANS};font-weight:bold;font-size:20px;letter-spacing:2px;color:${RED};">O</span><span style="font-family:${SANS};font-weight:bold;font-size:20px;letter-spacing:2px;color:${BRIGHT};">K</span><span style="font-family:${SANS};font-weight:bold;font-size:20px;letter-spacing:2px;color:${BLUE};">A</span><span style="font-family:${SANS};font-weight:bold;font-size:20px;letter-spacing:2px;color:${BRIGHT};">D</span><span style="font-family:${SANS};font-weight:bold;font-size:20px;letter-spacing:2px;color:${YELLOW};">S</span>
     <div style="font-size:12px;color:#B8B2A8;margin-top:4px;">Descendants of Korean Adoptees</div>
+    <div style="font-size:11px;color:#8A847A;margin-top:2px;letter-spacing:1px;">POWERED BY AK CONNECTION</div>
   </td></tr>
   <tr><td style="padding:28px 24px;font-size:16px;line-height:1.55;">
 ${bodyHtml}

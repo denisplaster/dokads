@@ -9,6 +9,14 @@ export function Footer() {
       <div className="wrap wrap--wide site-footer__inner">
         <div className="site-footer__brand">
           <Wordmark size="lg" withNote />
+          <a
+            className="site-footer__powered"
+            href="https://www.akconnection.com"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Powered by AK Connection
+          </a>
           <p className="site-footer__tag">
             For the next generation of Korean adoption stories.
           </p>
@@ -72,6 +80,9 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/privacy">Privacy</Link>
+              </li>
+              <li>
+                <a href="mailto:dokads@akconnection.com">dokads@akconnection.com</a>
               </li>
             </ul>
           </div>

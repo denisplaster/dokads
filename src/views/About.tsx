@@ -153,9 +153,14 @@ export function About() {
                 is built around them.
               </p>
               <p>
-                Organisations, researchers, and allies are welcome to support, fund, mentor, and
-                partner. We will name a partner organisation publicly only once that
-                relationship is actually agreed, and{' '}
+                DOKADS is powered by{' '}
+                <a href="https://www.akconnection.com" target="_blank" rel="noreferrer">
+                  AK Connection
+                </a>
+                , the Minnesota-based community organisation for adult Korean adoptees — support
+                that looks exactly like the principle above: adoptees backing the next
+                generation’s space without directing it. Other organisations, researchers, and
+                allies are welcome to support, fund, mentor, and partner, and{' '}
                 <strong>
                   being part of DOKADS does not connect you to any other organisation
                 </strong>

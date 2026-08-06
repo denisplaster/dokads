@@ -55,7 +55,7 @@ export function emailFrom(): string {
  * somebody actually reads.
  */
 export function emailReplyTo(): string {
-  return process.env.EMAIL_REPLY_TO ?? process.env.EMAIL_FROM ?? 'hello@dokads.com'
+  return process.env.EMAIL_REPLY_TO ?? 'dokads@akconnection.com'
 }
 
 export async function send(email: Email): Promise<SendResult> {
