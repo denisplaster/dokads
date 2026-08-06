@@ -1,4 +1,5 @@
 import 'server-only'
+import { unstable_cache } from 'next/cache'
 import { and, asc, count, desc, eq, inArray, ne, sql } from 'drizzle-orm'
 import { db } from './index'
 import { events, members, regions, resources, stories, submissions, eventRegistrations } from './schema'
@@ -7,7 +8,30 @@ import type { DbEvent, DbRegion, DbResource, DbStory } from './schema'
 /* ==========================================================================
    PUBLIC READS
    Anything reachable without signing in. Drafts never leak out of here.
+
+   These are cached, not the pages that call them. The pages stay
+   force-dynamic on purpose — see the note in app/(site)/page.tsx: a build
+   must never depend on a database it does not own, and page-level
+   `revalidate` would reintroduce exactly that by prerendering at build time.
+   Caching one layer down keeps the build database-free while still sparing
+   Postgres the crawler traffic: the public site is rendered per request but
+   reads from cache, so bot sweeps no longer wake the Neon compute.
+
+   Invalidation is by tag, driven from the admin mutations in
+   app/actions/admin.ts, so CMS edits still appear immediately. TTL is a
+   backstop for anything that changes the database without going through
+   those actions.
    ========================================================================== */
+
+/** Backstop TTL. Tag invalidation, not this, is what makes edits appear. */
+const PUBLIC_TTL = 3600
+
+export const CACHE_TAGS = {
+  events: 'public:events',
+  stories: 'public:stories',
+  resources: 'public:resources',
+  regions: 'public:regions',
+} as const
 
 /** Draft events are visible to admins only. */
 const PUBLIC_EVENT_STATUSES = [
@@ -20,87 +44,142 @@ const PUBLIC_EVENT_STATUSES = [
   'completed',
 ]
 
-export async function getPublicEvents(): Promise<DbEvent[]> {
-  return db
-    .select()
-    .from(events)
-    .where(inArray(events.status, PUBLIC_EVENT_STATUSES))
-    .orderBy(asc(events.date))
+export function getPublicEvents(): Promise<DbEvent[]> {
+  return unstable_cache(
+    async () =>
+      db
+        .select()
+        .from(events)
+        .where(inArray(events.status, PUBLIC_EVENT_STATUSES))
+        .orderBy(asc(events.date)),
+    ['public-events'],
+    { revalidate: PUBLIC_TTL, tags: [CACHE_TAGS.events] },
+  )()
 }
 
-export async function getEventBySlug(slug: string): Promise<DbEvent | undefined> {
-  const [row] = await db.select().from(events).where(eq(events.slug, slug)).limit(1)
-  return row
+export function getEventBySlug(slug: string): Promise<DbEvent | undefined> {
+  return unstable_cache(
+    async () => {
+      const [row] = await db.select().from(events).where(eq(events.slug, slug)).limit(1)
+      return row
+    },
+    ['event-by-slug', slug],
+    { revalidate: PUBLIC_TTL, tags: [CACHE_TAGS.events] },
+  )()
 }
 
-export async function getEventsInRegion(regionSlug: string): Promise<DbEvent[]> {
-  return db
-    .select()
-    .from(events)
-    .where(
-      and(eq(events.regionSlug, regionSlug), inArray(events.status, PUBLIC_EVENT_STATUSES)),
-    )
-    .orderBy(asc(events.date))
+export function getEventsInRegion(regionSlug: string): Promise<DbEvent[]> {
+  return unstable_cache(
+    async () =>
+      db
+        .select()
+        .from(events)
+        .where(
+          and(eq(events.regionSlug, regionSlug), inArray(events.status, PUBLIC_EVENT_STATUSES)),
+        )
+        .orderBy(asc(events.date)),
+    ['events-in-region', regionSlug],
+    { revalidate: PUBLIC_TTL, tags: [CACHE_TAGS.events] },
+  )()
 }
 
-export async function getPublishedStories(): Promise<DbStory[]> {
-  return db
-    .select()
-    .from(stories)
-    .where(eq(stories.status, 'published'))
-    .orderBy(desc(stories.featured), asc(stories.title))
+export function getPublishedStories(): Promise<DbStory[]> {
+  return unstable_cache(
+    async () =>
+      db
+        .select()
+        .from(stories)
+        .where(eq(stories.status, 'published'))
+        .orderBy(desc(stories.featured), asc(stories.title)),
+    ['published-stories'],
+    { revalidate: PUBLIC_TTL, tags: [CACHE_TAGS.stories] },
+  )()
 }
 
-export async function getStoryBySlug(slug: string): Promise<DbStory | undefined> {
-  const [row] = await db
-    .select()
-    .from(stories)
-    .where(and(eq(stories.slug, slug), eq(stories.status, 'published')))
-    .limit(1)
-  return row
+export function getStoryBySlug(slug: string): Promise<DbStory | undefined> {
+  return unstable_cache(
+    async () => {
+      const [row] = await db
+        .select()
+        .from(stories)
+        .where(and(eq(stories.slug, slug), eq(stories.status, 'published')))
+        .limit(1)
+      return row
+    },
+    ['story-by-slug', slug],
+    { revalidate: PUBLIC_TTL, tags: [CACHE_TAGS.stories] },
+  )()
 }
 
-export async function getRelatedStories(slug: string, limit = 3): Promise<DbStory[]> {
-  const current = await getStoryBySlug(slug)
-  const rows = await db
-    .select()
-    .from(stories)
-    .where(and(eq(stories.status, 'published'), ne(stories.slug, slug)))
-  // same format first, so a poem suggests a poem
-  return rows
-    .sort((a, b) => Number(b.kind === current?.kind) - Number(a.kind === current?.kind))
-    .slice(0, limit)
+export function getRelatedStories(slug: string, limit = 3): Promise<DbStory[]> {
+  return unstable_cache(
+    async () => {
+      const current = await getStoryBySlug(slug)
+      const rows = await db
+        .select()
+        .from(stories)
+        .where(and(eq(stories.status, 'published'), ne(stories.slug, slug)))
+      // same format first, so a poem suggests a poem
+      return rows
+        .sort((a, b) => Number(b.kind === current?.kind) - Number(a.kind === current?.kind))
+        .slice(0, limit)
+    },
+    ['related-stories', slug, String(limit)],
+    { revalidate: PUBLIC_TTL, tags: [CACHE_TAGS.stories] },
+  )()
 }
 
-export async function getPublishedResources(): Promise<DbResource[]> {
-  return db
-    .select()
-    .from(resources)
-    .where(eq(resources.published, true))
-    .orderBy(asc(resources.sortOrder))
+export function getPublishedResources(): Promise<DbResource[]> {
+  return unstable_cache(
+    async () =>
+      db
+        .select()
+        .from(resources)
+        .where(eq(resources.published, true))
+        .orderBy(asc(resources.sortOrder)),
+    ['published-resources'],
+    { revalidate: PUBLIC_TTL, tags: [CACHE_TAGS.resources] },
+  )()
 }
 
-export async function getAllRegions(): Promise<DbRegion[]> {
-  return db.select().from(regions).orderBy(asc(regions.sortOrder))
+export function getAllRegions(): Promise<DbRegion[]> {
+  return unstable_cache(
+    async () => db.select().from(regions).orderBy(asc(regions.sortOrder)),
+    ['all-regions'],
+    { revalidate: PUBLIC_TTL, tags: [CACHE_TAGS.regions] },
+  )()
 }
 
 /** A region only gets a public page once real organisers exist. */
-export async function getPublishedRegion(slug: string): Promise<DbRegion | undefined> {
-  const [row] = await db
-    .select()
-    .from(regions)
-    .where(and(eq(regions.slug, slug), ne(regions.status, 'interest')))
-    .limit(1)
-  return row
+export function getPublishedRegion(slug: string): Promise<DbRegion | undefined> {
+  return unstable_cache(
+    async () => {
+      const [row] = await db
+        .select()
+        .from(regions)
+        .where(and(eq(regions.slug, slug), ne(regions.status, 'interest')))
+        .limit(1)
+      return row
+    },
+    ['published-region', slug],
+    { revalidate: PUBLIC_TTL, tags: [CACHE_TAGS.regions] },
+  )()
 }
 
-export async function getRegionEventCounts(): Promise<Record<string, number>> {
-  const rows = await db
-    .select({ regionSlug: events.regionSlug, n: count() })
-    .from(events)
-    .where(inArray(events.status, PUBLIC_EVENT_STATUSES))
-    .groupBy(events.regionSlug)
-  return Object.fromEntries(rows.map((r) => [r.regionSlug, Number(r.n)]))
+export function getRegionEventCounts(): Promise<Record<string, number>> {
+  return unstable_cache(
+    async () => {
+      const rows = await db
+        .select({ regionSlug: events.regionSlug, n: count() })
+        .from(events)
+        .where(inArray(events.status, PUBLIC_EVENT_STATUSES))
+        .groupBy(events.regionSlug)
+      return Object.fromEntries(rows.map((r) => [r.regionSlug, Number(r.n)]))
+    },
+    ['region-event-counts'],
+    // counts come from events, but the regions index is where they render
+    { revalidate: PUBLIC_TTL, tags: [CACHE_TAGS.events, CACHE_TAGS.regions] },
+  )()
 }
 
 /* ==========================================================================
