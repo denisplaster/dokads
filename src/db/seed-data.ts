@@ -55,9 +55,8 @@ export const storyRows: InferInsertModel<typeof stories>[] = seedStories.map((s)
   art: s.art ?? null,
   featured: s.featured ?? false,
   body: s.body,
-  // Issue 001 is not out; these are layout copy and stay flagged as such
   status: 'published',
-  isPlaceholder: true,
+  isPlaceholder: s.isPlaceholder,
 }))
 
 export const regionRows: InferInsertModel<typeof regions>[] = seedRegions.map((r, i) => ({

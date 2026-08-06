@@ -56,11 +56,12 @@ export function Resources({ resources }: { resources: Resource[] }) {
         <div className="wrap wrap--wide">
           <PaperCard className="editor-note" tilt="hair" tiltDir={-1} shadow="lift" ruled>
             <TapeStrip position="top-left" variant="kraft" width={120} />
-            <span className="eyebrow">Why this looks empty</span>
+            <span className="eyebrow">How this list works</span>
             <p>
-              <strong>Every shelf below is an open call.</strong> We describe what each one is
-              for; the community fills it with actual titles. We would rather show you honest
-              empty shelves than pad the list with things nobody here has read.
+              <strong>Everything named below is real</strong> — books and films you can find at
+              a library or bookshop, and organisations whose links go where they claim.
+              Shelves marked <em>open call</em> are ones we are honestly still collecting for;
+              the suggestion form below keeps this page growing.
             </p>
             <p>
               Anything about immigration, citizenship, visas, or law gets checked and dated
@@ -150,7 +151,22 @@ export function Resources({ resources }: { resources: Resource[] }) {
                   <span className="res-card__audience">
                     {r.audience.map((a) => AUDIENCES[a]).join(' · ')}
                   </span>
-                  <span className="res-card__status">Open call</span>
+                  {r.link ? (
+                    <a
+                      className="res-card__status res-card__status--link"
+                      href={r.link}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Visit ↗
+                    </a>
+                  ) : r.status === 'listed' ? (
+                    <span className="res-card__status res-card__status--listed">
+                      Library · bookshop
+                    </span>
+                  ) : (
+                    <span className="res-card__status">Open call</span>
+                  )}
                 </div>
               </article>
             ))}

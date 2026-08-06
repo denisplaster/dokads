@@ -85,15 +85,17 @@ async function main() {
     .from(schema.stories)
     .where(eq(schema.stories.status, 'published'))
   check('stories published', published.length === storyRows.length)
-  check('all seeded stories still flagged placeholder', published.every((s) => s.isPlaceholder))
+  check(
+    'no seeded story claims to be a personal account',
+    published.every((s) => !s.isPlaceholder && s.byline === 'DOKADS editorial'),
+  )
   check(
     'story body survives as jsonb array',
     published.every((s) => Array.isArray(s.body) && s.body.length > 0),
   )
   check(
-    'byline style preserved',
-    published.some((s) => s.bylineStyle === 'anonymous') &&
-      published.some((s) => s.bylineStyle === 'pseudonym'),
+    'every story has substantial body copy',
+    published.every((s) => (s.body as string[]).join(' ').length > 1500),
   )
 
   const publishedRegions = await db
@@ -236,7 +238,18 @@ async function main() {
     .where(eq(schema.resources.published, true))
     .orderBy(asc(schema.resources.sortOrder))
   check('resources keep their curated order', ordered[0]?.id === resourceRows[0].id)
-  check('all resources still open call', ordered.every((r) => r.status === 'open call'))
+  check(
+    'linked resources are listed; unlinked are listed-library or open call',
+    ordered.every((r) => (r.link ? r.status === 'listed' : true)),
+  )
+  check(
+    'open calls carry no link',
+    ordered.filter((r) => r.status === 'open call').every((r) => r.link === null),
+  )
+  check(
+    'every linked resource uses https',
+    ordered.filter((r) => r.link).every((r) => (r.link as string).startsWith('https://')),
+  )
 
   const recent = await db
     .select()

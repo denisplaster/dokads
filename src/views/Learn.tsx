@@ -1,3 +1,4 @@
+import type { Route } from 'next'
 import Link from 'next/link'
 import {
   CollageFrame,
@@ -119,7 +120,15 @@ export function Learn() {
                     <li key={t.slug} style={rot('hair', i % 2 === 0 ? 1 : -1)}>
                       <article className="topic-card">
                         <div className="topic-card__head">
-                          <h4>{t.title}</h4>
+                          <h4>
+                            {t.href ? (
+                              <Link href={t.href as Route} className="topic-card__link">
+                                {t.title}
+                              </Link>
+                            ) : (
+                              t.title
+                            )}
+                          </h4>
                           <Sticker
                             color={STATUS_LABEL[t.status].color as 'green'}
                             flat

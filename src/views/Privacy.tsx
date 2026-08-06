@@ -26,9 +26,9 @@ export function Privacy() {
       <ZineSection tone="bright" className="privacy-body">
         <div className="wrap">
           <PaperCard className="editor-note" tilt="hair" shadow="lift">
-            <strong>Status:</strong> this site is a work in progress and the forms on it are
-            demonstrations — they do not send anywhere yet. This page describes how they will
-            behave, and it will carry a review date once anything is live.
+            <strong>Status:</strong> the forms on this site are live. What you submit is stored
+            in our database and handled exactly as described below, and confirmations are sent
+            by email where you have given us an address. Last reviewed August 2026.
           </PaperCard>
 
           <div className="prose privacy-prose">

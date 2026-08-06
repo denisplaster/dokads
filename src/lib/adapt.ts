@@ -34,7 +34,7 @@ export function toStory(r: DbStory): Story {
     art: (r.art as CollageVariant) ?? undefined,
     featured: r.featured,
     body: r.body ?? [],
-    isPlaceholder: true,
+    isPlaceholder: r.isPlaceholder,
   }
 }
 
@@ -94,6 +94,6 @@ export function toResource(r: DbResource): Resource {
     badge: (r.badge as Resource['badge']) ?? undefined,
     card: r.card as ResourceCard,
     link: r.link,
-    status: 'open call',
+    status: (r.status === 'listed' ? 'listed' : 'open call') as Resource['status'],
   }
 }

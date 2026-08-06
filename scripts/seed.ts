@@ -22,6 +22,29 @@ import { eventRows, regionRows, resourceRows, storyRows } from '../src/db/seed-d
 import { describeDatabaseUrl, requireDatabaseUrl } from './db-url'
 
 const FORCE = process.argv.includes('--force')
+/** Force-refresh ONLY editorial content (stories + resources), never events
+ * or regions — so a content update cannot revert an event status set in the
+ * admin. This is the flag to use when shipping new site copy. */
+const REFRESH_EDITORIAL = process.argv.includes('--refresh-editorial')
+
+/**
+ * Old placeholder layout copy, retired in favour of real editorial content.
+ * Hidden (status -> draft), not deleted — and only while still flagged as
+ * placeholder, so a piece an admin rewrote into something real is never
+ * touched.
+ */
+const RETIRED_STORY_SLUGS = [
+  'the-questions-i-inherited',
+  'two-generations-one-kitchen-table',
+  'things-my-halmoni-would-have-said',
+  'the-airport-photo',
+  'do-you-call-it-going-back',
+  'a-recording-of-my-dad-explaining',
+  'the-word-for-cousin',
+]
+
+/** The old abstract "shelf" cards, replaced by real recommendations. */
+const RETIRED_RESOURCE_IDS = ['r1','r2','r3','r4','r5','r6','r7','r8','r9','r10','r11','r12']
 
 type AnyDb = {
   insert: (t: unknown) => {
@@ -32,10 +55,10 @@ type AnyDb = {
   }
 }
 
-/** Insert, and only clobber an existing row when --force was passed. */
-async function upsert(db: AnyDb, table: unknown, row: object, target: unknown) {
+/** Insert; clobber an existing row only when forced for this table. */
+async function upsert(db: AnyDb, table: unknown, row: object, target: unknown, force: boolean) {
   const q = db.insert(table).values(row)
-  return FORCE
+  return force
     ? q.onConflictDoUpdate({ target, set: { ...row, updatedAt: new Date() } })
     : q.onConflictDoNothing({ target })
 }
@@ -77,26 +100,57 @@ async function connect() {
 async function main() {
   const { db, local } = await connect()
 
+  const forceEditorial = FORCE || REFRESH_EDITORIAL
+
   // regions first — events reference a region slug
   for (const row of regionRows) {
-    await upsert(db, schema.regions, row, schema.regions.slug)
+    await upsert(db, schema.regions, row, schema.regions.slug, FORCE)
   }
   console.log(`✓ ${regionRows.length} regions`)
 
   for (const row of eventRows) {
-    await upsert(db, schema.events, row, schema.events.slug)
+    await upsert(db, schema.events, row, schema.events.slug, FORCE)
   }
   console.log(`✓ ${eventRows.length} events`)
 
   for (const row of storyRows) {
-    await upsert(db, schema.stories, row, schema.stories.slug)
+    await upsert(db, schema.stories, row, schema.stories.slug, forceEditorial)
   }
-  console.log(`✓ ${storyRows.length} stories (all flagged as placeholder copy)`)
+  console.log(`✓ ${storyRows.length} stories (editorial, written for real)`)
 
   for (const row of resourceRows) {
-    await upsert(db, schema.resources, row, schema.resources.id)
+    await upsert(db, schema.resources, row, schema.resources.id, forceEditorial)
   }
-  console.log(`✓ ${resourceRows.length} resources (all 'open call')`)
+  const linked = resourceRows.filter((r) => r.link).length
+  console.log(`✓ ${resourceRows.length} resources (${linked} linked, rest library/open-call)`)
+
+  // Retire old placeholder content: hide, never delete, and never touch a row
+  // an admin has since turned into something real.
+  const { inArray, and, eq, isNull } = await import('drizzle-orm')
+  const raw = db as unknown as {
+    update: (t: unknown) => { set: (v: object) => { where: (w: unknown) => Promise<unknown> } }
+  }
+  await raw
+    .update(schema.stories)
+    .set({ status: 'draft', updatedAt: new Date() })
+    .where(
+      and(
+        inArray(schema.stories.slug, RETIRED_STORY_SLUGS),
+        eq(schema.stories.isPlaceholder, true),
+      ),
+    )
+  console.log(`✓ retired ${RETIRED_STORY_SLUGS.length} placeholder stories (hidden, not deleted)`)
+
+  await raw
+    .update(schema.resources)
+    .set({ published: false, updatedAt: new Date() })
+    .where(
+      and(
+        inArray(schema.resources.id, RETIRED_RESOURCE_IDS),
+        isNull(schema.resources.link),
+      ),
+    )
+  console.log(`✓ retired ${RETIRED_RESOURCE_IDS.length} placeholder resource shelves`)
 
   console.log(
     `\nSeed complete${local ? ' (local pglite database)' : ''}. ` +
@@ -104,8 +158,10 @@ async function main() {
   )
   console.log(
     FORCE
-      ? 'Ran with --force: existing rows were overwritten with the file contents.'
-      : 'Existing rows were left untouched. Use --force to overwrite them.',
+      ? 'Ran with --force: ALL existing rows were overwritten with the file contents.'
+      : REFRESH_EDITORIAL
+        ? 'Ran with --refresh-editorial: stories and resources were updated; events and regions untouched.'
+        : 'Existing rows were left untouched. Use --refresh-editorial to ship content updates.',
   )
   process.exit(0)
 }

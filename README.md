@@ -214,10 +214,17 @@ card and detail page. Tentative events list exactly what is not settled.
 **Regions only get a page when real organisers exist.** Anything else stays
 `status: 'interest'` and renders as "nobody is running this yet".
 
-**Placeholder content is labelled as placeholder.** `src/data/stories.ts` is layout
-copy, not anyone's real family, and the Stories page says so. Resource entries describe
-what a shelf collects rather than inventing titles or links. Delete the
-`isPlaceholder` / `status: 'open call'` flags as real content replaces them.
+**Editorial content is real; personal stories are never invented.** The articles in
+`src/data/stories.ts` are researched explainers and guides bylined "DOKADS editorial",
+fact-checked against live sources before shipping (43 claims verified, including every
+resource URL, book attribution, and historical date). Personal narratives — essays,
+interviews, poems, photo stories — come only from community submissions; the old
+placeholder layouts were retired to draft, not passed off as real. Resource entries
+name real books, films, podcasts, and organisations; shelves still marked *open call*
+are honestly empty. Content updates ship with
+`npm run db:seed -- --refresh-editorial`, which updates stories and resources but
+never touches events or regions, so it cannot revert an event status set in the
+admin.
 
 **No stock photos of Korean or mixed-race families, and no AI-generated people.**
 `src/lib/collage.ts` generates deterministic abstract cut-paper artwork from a seed

@@ -55,13 +55,14 @@ export function Stories({ stories }: { stories: Story[] }) {
             <TapeStrip position="top-left" variant="kraft" width={120} />
             <span className="eyebrow">Editor’s note</span>
             <p>
-              <strong>Issue 001 is still being made.</strong> The pieces below are placeholder
-              layouts — real writing, real photographs, and real voices go here as they come in.
-              Nothing on this page is a record of anybody’s actual family.
+              <strong>The explainers and guides below are real</strong> — researched and
+              written by the DOKADS editorial team, with sources on our Resources page. What
+              Issue 001 still needs is the part we will never write for you: personal stories
+              from actual DoKADs.
             </p>
             <p>
-              If you want to be in the first issue, the submission details are at the bottom of
-              this page.
+              Essays, interviews, poems, photo stories — anonymous and pseudonymous both
+              welcome. Submission details are at the bottom of this page.
             </p>
           </PaperCard>
         </div>

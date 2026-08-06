@@ -44,9 +44,11 @@ export function StoryPage({ story, related }: { story: Story; related: Story[] }
 
           <p className="article-head__byline">
             {story.byline}
-            <span className="article-head__credit">
-              credited as: {story.bylineStyle}
-            </span>
+            {!story.byline.toLowerCase().includes('dokads') && (
+              <span className="article-head__credit">
+                credited as: {story.bylineStyle}
+              </span>
+            )}
           </p>
         </div>
       </ZineSection>
@@ -65,10 +67,12 @@ export function StoryPage({ story, related }: { story: Story; related: Story[] }
       {/* body */}
       <ZineSection tone="paper" tight className="article-body">
         <div className="wrap">
-          <PaperCard className="placeholder-flag" tilt="hair" shadow="lift">
-            <strong>Placeholder piece.</strong> Issue 001 has not been published yet. This is
-            layout copy, not anyone’s real account.
-          </PaperCard>
+          {story.isPlaceholder && (
+            <PaperCard className="placeholder-flag" tilt="hair" shadow="lift">
+              <strong>Placeholder piece.</strong> This is layout copy, not anyone’s real
+              account.
+            </PaperCard>
+          )}
 
           <div className="prose article-prose">
             {story.body.map((para, i) =>

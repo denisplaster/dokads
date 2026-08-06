@@ -8,6 +8,8 @@ export type Topic = {
   blurb: string
   status: TopicStatus
   group: 'basics' | 'family' | 'identity' | 'korea' | 'practical' | 'community'
+  /** where the published piece lives, once it exists */
+  href?: string
   /** legal / immigration content carries extra obligations — see LEGAL_RULES */
   sensitive?: boolean
   lastReviewed?: string
@@ -25,6 +27,7 @@ export const TOPIC_GROUPS: Record<Topic['group'], { label: string; tone: string 
 export const topics: Topic[] = [
   {
     slug: 'what-does-dokad-mean',
+    href: '/stories/what-even-is-a-dokad',
     title: 'What does DoKAD mean?',
     blurb: 'The term, where it came from, and why it is a handle rather than a test.',
     status: 'published',
@@ -32,23 +35,34 @@ export const topics: Topic[] = [
   },
   {
     slug: 'am-i-a-dokad',
+    href: '/am-i-a-dokad',
     title: 'Am I a DoKAD?',
     blurb: 'A simple walk through who the word describes, with examples.',
     status: 'published',
     group: 'basics',
   },
   {
+    slug: 'a-short-history-of-korean-adoption',
+    href: '/stories/a-short-history-of-korean-adoption',
+    title: 'A short history of Korean adoption',
+    blurb: 'Where the programme came from, how it scaled, and the reckoning still under way.',
+    status: 'published',
+    group: 'basics',
+  },
+  {
     slug: 'why-descendants-experience-adoption-differently',
+    href: '/stories/why-descendants-experience-adoption-differently',
     title: 'Why descendants may experience adoption differently',
     blurb: 'Inheriting a history you did not live through — and the specific shape that takes.',
-    status: 'drafting',
+    status: 'published',
     group: 'basics',
   },
   {
     slug: 'talking-to-your-parent',
+    href: '/stories/talking-to-your-adoptee-parent',
     title: 'Talking to your Korean adoptee parent about adoption',
     blurb: 'How people have started the conversation, and what to do when it does not go well.',
-    status: 'drafting',
+    status: 'published',
     group: 'family',
   },
   {
@@ -67,23 +81,26 @@ export const topics: Topic[] = [
   },
   {
     slug: 'connected-or-disconnected',
+    href: '/stories/feeling-connected-or-disconnected-from-korea',
     title: 'Feeling connected — or disconnected — from Korea',
     blurb: 'Both are common. Neither is the correct one.',
-    status: 'planned',
+    status: 'published',
     group: 'identity',
   },
   {
     slug: 'visiting-korea-as-a-descendant',
+    href: '/stories/visiting-korea-as-a-descendant',
     title: 'Visiting Korea as a descendant of an adoptee',
     blurb: 'What the trip is like when it is your parent’s history and your first time.',
-    status: 'planned',
+    status: 'published',
     group: 'korea',
   },
   {
     slug: 'korean-language-and-culture',
+    href: '/resources',
     title: 'Korean language and culture resources',
     blurb: 'Starting points that do not assume you grew up with any of it.',
-    status: 'planned',
+    status: 'published',
     group: 'korea',
   },
   {
@@ -97,9 +114,10 @@ export const topics: Topic[] = [
   },
   {
     slug: 'preserving-files-and-photos',
+    href: '/stories/preserving-adoption-files-photos-and-stories',
     title: 'Preserving adoption files, photographs, letters, and family stories',
     blurb: 'Practical steps, before the paper degrades or the person who remembers is gone.',
-    status: 'drafting',
+    status: 'published',
     group: 'practical',
   },
   {

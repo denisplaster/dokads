@@ -244,7 +244,7 @@ export async function saveResource(input: unknown): Promise<ActionResult> {
   await requireStaff()
   try {
     const data = resourceSchema.parse(input)
-    const values = { ...data, status: 'open call', updatedAt: new Date() }
+    const values = { ...data, status: data.link ? 'listed' : 'open call', updatedAt: new Date() }
     if (data.id) {
       await db.update(resources).set(values).where(eq(resources.id, data.id))
     } else {
