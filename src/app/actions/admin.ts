@@ -2,9 +2,10 @@
 
 import { randomUUID } from 'node:crypto'
 import { eq } from 'drizzle-orm'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
 import { z } from 'zod'
 import { db } from '@/db'
+import { CACHE_TAGS } from '@/db/queries'
 import {
   eventRegistrations,
   events,
@@ -26,10 +27,23 @@ function err(message: string): ActionResult {
   return { ok: false, error: message }
 }
 
-/** Refresh every public surface an edit could touch. */
+/**
+ * Refresh every public surface an edit could touch.
+ *
+ * Two layers have to be busted, not one. `revalidatePath` drops the rendered
+ * route, but the public reads in db/queries.ts are cached separately by tag —
+ * without clearing those a re-render would just refill the page from a stale
+ * query result. Tags are cheap and edits are rare, so we clear all of them
+ * rather than trying to guess which read a given edit invalidates.
+ *
+ * `updateTag`, not `revalidateTag`: these run inside Server Actions, and only
+ * updateTag gives read-your-own-writes. An admin who saves a story and lands
+ * back on the public page must see the story, not the pre-save cache entry.
+ */
 function revalidatePublic(paths: string[] = []) {
   revalidatePath('/')
   for (const p of paths) revalidatePath(p)
+  for (const tag of Object.values(CACHE_TAGS)) updateTag(tag)
 }
 
 /* ==========================================================================
