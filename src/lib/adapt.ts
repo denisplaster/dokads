@@ -68,6 +68,8 @@ export function toEvent(r: DbEvent): DokEvent {
     },
     tentativeNotes: r.tentativeNotes ?? undefined,
     needsFoodInfo: r.needsFoodInfo,
+    host: r.host ?? undefined,
+    recap: r.recap ?? undefined,
   }
 }
 

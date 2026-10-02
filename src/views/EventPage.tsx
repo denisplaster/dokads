@@ -21,6 +21,9 @@ export function EventPage({ event, region }: { event: DokEvent; region?: Region 
   const status = STATUS_META[event.status]
   const registrationOpen =
     event.status === 'registration open' || event.status === 'waitlist'
+  // sign-up rules, the guidelines-on-registration note and any sign-up route
+  // are meaningless once an event is over
+  const isPast = event.status === 'completed' || event.status === 'cancelled'
 
   return (
     <>
@@ -121,6 +124,8 @@ export function EventPage({ event, region }: { event: DokEvent; region?: Region 
             <SectionHead number="01" kicker="Who this is for" />
             <p className="prose">{AUDIENCE_META[event.audience].detail}</p>
 
+            {!isPast && (
+            <>
             <h3 className="event-detail__sub">The rules for this one</h3>
             <ul className="event-detail__rules">
               <li>
@@ -173,10 +178,35 @@ export function EventPage({ event, region }: { event: DokEvent; region?: Region 
                 Read the guidelines
               </Link>
             </PaperCard>
+            </>
+            )}
           </div>
 
           <div className="event-detail__form">
-            {isStatic() ? (
+            {isPast ? (
+              <PaperCard className="reg-closed" shadow="slab">
+                <h3 className="reg-form__head">
+                  {event.status === 'cancelled' ? 'This one was cancelled' : 'This one has happened'}
+                </h3>
+                {event.recap && <p>{event.recap}</p>}
+                {event.status === 'completed' && event.rules.perk && <p>{event.rules.perk}.</p>}
+                {event.host && (
+                  <p>
+                    <a href={event.host.href} target="_blank" rel="noreferrer">
+                      {event.host.name}’s page for this event ↗
+                    </a>
+                  </p>
+                )}
+                <p style={{ marginTop: 'var(--s-4)' }}>
+                  <a
+                    href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Interested in the next DoKAD meetup')}`}
+                    className="btn btn--red btn--lg btn--block"
+                  >
+                    Tell us you want the next one
+                  </a>
+                </p>
+              </PaperCard>
+            ) : isStatic() ? (
               /* static mode collects nothing — a real address beats a dead form */
               <PaperCard className="reg-closed" shadow="slab">
                 <h3 className="reg-form__head">Want to come?</h3>
@@ -215,7 +245,7 @@ export function EventPage({ event, region }: { event: DokEvent; region?: Region 
 
       <ZineSection tone="ink" className="event-close">
         <div className="wrap event-close__inner">
-          <EditorialHeadline size={2}>Not this one?</EditorialHeadline>
+          <EditorialHeadline size={2}>{isPast ? 'Missed it?' : 'Not this one?'}</EditorialHeadline>
           <p className="lead">There will be others, and you can help decide what they are.</p>
           <div className="event-close__ctas">
             <Link href="/events" className="btn btn--yellow">

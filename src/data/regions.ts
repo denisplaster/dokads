@@ -29,16 +29,27 @@ export const regions: Region[] = [
     status: 'forming',
     intro:
       'Minnesota DoKADs is a growing community for descendants of Korean adoptees in the Twin Cities and throughout Minnesota. Early gatherings will focus on meeting one another, building relationships, and learning what kinds of programs the community wants next.',
-    organisers: [{ name: 'Organising group forming', role: 'Volunteers wanted' }],
+    organisers: [
+      { name: 'AK Connection', role: 'Hosted the first DoKAD meetup, September 2026' },
+      { name: 'DoKAD organising group', role: 'Forming — volunteers wanted' },
+    ],
     socials: [
       {
         label: 'Minnesota DoKADs Facebook group',
         href: null,
         note: 'Being set up — link goes here once it exists',
       },
-      { label: 'Minnesota email updates', href: null, note: 'Opt in on the join form' },
+      {
+        label: 'Minnesota email updates',
+        href: 'mailto:dokads@akconnection.com?subject=Minnesota%20DoKAD%20updates',
+        note: 'Email us and ask to be told about Minnesota gatherings',
+      },
     ],
     updates: [
+      {
+        date: '2026-09-27',
+        text: 'The first DoKAD meetup happened at The Lobby Coffee & Leisure in Edina, hosted by AK Connection. Next one not scheduled yet — tell us what would suit you.',
+      },
       {
         date: '2026-08-01',
         text: 'First coffee meetup penciled in for late September. Date and venue still being settled.',

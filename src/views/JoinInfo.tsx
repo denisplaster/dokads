@@ -90,10 +90,10 @@ export function JoinInfo() {
             </PaperCard>
             <PaperCard tilt="hair" tiltDir={-1} pickup>
               <span className="route-card__num">03</span>
-              <h3 className="route-card__title">See what is being planned</h3>
+              <h3 className="route-card__title">Meetups</h3>
               <p className="route-card__body">
-                Nothing is confirmed yet, and every event says so plainly. Email us if you want
-                to hear the moment one is.
+                The first DoKAD meetup happened in Edina in September. Nothing new is scheduled
+                yet — email us if you want to hear the moment something is.
               </p>
               <div className="route-card__foot">
                 <Link href="/events" className="btn btn--ghost">

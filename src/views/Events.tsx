@@ -21,8 +21,16 @@ import { contactMailto } from '../lib/site-mode'
 
 type FormatFilter = 'all' | 'online' | 'in person'
 
-export function Events({ events, regions }: { events: DokEvent[]; regions: Region[] }) {
-  const all = events
+export function Events({
+  upcoming,
+  past,
+  regions,
+}: {
+  upcoming: DokEvent[]
+  past: DokEvent[]
+  regions: Region[]
+}) {
+  const all = upcoming
   const regionName = (slug: string) => regions.find((r) => r.slug === slug)?.name ?? 'Online'
   const [type, setType] = useState<EventType | 'all'>('all')
   const [format, setFormat] = useState<FormatFilter>('all')
@@ -40,7 +48,9 @@ export function Events({ events, regions }: { events: DokEvent[]; regions: Regio
   )
 
   const usedTypes = Array.from(new Set(all.map((e) => e.type)))
-  const flagship = all.find((e) => e.id === 'mn-coffee-001')
+  // the most recent thing that actually happened gets the feature slot
+  const latest = past[0]
+  const earlier = past.slice(1)
 
   return (
     <>
@@ -53,8 +63,9 @@ export function Events({ events, regions }: { events: DokEvent[]; regions: Regio
             up.
           </EditorialHeadline>
           <p className="lead page-hero__lead">
-            Coffee meetups, online gatherings, guided conversations, and the occasional
-            workshop. Small, mostly free, and shaped by whoever turns up.
+            {all.length
+              ? 'Coffee meetups, online gatherings, guided conversations, and the occasional workshop. Small, mostly free, and shaped by whoever turns up.'
+              : 'Nothing is on the calendar right now. The first DoKAD meetup happened in September — here is how that went, and how to hear about the next one first.'}
           </p>
           <p className="page-hero__aside">
             <HandwrittenNote color="ink" tiltDir={1}>
@@ -71,12 +82,13 @@ export function Events({ events, regions }: { events: DokEvent[]; regions: Regio
             <TapeStrip position="top-right" variant="kraft" width={110} />
             <span className="eyebrow">Read the label</span>
             <p>
-              Every event here shows where it actually stands. We would rather show you an idea
-              at the “not confirmed” stage than pretend a plan exists.
+              Every event here shows where it actually stands. A real plan can still be
+              tentative — date or venue not settled — and when it is, it says so. Ideas that are
+              not plans yet are not listed at all.
             </p>
             <ul className="events-key__list">
               {(
-                ['draft', 'tentative', 'registration opening soon', 'registration open', 'waitlist'] as const
+                ['tentative', 'registration opening soon', 'registration open', 'waitlist', 'completed'] as const
               ).map((s, i) => (
                 <li key={s} style={rot('hair', i % 2 === 0 ? 1 : -1)}>
                   <span className={`status-badge status-badge--${s.replace(/\s+/g, '-')}`}>
@@ -91,61 +103,62 @@ export function Events({ events, regions }: { events: DokEvent[]; regions: Regio
         </div>
       </ZineSection>
 
-      {/* flagship */}
-      {flagship && (
+      {/* the most recent event that happened */}
+      {latest && (
         <ZineSection tone="yellow" torn="both" className="events-flagship">
           <div className="wrap wrap--wide events-flagship__inner">
             <div>
-              <SectionHead number="01" kicker="The first one" />
-              <EditorialHeadline size={1}>{flagship.title}</EditorialHeadline>
+              <SectionHead number="01" kicker="Last time" />
+              <EditorialHeadline size={1}>{latest.title}</EditorialHeadline>
               <p className="lead" style={{ marginTop: 'var(--s-4)' }}>
-                {flagship.blurb}
+                {latest.recap ?? latest.blurb}
               </p>
               <dl className="events-flagship__facts">
                 <div>
-                  <dt>Target date</dt>
-                  <dd>{formatEventDate(flagship.date, { long: true })}</dd>
+                  <dt>When</dt>
+                  <dd>{formatEventDate(latest.date, { long: true })}</dd>
                 </div>
-                {flagship.backupDate && (
-                  <div>
-                    <dt>Backup date</dt>
-                    <dd>{formatEventDate(flagship.backupDate, { long: true })}</dd>
-                  </div>
-                )}
                 <div>
                   <dt>Time</dt>
                   <dd>
-                    {flagship.time} {flagship.timezone}
+                    {latest.time} {latest.timezone}
                   </dd>
                 </div>
                 <div>
                   <dt>Where</dt>
-                  <dd>{flagship.location}</dd>
+                  <dd>{latest.location}</dd>
                 </div>
                 <div>
                   <dt>Who</dt>
-                  <dd>{AUDIENCE_META[flagship.audience].label}</dd>
+                  <dd>
+                    {AUDIENCE_META[latest.audience].label} · {latest.agePolicy}
+                  </dd>
                 </div>
-                <div>
-                  <dt>Cost</dt>
-                  <dd>{flagship.cost}</dd>
-                </div>
+                {latest.host && (
+                  <div>
+                    <dt>Hosted by</dt>
+                    <dd>{latest.host.name}</dd>
+                  </div>
+                )}
               </dl>
               <div className="events-flagship__ctas">
-                <Link href={`/events/${flagship.slug}`} className="btn btn--red btn--lg">
-                  Details + register interest
+                <Link href={`/events/${latest.slug}`} className="btn btn--red btn--lg">
+                  About this one
                 </Link>
-                <Link href="/regions/minnesota" className="btn btn--ghost">
-                  Minnesota DoKADs
-                </Link>
+                <a
+                  href={contactMailto('Interested in the next DoKAD meetup')}
+                  className="btn btn--ghost"
+                >
+                  Tell us you want the next one
+                </a>
               </div>
             </div>
             <div className="events-flagship__card">
-              <Link href={`/events/${flagship.slug}`} className="home-events__link">
-                <FlyerEventCard event={flagship} index={1} stub />
+              <Link href={`/events/${latest.slug}`} className="home-events__link">
+                <FlyerEventCard event={latest} index={1} stub />
               </Link>
               <HandwrittenNote color="red" tiltDir={1} className="events-flagship__scrawl">
-                nothing here is locked in yet!
+                the first one happened!
               </HandwrittenNote>
             </div>
           </div>
@@ -155,8 +168,29 @@ export function Events({ events, regions }: { events: DokEvent[]; regions: Regio
       {/* the wall */}
       <ZineSection tone="paper" className="events-wall">
         <div className="wrap wrap--wide">
-          <SectionHead number="02" kicker="Everything on the wall" />
+          <SectionHead number="02" kicker="Coming up" />
 
+          {all.length === 0 ? (
+            <PaperCard className="empty" tilt="nudge">
+              <p>
+                <strong>Nothing scheduled right now.</strong> When the next gathering is real —
+                date, place and host confirmed — it goes here first. Ideas that are not plans yet
+                do not get listed.
+              </p>
+              <p style={{ marginTop: 'var(--s-3)' }}>
+                Want a say in what happens next? Tell us what would suit you: a time, a kind of
+                gathering, a part of the world.
+              </p>
+              <a
+                href={contactMailto('Event idea for DOKADS')}
+                className="btn btn--red"
+                style={{ marginTop: 'var(--s-4)' }}
+              >
+                Email us an idea
+              </a>
+            </PaperCard>
+          ) : (
+          <>
           <div className="filters">
             <div className="filters__row" role="group" aria-label="Filter by event type">
               <span className="filters__label">Type</span>
@@ -251,6 +285,23 @@ export function Events({ events, regions }: { events: DokEvent[]; regions: Regio
                 </Link>
               ))}
             </div>
+          )}
+          </>
+          )}
+
+          {earlier.length > 0 && (
+            <>
+              <h3 className="event-detail__sub" style={{ marginTop: 'var(--s-8)' }}>
+                Earlier
+              </h3>
+              <div className="events-wall__grid">
+                {earlier.map((e, i) => (
+                  <Link key={e.id} href={`/events/${e.slug}`} className="home-events__link">
+                    <FlyerEventCard event={e} index={i + 2} />
+                  </Link>
+                ))}
+              </div>
+            </>
           )}
         </div>
       </ZineSection>

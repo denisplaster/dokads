@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Home } from '@/views/Home'
-import { getPublicEvents, getPublishedStories } from '@/lib/content'
+import { getPastEvents, getPublishedStories, getUpcomingEvents } from '@/lib/content'
 
 /**
  * Fully static. Content comes from the committed modules in src/data, so this
@@ -14,5 +14,11 @@ export const metadata: Metadata = {
 }
 
 export default function Page() {
-  return <Home stories={getPublishedStories()} events={getPublicEvents()} />
+  return (
+    <Home
+      stories={getPublishedStories()}
+      upcoming={getUpcomingEvents()}
+      past={getPastEvents()}
+    />
+  )
 }

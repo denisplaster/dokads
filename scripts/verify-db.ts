@@ -72,12 +72,16 @@ async function main() {
   check('public events sorted by date', pub.every((e, i) => i === 0 || pub[i - 1].date <= e.date))
 
   const flagship = pub.find((e) => e.slug === 'minnesota-dokad-coffee-meetup')
-  check('flagship event round-trips', !!flagship && flagship.status === 'tentative')
+  check('flagship event round-trips as completed', !!flagship && flagship.status === 'completed')
   check(
-    'tentative notes survive as jsonb',
-    Array.isArray(flagship?.tentativeNotes) && (flagship?.tentativeNotes?.length ?? 0) === 4,
+    'host survives as jsonb',
+    flagship?.host?.name === 'AK Connection' && !!flagship?.host?.href.startsWith('https://'),
   )
-  check('backup date preserved', flagship?.backupDate === '2026-09-20')
+  check('recap survives as text', (flagship?.recap ?? '').includes('Edina'))
+  check(
+    'a completed event carries no tentative notes or backup date',
+    (flagship?.tentativeNotes?.length ?? 0) === 0 && flagship?.backupDate === null,
+  )
   check('no-plus-ones rule preserved', flagship?.plusOnes === false)
 
   const published = await db

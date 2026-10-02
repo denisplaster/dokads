@@ -32,6 +32,25 @@ export function getPublicEvents(): DokEvent[] {
     .sort((a, b) => a.date.localeCompare(b.date))
 }
 
+/**
+ * Upcoming vs past is decided by status, not by comparing to today's date.
+ * The site is prerendered, so "today" would freeze at build time — an event
+ * would stay "upcoming" forever after its date until someone redeployed.
+ * Status is already the source of truth everywhere else on this site.
+ */
+const PAST: DokEvent['status'][] = ['completed', 'cancelled']
+
+export function getUpcomingEvents(): DokEvent[] {
+  return getPublicEvents().filter((e) => !PAST.includes(e.status))
+}
+
+/** Most recent first. */
+export function getPastEvents(): DokEvent[] {
+  return getPublicEvents()
+    .filter((e) => e.status === 'completed')
+    .reverse()
+}
+
 export function getEventBySlug(slug: string): DokEvent | undefined {
   const event = getEvent(slug)
   // a draft must not be reachable by guessing the URL

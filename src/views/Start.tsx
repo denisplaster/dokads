@@ -48,7 +48,7 @@ const ROUTES: {
     title: 'I want to meet people like me',
     body: 'Coffee meetups, online gatherings, and guided conversations. Small, free, and mostly informal.',
     to: '/events',
-    cta: 'See what’s coming up',
+    cta: 'See meetups',
     note: 'the point, really',
   },
   {

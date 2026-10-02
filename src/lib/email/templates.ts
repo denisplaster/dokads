@@ -183,7 +183,7 @@ everything figured out before taking part.
 ${minorNote}
 <p style="margin:16px 0 8px;"><strong>While you’re here:</strong></p>
 <ul style="margin:0 0 20px;padding-left:20px;">
-  <li style="margin-bottom:6px;"><a href="${site}/events" style="color:${BLUE};">See what’s coming up</a> — the first Minnesota meetup is penciled in, and the online sessions are open to everyone.</li>
+  <li style="margin-bottom:6px;"><a href="${site}/events" style="color:${BLUE};">See what’s coming up</a> — the first Minnesota meetup happened in September, and the next one goes on the events page first.</li>
   <li style="margin-bottom:6px;"><a href="${site}/stories" style="color:${BLUE};">Read the stories</a>, or send us one of your own.</li>
   <li style="margin-bottom:6px;"><a href="${site}/share" style="color:${BLUE};">Share DOKADS</a> — most people find this through someone else in their family.</li>
 </ul>

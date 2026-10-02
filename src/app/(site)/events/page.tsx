@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Events } from '@/views/Events'
-import { getAllRegions, getPublicEvents } from '@/lib/content'
+import { getAllRegions, getPastEvents, getUpcomingEvents } from '@/lib/content'
 
 /**
  * Fully static. Content comes from the committed modules in src/data, so this
@@ -15,5 +15,7 @@ export const metadata: Metadata = {
 }
 
 export default function Page() {
-  return <Events events={getPublicEvents()} regions={getAllRegions()} />
+  return (
+    <Events upcoming={getUpcomingEvents()} past={getPastEvents()} regions={getAllRegions()} />
+  )
 }

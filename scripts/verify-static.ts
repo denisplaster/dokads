@@ -53,6 +53,29 @@ async function main() {
       .every((r) => getPublishedRegion(r.slug) === undefined),
   )
 
+  console.log('\nPast vs upcoming')
+  const { getUpcomingEvents, getPastEvents } = await import('../src/lib/content')
+  const upcoming = getUpcomingEvents()
+  const past = getPastEvents()
+  check(
+    'completed and cancelled events never appear as upcoming',
+    !upcoming.some((e) => e.status === 'completed' || e.status === 'cancelled'),
+  )
+  check('every completed event appears in the past list', past.length === pub.filter((e) => e.status === 'completed').length)
+  check(
+    'every completed event names its host and links to the host’s page',
+    past.every((e) => !!e.host && e.host.href.startsWith('https://')),
+  )
+  check(
+    'no completed event still carries tentative notes or a backup date',
+    past.every((e) => !e.tentativeNotes?.length && !e.backupDate),
+  )
+  const eventPage = readFileSync('src/views/EventPage.tsx', 'utf8')
+  check(
+    'past events render a recap, not a sign-up',
+    /isPast \? \(/.test(eventPage) && /This one has happened/.test(eventPage),
+  )
+
   console.log('\nLEGAL_RULES on sensitive content')
   const { LEGAL_DISCLAIMER } = await import('../src/data/topics')
   const sensitive = getPublishedStories().filter((st) => st.sensitive)

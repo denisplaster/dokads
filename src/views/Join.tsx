@@ -158,8 +158,8 @@ export function Join() {
             <h2 className="eyebrow">While you’re here</h2>
             <ul className="join-done__list">
               <li>
-                <Link href="/events">See what’s coming up</Link> — the first Minnesota meetup is
-                penciled in, and the online sessions are open to everyone.
+                <Link href="/events">See what’s coming up</Link> — the first Minnesota meetup
+                happened in September, and the next one goes on the events page first.
               </li>
               <li>
                 <Link href="/stories">Read the stories</Link> — or send us one of your own.

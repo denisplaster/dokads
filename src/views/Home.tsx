@@ -23,11 +23,22 @@ import type { DokEvent } from '../data/events'
 import { COMMUNITY_LED_PRINCIPLE } from '../data/community'
 import { CollageFrame } from '../components/zine/CollageFrame'
 import { RotatingPhrase } from '../components/RotatingPhrase'
+import { contactMailto } from '../lib/site-mode'
 
-export function Home({ stories, events }: { stories: Story[]; events: DokEvent[] }) {
+export function Home({
+  stories,
+  upcoming,
+  past,
+}: {
+  stories: Story[]
+  upcoming: DokEvent[]
+  past: DokEvent[]
+}) {
   const featured = stories.filter((s) => s.featured)
   const rest = stories.filter((s) => !s.featured).slice(0, 4)
-  const nextEvents = events.slice(0, 3)
+  const nextEvents = upcoming.slice(0, 3)
+  // with nothing scheduled, show what already happened rather than an empty wall
+  const lastTime = past.slice(0, 1)
 
   return (
     <>
@@ -245,7 +256,7 @@ export function Home({ stories, events }: { stories: Story[]; events: DokEvent[]
       {/* ================= EVENTS ================= */}
       <ZineSection tone="blue" torn="top" className="home-events">
         <div className="wrap wrap--wide">
-          <SectionHead number="03" kicker="Coming up" />
+          <SectionHead number="03" kicker={nextEvents.length ? 'Coming up' : 'Meetups'} />
           <div className="home-events__head">
             <EditorialHeadline size={2}>
               Come and meet{' '}
@@ -253,17 +264,33 @@ export function Home({ stories, events }: { stories: Story[]; events: DokEvent[]
               some people
             </EditorialHeadline>
             <p className="lead">
-              Small gatherings, mostly free, mostly informal. Coffee shops and video calls
-              rather than conference rooms.
+              {nextEvents.length
+                ? 'Small gatherings, mostly free, mostly informal. Coffee shops and video calls rather than conference rooms.'
+                : 'The first DoKAD meetup has happened. Nothing new is on the calendar yet — when there is, it goes here first.'}
             </p>
           </div>
 
           <div className="home-events__wall">
-            {nextEvents.map((e, i) => (
+            {(nextEvents.length ? nextEvents : lastTime).map((e, i) => (
               <Link key={e.id} href={`/events/${e.slug}`} className="home-events__link">
                 <FlyerEventCard event={e} index={i} />
               </Link>
             ))}
+            {!nextEvents.length && (
+              <div className="home-events__empty">
+                <p className="home-events__empty-head">Want the next one?</p>
+                <p>
+                  Tell us you are interested and what would suit you — a time, a place, a kind of
+                  gathering. The first one happened because people asked.
+                </p>
+                <a
+                  href={contactMailto('Interested in the next DoKAD meetup')}
+                  className="btn btn--yellow"
+                >
+                  Email us
+                </a>
+              </div>
+            )}
           </div>
 
           <div className="home-events__foot">

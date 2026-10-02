@@ -107,7 +107,15 @@ async function main() {
     .from(schema.events)
     .where(eq(schema.events.slug, 'minnesota-dokad-coffee-meetup'))
 
-  const tentative = { ...ev, status: 'tentative' }
+  // a fixture of its own: these assertions test the template, so they must not
+  // depend on whatever state the real event happens to be in
+  const tentative = {
+    ...ev,
+    status: 'tentative',
+    backupDate: '2026-09-20',
+    tentativeNotes: ['The date is not locked.', 'The venue is still being chosen.'],
+    perk: 'One complimentary drink per registered attendee',
+  }
   const t = registrationEmail({ firstName: 'Sam', event: tentative, status: 'registered', site: 'https://www.dokads.com' })
   check('tentative email says it is not confirmed', /not confirmed yet/i.test(t.html))
   check('tentative email lists what may change', /What is not settled yet/i.test(t.html))

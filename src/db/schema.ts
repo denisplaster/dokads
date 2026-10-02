@@ -121,6 +121,10 @@ export const events = pgTable(
     /** what is explicitly NOT settled yet — rendered on the page */
     tentativeNotes: jsonb('tentative_notes').$type<string[]>().default([]),
     needsFoodInfo: boolean('needs_food_info').notNull().default(false),
+    /** who ran it, and their own page for it — the source of truth for details */
+    host: jsonb('host').$type<{ name: string; href: string }>(),
+    /** for a completed event: what actually happened */
+    recap: text('recap'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },

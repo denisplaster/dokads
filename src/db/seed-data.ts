@@ -39,6 +39,8 @@ export const eventRows: InferInsertModel<typeof events>[] = seedEvents.map((e) =
   perk: e.rules.perk ?? null,
   tentativeNotes: e.tentativeNotes ?? [],
   needsFoodInfo: e.needsFoodInfo ?? false,
+  host: e.host ?? null,
+  recap: e.recap ?? null,
 }))
 
 export const storyRows: InferInsertModel<typeof stories>[] = seedStories.map((s) => ({

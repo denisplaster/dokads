@@ -2599,3 +2599,23 @@
   padding-left: var(--s-4);
   border-left: var(--bd-thick) solid var(--blue);
 }
+
+/* home: shown beside the last meetup when nothing is scheduled */
+.home-events__empty {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  align-items: flex-start;
+  padding: var(--s-5);
+  border: var(--bd-thick) dashed currentColor;
+}
+.home-events__empty-head {
+  font-family: var(--font-display);
+  font-size: var(--t-h3);
+  text-transform: uppercase;
+  line-height: 1;
+}
+.home-events__empty p:not(.home-events__empty-head) {
+  font-size: var(--t-small);
+  line-height: 1.5;
+}

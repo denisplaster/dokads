@@ -41,7 +41,7 @@ export function RegionPage({ region, events }: { region: Region; events: DokEven
           {isMinnesota && (
             <p className="page-hero__aside">
               <HandwrittenNote color="paper" tiltDir={1}>
-                first one’s in September (probably)
+                the first one happened — September 2026
               </HandwrittenNote>
             </p>
           )}
@@ -109,7 +109,9 @@ export function RegionPage({ region, events }: { region: Region; events: DokEven
               {(region.socials ?? []).map((s) => (
                 <li key={s.label}>
                   <span className="region-people__social-label">{s.label}</span>
-                  {s.href ? (
+                  {s.href?.startsWith('mailto:') ? (
+                    <a href={s.href}>Email us →</a>
+                  ) : s.href ? (
                     <a href={s.href} target="_blank" rel="noreferrer">
                       Open →
                     </a>

@@ -1,9 +1,10 @@
 /**
  * ── EDITORIAL NOTE ────────────────────────────────────────────────────
- * Nothing here is confirmed. Every record carries an explicit `status`,
- * and the UI is required to show it. Do not move an event to
- * 'registration open' — and do not publish a venue, date, beverage
- * offer, or attendance policy as final — until it has been approved.
+ * Only events that are real appear publicly. Every record carries an
+ * explicit `status`, and the UI shows it everywhere. Anything that is an
+ * idea rather than a plan stays `draft`, which is invisible to the public
+ * site. Confirm details against the host's own page before publishing,
+ * and record that page in `host`.
  * ─────────────────────────────────────────────────────────────────────
  */
 
@@ -153,39 +154,43 @@ export type DokEvent = {
   /** anything not yet approved, called out plainly on the page */
   tentativeNotes?: string[]
   needsFoodInfo?: boolean
+  /** who ran it, and their own page for it — the source of truth for details */
+  host?: { name: string; href: string }
+  /** for a completed event: what actually happened, in a sentence or two */
+  recap?: string
 }
 
 export const events: DokEvent[] = [
   {
+    // Confirmed against the host's page: https://akconnection.org/event/dokad-meetup/
     id: 'mn-coffee-001',
     slug: 'minnesota-dokad-coffee-meetup',
     title: 'Minnesota DoKAD Coffee Meetup',
     blurb:
-      'The first one. An informal Sunday-afternoon coffee meetup for descendants of Korean adoptees in the Twin Cities — mostly just to meet each other and see who is out there.',
+      'The first one. A casual Sunday meetup designed by and for DoKADs in the Twin Cities — mostly just to meet each other and see who is out there.',
     type: 'coffee meetup',
-    status: 'tentative',
+    status: 'completed',
     date: '2026-09-27',
-    backupDate: '2026-09-20',
-    time: '12:00 PM',
+    time: '12:00–1:30 PM',
     timezone: 'Central Time',
     region: 'minnesota',
     venueKind: 'coffee shop',
-    location: 'A coffee shop in Minneapolis, MN',
+    location: 'The Lobby Coffee & Leisure, 4620 W 77th St, Edina, MN',
     format: 'in person',
     audience: 'dokads only',
-    agePolicy: 'all ages',
-    cost: 'Free',
+    agePolicy: '18+',
+    cost: 'Free / pay what you can',
     rules: {
       plusOnes: false,
-      waitlist: true,
-      perk: 'One complimentary drink per registered attendee',
+      waitlist: false,
+      perk: 'AK Connection covered one drink per attendee',
     },
-    tentativeNotes: [
-      'The date is not locked. Sunday 27 September is the target; Sunday 20 September is the backup.',
-      'The venue is still being chosen — we know it will be a coffee shop in Minneapolis.',
-      'The complimentary drink is hoped-for, not yet confirmed.',
-      'For this first one we are keeping it to DoKADs only, with no plus-ones, so it stays small enough to actually talk.',
-    ],
+    host: {
+      name: 'AK Connection',
+      href: 'https://akconnection.org/event/dokad-meetup/',
+    },
+    recap:
+      'The first DoKAD meetup happened on Sunday 27 September 2026 at The Lobby Coffee & Leisure in Edina, hosted by AK Connection — a casual afternoon for descendants of Korean adoptees to meet each other in person.',
   },
   {
     id: 'dokad-101-online',
@@ -194,7 +199,9 @@ export const events: DokEvent[] = [
     blurb:
       'A short, plain-language session on what “descendant of a Korean adoptee” means, where the term came from, and what this community is trying to be. Bring questions; no background needed.',
     type: 'dokad 101',
-    status: 'registration opening soon',
+    // Placeholder from the original build, never a real plan. Hidden until
+    // someone actually organises it — do not republish with invented details.
+    status: 'draft',
     date: '2026-10-15',
     time: '7:00 PM',
     timezone: 'Central Time',
@@ -214,7 +221,9 @@ export const events: DokEvent[] = [
     blurb:
       'A facilitated small-group discussion for descendants who want to ask a parent about their adoption and are not sure how to start — or whether to start at all.',
     type: 'guided discussion',
-    status: 'tentative',
+    // Placeholder from the original build, never a real plan. Hidden until
+    // someone actually organises it — do not republish with invented details.
+    status: 'draft',
     date: '2026-11-08',
     time: '2:00 PM',
     timezone: 'Central Time',
