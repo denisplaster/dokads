@@ -2560,3 +2560,42 @@
   font-size: var(--t-small);
   line-height: 1.5;
 }
+
+/* sensitive (legal / immigration) articles: disclaimer + sources */
+.legal-flag {
+  max-width: var(--w-text);
+  margin-bottom: var(--s-6);
+  background: var(--yellow);
+  font-size: var(--t-small);
+}
+.legal-flag .eyebrow {
+  display: block;
+  margin-bottom: var(--s-2);
+}
+.legal-flag__date {
+  margin-top: var(--s-3);
+  padding-top: var(--s-3);
+  border-top: var(--bd) dashed var(--ink);
+  font-size: var(--t-micro);
+}
+.article-sources {
+  max-width: var(--w-text);
+  margin-top: var(--s-7);
+  padding: var(--s-5);
+  border: var(--bd) solid var(--ink);
+  background: var(--paper-bright);
+}
+.article-sources ul {
+  list-style: none;
+  padding: 0;
+  margin-top: var(--s-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+.article-sources li {
+  font-size: var(--t-small);
+  line-height: 1.45;
+  padding-left: var(--s-4);
+  border-left: var(--bd-thick) solid var(--blue);
+}

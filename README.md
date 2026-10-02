@@ -261,6 +261,13 @@ reviewed for accuracy, show its review date, cite official sources, carry the
 educational-not-legal-advice disclaimer, and never imply eligibility from a family
 relationship alone. See `LEGAL_RULES` in `src/data/topics.ts`.
 
+These are **enforced, not just documented**. A story with `sensitive: true` must also
+set `lastReviewed` and `sources`; `StoryPage` renders the disclaimer, the review date
+and the source list automatically, and `npm run static:verify` fails if a sensitive
+story is missing any of them, cites no official `.go.kr` source, or contains language
+promising eligibility outright. Re-check the sources and bump `lastReviewed` whenever
+you touch that content — immigration rules move.
+
 **The community-led principle** — *DoKAD programming should be shaped and led by
 DoKADs* — appears on About, the Minnesota page, and governs volunteer and event
 planning. Adoptees, parents, organisations, and allies support; descendants lead.

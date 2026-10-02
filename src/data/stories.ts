@@ -51,6 +51,16 @@ export type Story = {
   body: string[]
   /** layout copy rather than real content — rendered with a visible flag */
   isPlaceholder: boolean
+  /**
+   * Legal, immigration, citizenship or visa content. Carries obligations —
+   * see LEGAL_RULES in data/topics.ts. A story marked sensitive MUST also set
+   * lastReviewed and sources; scripts/verify-static.ts fails the build if not,
+   * and StoryPage renders the disclaimer, the review date and the sources.
+   */
+  sensitive?: boolean
+  /** ISO date this was last checked against current official sources */
+  lastReviewed?: string
+  sources?: { label: string; href: string }[]
 }
 
 const ED = {
@@ -181,6 +191,59 @@ export const stories: Story[] = [
       'The emotional part deserves a paragraph of its own. Depending on how you look, you may be addressed in Korean everywhere you go and feel the odd grief of not understanding a word — or you may be read as a foreigner in the one country where you expected not to be. Walking past a hospital, an agency building, or just an ordinary neighbourhood knowing your family’s story passed through places like it can land harder than expected. None of this ruins the trip. It is simply worth knowing that a “vacation” to Korea often is not only that, and giving yourself room accordingly.',
       'If you want the adoption-specific layer, it exists. Adoptee-led organisations in Seoul — GOA’L is the best known — help with birth-family search and navigating Korea as someone connected to adoption. File reviews and record requests go through the National Center for the Rights of the Child; note that the legal right to request records belongs to the adoptee, so if the search interests your family, that part is your parent’s to initiate. Heritage tours designed for adoptee families run regularly, and the international adoptee Gatherings held in Seoul draw hundreds of adoptees and, increasingly, their children.',
       'And if you do not want the adoption-specific layer — skip all of it. Eating your way through Gwangjang Market, hiking Bukhansan, and coming home with skincare is a complete and legitimate way for a descendant to meet Korea. The connection does not have to be processed to be real. Go for your own reasons; they count.',
+    ],
+  },
+  {
+    slug: 'visas-citizenship-and-what-descendants-can-claim',
+    title: 'Visas, citizenship, and what descendants can actually claim',
+    dek: 'There are real pathways to Korea for children and grandchildren of adoptees — narrower than the rumours, and wider than most people assume. Including one common move that would cost you your passport.',
+    kind: 'explainer',
+    ...ED,
+    readingTime: 9,
+    pullquote: 'A family relationship is where eligibility starts. It is never where it ends.',
+    art: 'grid',
+    sensitive: true,
+    lastReviewed: '2026-10-02',
+    sources: [
+      {
+        label: 'Overseas Korean (F-4) Visa — Embassy of the Republic of Korea in the USA',
+        href: 'https://overseas.mofa.go.kr/us-en/brd/m_4502/view.do?seq=715891',
+      },
+      {
+        label: 'Procedures to restore nationality for adoptees — Consulate General in Seattle',
+        href: 'https://overseas.mofa.go.kr/us-seattle-en/brd/m_4809/view.do?seq=761299',
+      },
+      {
+        label: 'Loss of Nationality Report (국적상실신고) — Ministry of Foreign Affairs',
+        href: 'https://www.mofa.go.kr/dk-en/brd/m_25531/view.do?seq=2&page=1',
+      },
+      {
+        label: 'GOA\u2019L — adoptee-led help with visas, records and returning to Korea',
+        href: 'https://goal.or.kr',
+      },
+    ],
+    body: [
+      'This is the question that comes up more than almost any other, usually in some version of: does any of this get me anything? The honest answer is that there are real, specific pathways for descendants of Korean adoptees — and that almost everything circulating about them by word of mouth is wrong in one direction or the other. Some people assume a Korean passport is waiting for them. Others assume that because they were never Korean, nothing applies. Both are mistaken.',
+      'Before anything else: this is educational background, not legal advice. Nothing here is a promise that you personally qualify, immigration rules change, and the one thing that is always true is that a family relationship is where eligibility starts rather than where it ends. Everything below should be checked against your nearest Korean consulate before you act on it.',
+
+      '> A family relationship is where eligibility starts. It is never where it ends.',
+
+      'Start with the one that actually applies to descendants: the F-4 visa. Formally the Overseas Korean visa, it exists for people of Korean heritage who hold foreign nationality, and the Korean Embassy in the United States describes two eligible groups. The first is people who previously held South Korean nationality and have since acquired a foreign one — that is your adoptee parent or grandparent, not you. The second is the one that matters here: people with at least one parent or one grandparent who previously held South Korean nationality before acquiring a foreign nationality.',
+      'Read that again, because it is the sentence most DoKADs have never seen. The pathway is written for the child or grandchild. And since an amendment that took effect on 2 July 2019, the old ceiling that stopped at the third generation is gone — fourth-generation descendants and beyond are now covered too. If your grandparent was the adoptee, you are not automatically outside this.',
+      'What an F-4 actually gets you is substantial. It is a long-stay residence visa, renewable, that lets you live and work in Korea without an employer sponsoring you — which is the thing that makes ordinary work visas so constraining. It can be renewed indefinitely, it allows access to the national health insurance system under the normal residency rules, and it is a recognised step toward permanent residency. There are limits: certain categories of manual labour remain restricted for F-4 holders, and that list is set by ministry notice and changes periodically.',
+
+      'Now the part nobody warns you about, which is paperwork. Eligibility is one thing; proving it is another, and for adoptee families this is exactly where it gets hard. For the parent-or-grandparent route, the consulate asks for the Korean family-register document of that ascendant — a 기본증명서, basic certificate — plus documents establishing the lineal relationship between you and them, usually a birth certificate.',
+      'That means your claim runs through your parent’s Korean records, and those records are the weak link. Most adoptees do have a Korean family register, because one had to exist for them to be legally adoptable, but it was often an orphan registration created for that purpose, and Korea’s own Truth and Reconciliation Commission confirmed in 2025 that many such files contain fabricated details — children documented as orphans who were not, altered names and birth dates, switched identities. A register that does not match your family’s understanding of itself is common, not exceptional.',
+      'There is also a step most adoptee families have never taken. When a Korean national acquires another nationality they lose Korean nationality automatically, but the loss is not recorded until the person reports it — the 국적상실신고, loss-of-nationality report. Many adoptees naturalised as small children decades ago and nobody ever filed it, so the Korean register has never been updated. It generally needs doing before the paperwork lines up, and the receipt from filing can often be used while the report is processing.',
+      'The practical consequence: this is not a form you fill in alone on a weekend. GOA’L, the adoptee-founded organisation in Seoul, exists partly to help people through exactly this, and it is where most families should start rather than with a general immigration agency.',
+
+      'Citizenship is a different question, and the honest answer is that it is largely your parent’s question, not yours. Korea allows people who once held Korean nationality to apply to restore it — and for adoptees specifically, dual nationality is possible, which surprises people who know how restrictive Korea usually is. The condition is that after restoration is granted, the person must enter Korea within a year and make a formal pledge not to exercise their foreign nationality while on Korean soil. Fail to do it and the restored Korean nationality is lost automatically.',
+      'Two things attached to that are worth knowing before anyone in your family starts. Men between 18 and 38 become subject to military service on restoring nationality, with narrow exemptions that do not apply to everyone adoptees might assume they apply to. And — this is the one that could genuinely harm a family that did not know — a parent restoring their nationality can include their children in the application, but children included that way are not covered by the dual-nationality pledge. They would be required to give up their other nationality. A move that sounds like gaining something would, for the child, mean surrendering the passport they grew up with.',
+      'For an adult descendant who never held Korean nationality, restoration is not the relevant route at all, because there is nothing to restore. Korean nationality passes by descent, but only from a parent who held it at the time you were born — and most adoptees had already lost theirs years before their children arrived. Which is precisely why F-4 is the realistic path for most DoKADs, and why anyone claiming you have an automatic right to a Korean passport is overselling it.',
+
+      'Finally, the genuinely overlooked part, which costs nothing and asks very little. The Korean government runs homeland programmes for overseas Koreans through its Overseas Koreans Agency, and the eligibility wording for the OKFriends Homecoming camps names this community explicitly: overseas Koreans with foreign nationality or permanent residency, Korean nationals, adoptees, and children of adoptees. Children of adoptees. It is written down, in a government programme, and almost no DoKAD knows it.',
+      'The camps run in two bands — roughly 15 to 18 and 18 to 25 — with a residency requirement abroad, and they are built around history, language and culture rather than adoption. There are also scholarship routes: the Global Korea Scholarship reserves places for overseas Koreans, and several Korean universities run their own overseas-Korean scholarships covering tuition and living costs. These sit under the same legal definition of 재외동포, overseas Korean, that the F-4 visa uses — the definition that includes lineal descendants.',
+      'None of this is a windfall and none of it is automatic. But “my grandparent was adopted from Korea, so none of this is for me” is simply not what the rules say, and that assumption is probably the single most expensive thing a DoKAD can believe. Check the specifics for your own family, with the consulate or with GOA’L, before you decide either way.',
     ],
   },
   {

@@ -15,6 +15,7 @@ import {
   ZineSection,
 } from '../components/zine'
 import { STORY_KINDS } from '../data/stories'
+import { LEGAL_DISCLAIMER } from '../data/topics'
 import type { Story } from '../data/stories'
 
 export function StoryPage({ story, related }: { story: Story; related: Story[] }) {
@@ -67,6 +68,26 @@ export function StoryPage({ story, related }: { story: Story; related: Story[] }
       {/* body */}
       <ZineSection tone="paper" tight className="article-body">
         <div className="wrap">
+          {story.sensitive && (
+            <PaperCard className="legal-flag" tilt="hair" shadow="lift">
+              <span className="eyebrow">Educational information, not legal advice</span>
+              <p>{LEGAL_DISCLAIMER}</p>
+              {story.lastReviewed && (
+                <p className="legal-flag__date">
+                  Last reviewed against official sources on{' '}
+                  <time dateTime={story.lastReviewed}>
+                    {new Date(`${story.lastReviewed}T12:00:00`).toLocaleDateString('en-US', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                  </time>
+                  . Rules change — check the sources at the end before acting on anything here.
+                </p>
+              )}
+            </PaperCard>
+          )}
+
           {story.isPlaceholder && (
             <PaperCard className="placeholder-flag" tilt="hair" shadow="lift">
               <strong>Placeholder piece.</strong> This is layout copy, not anyone’s real
@@ -85,6 +106,21 @@ export function StoryPage({ story, related }: { story: Story; related: Story[] }
               ),
             )}
           </div>
+
+          {story.sources && story.sources.length > 0 && (
+            <aside className="article-sources">
+              <h2 className="eyebrow">Sources</h2>
+              <ul>
+                {story.sources.map((src) => (
+                  <li key={src.href}>
+                    <a href={src.href} target="_blank" rel="noreferrer">
+                      {src.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </aside>
+          )}
 
           <div className="article-foot">
             <div className="article-foot__note">

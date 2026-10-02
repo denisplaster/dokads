@@ -105,12 +105,14 @@ export const topics: Topic[] = [
   },
   {
     slug: 'visa-and-immigration-options',
+    href: '/stories/visas-citizenship-and-what-descendants-can-claim',
     title: 'Korean immigration and visa options, including the F-4',
     blurb:
-      'Educational background on the pathways people ask about most. Not yet written — this one needs review before it goes anywhere near publication.',
-    status: 'needs review',
+      'The F-4 route written for children and grandchildren, what citizenship restoration would really cost, and the government programmes that name adoptees’ children explicitly.',
+    status: 'published',
     group: 'korea',
     sensitive: true,
+    lastReviewed: '2026-10-02',
   },
   {
     slug: 'preserving-files-and-photos',

@@ -53,6 +53,44 @@ async function main() {
       .every((r) => getPublishedRegion(r.slug) === undefined),
   )
 
+  console.log('\nLEGAL_RULES on sensitive content')
+  const { LEGAL_DISCLAIMER } = await import('../src/data/topics')
+  const sensitive = getPublishedStories().filter((st) => st.sensitive)
+  check('at least one sensitive story exists to check', sensitive.length > 0, `${sensitive.length}`)
+  check(
+    'every sensitive story shows when it was last reviewed',
+    sensitive.every((st) => !!st.lastReviewed && /^\d{4}-\d{2}-\d{2}$/.test(st.lastReviewed)),
+  )
+  check(
+    'every sensitive story cites official sources',
+    sensitive.every((st) => (st.sources?.length ?? 0) > 0),
+  )
+  check(
+    'sources are https and at least one is an official .go.kr source',
+    sensitive.every(
+      (st) =>
+        (st.sources ?? []).every((src) => src.href.startsWith('https://')) &&
+        (st.sources ?? []).some((src) => src.href.includes('.go.kr')),
+    ),
+  )
+  check(
+    'the not-legal-advice disclaimer is rendered, not just stored',
+    /LEGAL_DISCLAIMER/.test(readFileSync('src/views/StoryPage.tsx', 'utf8')) &&
+      LEGAL_DISCLAIMER.toLowerCase().includes('not legal advice'),
+  )
+  // the rule that matters most: never promise eligibility from a relationship alone
+  const promises = sensitive.filter((st) => {
+    const text = st.body.join(' ').toLowerCase()
+    return /you (are|will be) (automatically )?(entitled|eligible)\b/.test(text) ||
+      /guarantee[sd]? (you|your)/.test(text)
+  })
+  check('no sensitive story promises eligibility outright', promises.length === 0,
+    promises.map((p) => p.slug).join(', '))
+  check(
+    'sensitive story states that eligibility is not automatic',
+    sensitive.every((st) => /not a promise|never where it ends|not automatic/i.test(st.body.join(' '))),
+  )
+
   console.log('\nNo network in the public tree')
   const siteFiles = walk('src/app/(site)')
   const dbImports = siteFiles.filter((f) => /from '@\/db|from '@\/lib\/adapt/.test(readFileSync(f, 'utf8')))
