@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { HandwrittenNote, IssueLabel, Sticker, TornEdge } from '../zine'
+import { isStatic } from '../../lib/site-mode'
 import { Wordmark } from '../zine/Wordmark'
 
 export function Footer() {
@@ -99,7 +100,9 @@ export function Footer() {
         </p>
 
         {/* Quiet on purpose: organisers need to find it, visitors do not need
-            to wonder what it is. Sits last in the tab order. */}
+            to wonder what it is. Sits last in the tab order. Hidden entirely in
+            static mode, where /admin does not resolve. */}
+        {!isStatic() && (
         <Link href="/admin" className="site-footer__admin" title="Organiser sign-in">
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path
@@ -122,6 +125,7 @@ export function Footer() {
           </svg>
           <span>Organisers</span>
         </Link>
+        )}
       </div>
     </footer>
   )

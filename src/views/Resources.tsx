@@ -14,6 +14,7 @@ import {
   rot,
 } from '../components/zine'
 import { AUDIENCES, FORMATS } from '../data/resources'
+import { contactMailto } from '../lib/site-mode'
 import type { Audience, Resource, ResourceFormat } from '../data/resources'
 
 export function Resources({ resources }: { resources: Resource[] }) {
@@ -206,9 +207,12 @@ export function Resources({ resources }: { resources: Resource[] }) {
                 {FORMATS[f].verb}
               </Sticker>
             ))}
-            <Link href="/join" className="btn btn--yellow btn--lg">
+            <a
+              href={contactMailto('Resource suggestion for DOKADS')}
+              className="btn btn--yellow btn--lg"
+            >
               Send a recommendation
-            </Link>
+            </a>
           </div>
         </div>
       </ZineSection>

@@ -18,6 +18,7 @@ import type { Region } from '../data/regions'
 import { formatEventDate } from '../data/events'
 import type { DokEvent } from '../data/events'
 import { COMMUNITY_LED_PRINCIPLE } from '../data/community'
+import { contactMailto } from '../lib/site-mode'
 
 export function RegionPage({ region, events }: { region: Region; events: DokEvent[] }) {
   const meta = REGION_STATUS_META[region.status]
@@ -96,9 +97,9 @@ export function RegionPage({ region, events }: { region: Region; events: DokEven
                 You do not need experience, a venue, or a plan. The first meetups are mostly
                 about picking a coffee shop and showing up.
               </p>
-              <Link href="/join" className="btn btn--red">
+              <a href={contactMailto('I would like to help organise')} className="btn btn--red">
                 Volunteer
-              </Link>
+              </a>
             </PaperCard>
           </div>
 

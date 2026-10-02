@@ -18,7 +18,8 @@
     "db:verify": "tsx scripts/verify-db.ts",
     "db:setup": "npm run db:migrate && npm run db:seed",
     "email:test": "tsx scripts/email-test.ts",
-    "email:verify": "tsx scripts/verify-email.ts"
+    "email:verify": "tsx scripts/verify-email.ts",
+    "static:verify": "tsx scripts/verify-static.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",

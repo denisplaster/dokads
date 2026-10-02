@@ -14,6 +14,7 @@ import {
   rot,
 } from '../components/zine'
 import { STORY_KINDS } from '../data/stories'
+import { contactMailto } from '../lib/site-mode'
 import type { Story, StoryKind } from '../data/stories'
 
 const KIND_ORDER = Object.keys(STORY_KINDS) as StoryKind[]
@@ -181,11 +182,11 @@ export function Stories({ stories }: { stories: Story[] }) {
               </li>
             </ul>
             <div className="submit-card__foot">
-              <Sticker color="red" large>
+              <Sticker color="red" large href={contactMailto('Story pitch for DOKADS')}>
                 Pitch a story
               </Sticker>
               <HandwrittenNote tiltDir={1}>
-                submissions open with Issue 001
+                email us — a person reads it
               </HandwrittenNote>
             </div>
           </PaperCard>

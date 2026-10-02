@@ -2522,3 +2522,41 @@
 .topic-card__link:hover {
   border-bottom-color: var(--red-bright);
 }
+
+/* ==========================================================================
+   STATIC MODE — informational stand-ins for the forms
+   ========================================================================== */
+.join-info-promise__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: clamp(var(--s-6), 5vw, var(--s-8));
+  align-items: start;
+}
+@media (max-width: 860px) {
+  .join-info-promise__inner {
+    grid-template-columns: 1fr;
+  }
+}
+.join-info-promise__card {
+  position: sticky;
+  top: 100px;
+}
+@media (max-width: 860px) {
+  .join-info-promise__card {
+    position: static;
+  }
+}
+.join-info .grid {
+  align-items: stretch;
+}
+
+/* the mailto card that replaces event registration */
+.reg-closed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+}
+.reg-closed p {
+  font-size: var(--t-small);
+  line-height: 1.5;
+}

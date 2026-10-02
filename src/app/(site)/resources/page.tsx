@@ -1,22 +1,12 @@
 import type { Metadata } from 'next'
 import { Resources } from '@/views/Resources'
-import { getPublishedResources } from '@/db/queries'
-import { toResource } from '@/lib/adapt'
+import { getPublishedResources } from '@/lib/content'
 
 /**
- * Rendered per request, not at build time.
- *
- * These pages read from Postgres. Prerendering them coupled every deploy to
- * the database being reachable AND migrated — a first deploy, a paused Neon
- * branch, or a transient outage failed the build outright. A build should
- * never depend on a database it does not own.
- *
- * Still server-rendered HTML, so nothing is lost for search engines or link
- * previews, and CMS edits appear immediately with no revalidation to reason
- * about. If traffic ever justifies caching, add it here deliberately.
+ * Fully static. Content comes from the committed modules in src/data, so this
+ * page needs no database at build time or at request time — nothing to wake,
+ * nothing to pay for, nothing that can be down. See src/lib/site-mode.ts.
  */
-export const dynamic = 'force-dynamic'
-
 
 export const metadata: Metadata = {
   title: 'Resources',
@@ -24,7 +14,6 @@ export const metadata: Metadata = {
     'A community-built reading pile: books, films, podcasts, organisations, and the practical things nobody hands you.',
 }
 
-export default async function Page() {
-  const resources = await getPublishedResources()
-  return <Resources resources={resources.map(toResource)} />
+export default function Page() {
+  return <Resources resources={getPublishedResources()} />
 }

@@ -11,36 +11,62 @@ Built as a modern digital zine: bold, editorial, community-made, and readable.
 
 ```bash
 npm install
-cp .env.example .env      # then set DATABASE_URL + BETTER_AUTH_SECRET
-npm run db:seed           # applies migrations (local) and seeds content
 npm run dev
 ```
 
-Dev server: <http://localhost:5190>
+Dev server: <http://localhost:5190>. **No configuration, no database, no
+accounts** — the site runs in static mode by default.
 
-**Database.** Production runs on Neon. For local work you can either paste a
-Neon *branch* connection string into `.env`, or use the zero-setup option:
+### Static mode
+
+The site is currently an informational brochure. Nothing it serves touches the
+network:
+
+- **Content** comes from the committed TypeScript modules in `src/data`, not
+  Postgres. Every public page is prerendered at build time.
+- **Nothing is collected.** No join form, no event registration, no analytics,
+  no cookies. Pages that used to post a form now point at
+  `dokads@akconnection.com`.
+- **No email is sent.**
+- **The admin is unreachable** — `/admin` and `/api/auth/*` return 404.
+- **Fonts are self-hosted**, so loading a page reports nothing to anyone.
+
+The database, auth, email and admin code all remain in the repository and keep
+passing their suites. One switch turns them back on:
 
 ```bash
-DATABASE_URL="pglite://.data/dev"
+SITE_MODE=full      # + DATABASE_URL, BETTER_AUTH_SECRET, and optionally RESEND_API_KEY
 ```
 
-That runs Postgres in-process — no account, no daemon. One caveat: it is a
-single-process file database, so do not run `npm run dev` and `npm run build`
-at the same time. If the directory gets corrupted, `rm -rf .data && npm run
-db:seed` and you are back.
-
-**Admin account.** Choose your own password; it is hashed and never stored in
-plain text.
-
-```bash
-ADMIN_EMAIL="you@example.com" ADMIN_PASSWORD="a-long-passphrase" npm run admin:create
-```
-
-Then sign in at `/admin/sign-in`, and unset `ADMIN_PASSWORD` from your shell.
+`npm run static:verify` asserts the guarantees above so they cannot erode
+quietly — including that drafts stay out of the public list, that no public
+page imports the database, and that the mode switch actually works.
 
 | Command | Does |
 | --- | --- |
+| `npm run dev` | Dev server on :5190 |
+| `npm run build` / `start` | Production build and serve |
+| `npm run typecheck` | Types only |
+| `npm run static:verify` | Assert the static-mode guarantees |
+| `npm run db:verify` | Schema + queries against in-process Postgres (full mode) |
+| `npm run email:verify` | Email failures cannot lose a registration (full mode) |
+| `npm run db:setup` | `db:migrate` then `db:seed` — first-time setup (full mode) |
+| `npm run db:seed` | Seed content. `-- --refresh-editorial` ships copy updates |
+| `npm run admin:create` | Create or promote an admin (full mode) |
+| `npm run email:test` | Send one real email to check a configuration |
+
+### Deploying to Vercel
+
+Import the repo and deploy. Static mode needs no environment variables, so the
+first deploy works with nothing configured.
+
+To go back to the full site: set `SITE_MODE=full`, add the Neon integration
+(which injects `DATABASE_URL`), set `BETTER_AUTH_SECRET`, then run
+`npm run db:setup` and `npm run admin:create` against the Neon connection
+string from the Neon console. Resend is optional on top of that — see **Email**
+below.
+
+--- | --- |
 | `npm run dev` | Dev server on :5190 |
 | `npm run build` / `start` | Production build and serve |
 | `npm run typecheck` | Types only |
@@ -311,6 +337,9 @@ their event.
 ---
 
 ## Email
+
+**Dormant in static mode** — nothing is sent, because nothing is collected.
+The rest of this section applies when `SITE_MODE=full`.
 
 Transactional only, via [Resend](https://resend.com). Set these and it turns on;
 leave them unset and the site works exactly as it does without them.

@@ -17,6 +17,7 @@ import {
 import { AUDIENCE_META, EVENT_TYPES, STATUS_META, formatEventDate } from '../data/events'
 import type { DokEvent, EventAudience, EventType } from '../data/events'
 import type { Region } from '../data/regions'
+import { contactMailto } from '../lib/site-mode'
 
 type FormatFilter = 'all' | 'online' | 'in person'
 
@@ -231,9 +232,13 @@ export function Events({ events, regions }: { events: DokEvent[]; regions: Regio
                 <strong>Nothing matches that combination yet.</strong> Tell us what you want and
                 we will try to make it exist.
               </p>
-              <Link href="/join" className="btn btn--red" style={{ marginTop: 'var(--s-4)' }}>
+              <a
+                href={contactMailto('Event idea for DOKADS')}
+                className="btn btn--red"
+                style={{ marginTop: 'var(--s-4)' }}
+              >
                 Request an event
-              </Link>
+              </a>
             </PaperCard>
           ) : (
             <div className="events-wall__grid">

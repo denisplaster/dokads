@@ -162,7 +162,7 @@ export function Nav() {
             A space for descendants of Korean adoptees. Still figuring it out? Same.
           </p>
           <Sticker to="/join" color="yellow" large>
-            Get the newsletter
+            Get in touch
           </Sticker>
         </div>
       </div>

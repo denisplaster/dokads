@@ -4,16 +4,28 @@ import { drizzle } from 'drizzle-orm/neon-http'
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http'
 import * as schema from './schema'
 
-const url = process.env.DATABASE_URL
-
-if (!url) {
-  throw new Error(
-    'DATABASE_URL is not set.\n' +
-      '  · On Vercel: add the Neon integration and it is injected for you.\n' +
-      '  · Locally:   copy .env.example to .env, then either paste a Neon branch\n' +
-      '               connection string or use DATABASE_URL="pglite://.data/dev"\n' +
-      '               for a throwaway local database with no setup.',
-  )
+/**
+ * Checked when a connection is first needed, not at import.
+ *
+ * In static mode nothing queries the database, but the module is still in the
+ * graph (the admin and the server actions import it). Throwing at import time
+ * would make a build fail without DATABASE_URL even though no query is ever
+ * run — so the check belongs with the connection.
+ */
+function requireUrl(): string {
+  const url = process.env.DATABASE_URL
+  if (!url) {
+    throw new Error(
+      'DATABASE_URL is not set.\n' +
+        '  · The site is in static mode (SITE_MODE is not "full"), so nothing\n' +
+        '    should be querying the database — this is a bug if you see it.\n' +
+        '  · On Vercel: add the Neon integration and it is injected for you.\n' +
+        '  · Locally:   copy .env.example to .env, then either paste a Neon branch\n' +
+        '               connection string or use DATABASE_URL="pglite://.data/dev"\n' +
+        '               for a throwaway local database with no setup.',
+    )
+  }
+  return url
 }
 
 /**
@@ -25,7 +37,8 @@ if (!url) {
  * dependency never enters a production bundle.
  */
 function createDb(): NeonHttpDatabase<typeof schema> {
-  if (url!.startsWith('pglite://')) {
+  const url = requireUrl()
+  if (url.startsWith('pglite://')) {
     // Guard the real hazard — shipping a local file database to a deployment —
     // without blocking `next build` on a laptop, which also runs in production
     // mode. VERCEL is set during both build and runtime on Vercel.
@@ -38,7 +51,7 @@ function createDb(): NeonHttpDatabase<typeof schema> {
     const req = createRequire(import.meta.url)
     const { PGlite } = req('@electric-sql/pglite')
     const { drizzle: pgliteDrizzle } = req('drizzle-orm/pglite')
-    const dir = url!.replace('pglite://', '')
+    const dir = url.replace('pglite://', '')
     // cached on globalThis so dev-server hot reloads reuse one instance
     const g = globalThis as unknown as { __dokadsPglite?: unknown }
     g.__dokadsPglite ??= new PGlite(dir)
@@ -46,7 +59,7 @@ function createDb(): NeonHttpDatabase<typeof schema> {
       typeof schema
     >
   }
-  return drizzle(neon(url!), { schema })
+  return drizzle(neon(url), { schema })
 }
 
 const g = globalThis as unknown as { __dokadsDb?: NeonHttpDatabase<typeof schema> }

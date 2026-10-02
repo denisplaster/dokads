@@ -15,6 +15,7 @@ import { AUDIENCE_META, EVENT_TYPES, STATUS_META, formatEventDate } from '../dat
 import type { DokEvent } from '../data/events'
 import type { Region } from '../data/regions'
 import { RegistrationForm } from '../components/forms/RegistrationForm'
+import { CONTACT_EMAIL, isStatic } from '../lib/site-mode'
 
 export function EventPage({ event, region }: { event: DokEvent; region?: Region }) {
   const status = STATUS_META[event.status]
@@ -175,13 +176,39 @@ export function EventPage({ event, region }: { event: DokEvent; region?: Region 
           </div>
 
           <div className="event-detail__form">
-            <RegistrationForm
-              eventSlug={event.slug}
-              audience={event.audience}
-              needsFood={event.needsFoodInfo}
-              guardianConsentUnder={event.rules.guardianConsentUnder}
-              open={registrationOpen}
-            />
+            {isStatic() ? (
+              /* static mode collects nothing — a real address beats a dead form */
+              <PaperCard className="reg-closed" shadow="slab">
+                <h3 className="reg-form__head">Want to come?</h3>
+                <p className="reg-form__notice">
+                  {AUDIENCE_META[event.audience].detail}
+                </p>
+                <p>
+                  Online sign-ups are not open yet. Email us and we will put you on the list by
+                  hand — tell us your name and anything we should know, like access needs.
+                </p>
+                <p style={{ marginTop: 'var(--s-4)' }}>
+                  <a
+                    href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Interested: ${event.title}`)}`}
+                    className="btn btn--red btn--lg btn--block"
+                  >
+                    Email {CONTACT_EMAIL}
+                  </a>
+                </p>
+                <p className="reg-form__foot">
+                  Nothing you send is stored on this website. Ask us to forget you at any time
+                  and that is the end of it.
+                </p>
+              </PaperCard>
+            ) : (
+              <RegistrationForm
+                eventSlug={event.slug}
+                audience={event.audience}
+                needsFood={event.needsFoodInfo}
+                guardianConsentUnder={event.rules.guardianConsentUnder}
+                open={registrationOpen}
+              />
+            )}
           </div>
         </div>
       </ZineSection>
