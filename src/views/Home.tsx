@@ -57,7 +57,7 @@ export function Home({
           </div>
 
           <p className="hero__eyebrow">
-            Your parent’s adoption story may be part of your story too.
+            Your family’s adoption story may be part of your story too.
           </p>
 
           <EditorialHeadline size="display" sentence className="hero__headline">

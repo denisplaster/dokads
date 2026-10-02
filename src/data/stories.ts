@@ -81,6 +81,28 @@ export const stories: Story[] = [
     pullquote: 'Adoption from Korea was never one story. It changed decade by decade.',
     art: 'strip',
     featured: true,
+    sources: [
+      {
+        label: 'NPR (March 2025) — the Truth and Reconciliation Commission’s first adoption findings',
+        href: 'https://www.npr.org/2025/03/27/nx-s1-5341421/south-korea-admits-agencies-mishandled-international-adoptions',
+      },
+      {
+        label: 'ABC News (October 2025) — President Lee apologises for the foreign adoption programme',
+        href: 'https://www.abc.net.au/news/2025-10-03/south-korea-president-apologises-foreign-adoption-programs/105848604',
+      },
+      {
+        label: 'Korea Times (February 2026) — adoptees file complaints with the new commission',
+        href: 'https://www.koreatimes.co.kr/southkorea/globalcommunity/20260226/more-than-300-adoptees-file-complaints-in-koreas-renewed-adoption-probe',
+      },
+      {
+        label: 'Korean Ministry of Foreign Affairs — Hague Adoption Convention ratification',
+        href: 'https://www.mofa.go.kr/eng/brd/m_5676/view.do?seq=322873',
+      },
+      {
+        label: 'IKAA — history of the adoptee Gatherings',
+        href: 'https://www.ikaa.org/ikaa-gatherings/',
+      },
+    ],
     body: [
       'If your parent or grandparent was adopted from Korea, they were part of the largest and longest-running international adoption movement in history. Around 200,000 children were adopted out of South Korea from the 1950s onward — most to the United States, and large numbers to France, Denmark, Sweden, Norway, the Netherlands, Belgium, Germany, Canada, and Australia. Very few families were ever handed the context for how that came to be. This is the short version.',
       'It began with a war. The Korean War (1950–1953) left the peninsula divided and the South devastated, with enormous numbers of children orphaned or separated from family. Among the most vulnerable were mixed-race children born to Korean mothers and foreign soldiers. In a society that traced belonging through paternal bloodlines, these children faced severe stigma, and the earliest overseas adoptions were framed largely as a response to their situation.',
@@ -88,8 +110,9 @@ export const stories: Story[] = [
       '> The emergency ended. The system kept running.',
       'By the 1970s and 1980s, the children leaving Korea were mostly not war orphans. Korea was industrialising at extraordinary speed, but social welfare had not caught up, and the stigma against unmarried mothers was severe — most had no realistic way to keep a child. Domestic adoption was rare and usually secret. Sending children abroad became the path of least resistance, and at the peak in the mid-1980s, more than 8,000 children a year were leaving the country.',
       'The 1988 Seoul Olympics changed the mood. With the world watching, foreign press coverage described Korea — by then a rising industrial power — as a country that exported its own children. The embarrassment was acute, and the government began setting quotas and pledging reductions. The numbers fell through the 1990s and 2000s, though adoptions continued at a smaller scale.',
-      'Meanwhile, the first generations grew up — and came back. From the late 1990s onward, adult adoptees began organising internationally: the first large adoptee Gathering was held in 1999, adoptee-led organisations formed in Seoul and across the West, and returning adoptees became a visible presence in Korea. Adoptee activists also drove legal change. The Special Adoption Law, revised in 2012, required court approval for adoptions, tightened birth registration, and gave adoptees a legal route to request their own records. Post-adoption services — including file access and birth-family search — are now handled by a national body, the National Center for the Rights of the Child (NCRC).',
-      'The reckoning is recent and ongoing. Korea’s Truth and Reconciliation Commission spent 2022 to 2025 investigating hundreds of cases brought by adoptees, and in March 2025 it announced its first findings: in many of the cases examined, children had been documented as orphans when they were not, identities had been switched or fabricated, and proper consent was missing. The commission described the state as responsible for failures of oversight and recommended an official apology. Separately, Korea passed a law in 2023 moving intercountry adoption from private agencies to state responsibility, which took effect in 2025.',
+      'Meanwhile, the first generations grew up — and came back. From the late 1990s onward, adult adoptees began organising internationally: the first large-scale international gathering of Korean adoptees was held in Washington, D.C., in 1999, the first Gathering in Korea followed in 2004, adoptee-led organisations formed in Seoul and across the West, and returning adoptees became a visible presence in Korea. Adoptee activists also drove legal change. The Special Adoption Law, revised in 2012, required court approval for adoptions, tightened birth registration, and gave adoptees a legal route to request their own records. Post-adoption services — including file access and birth-family search — are now handled by a national body, the National Center for the Rights of the Child (NCRC).',
+      'The reckoning is recent and ongoing. Korea’s Truth and Reconciliation Commission spent 2022 to 2025 investigating hundreds of cases brought by adoptees, and in March 2025 it announced its first findings, confirming abuses in 56 cases: children had been documented as orphans when they were not, identities had been switched or fabricated, and proper consent was missing. The commission held the state responsible for failures of oversight and recommended an official apology. In October 2025, President Lee Jae Myung apologised on behalf of the country for the government’s failures in the overseas adoption system. A newly reconstituted Truth and Reconciliation Commission began accepting cases again in February 2026, so the investigation of adoption-related abuses is continuing.',
+      'The system itself has also changed. In 2023, Korea enacted reforms shifting domestic and intercountry adoption toward a state-led public system. The new system took effect in July 2025, and the Hague Adoption Convention entered into force for Korea that October.',
       'Why does any of this matter to a descendant? Because it is not ancient history. The paperwork in your family’s closet was produced by this system, and it may be incomplete or wrong through no fault of anyone in your family. The news from the Truth and Reconciliation Commission lands in living rooms and group chats now, in your parent’s generation and yours. Understanding the history will not answer every question — but it turns a private, confusing story into a shared one with context, which is a very different thing to carry.',
       'Further reading: the books on our Resources page — including work by historians and scholars of Korean adoption — go far deeper than this summary can.',
     ],
@@ -105,8 +128,8 @@ export const stories: Story[] = [
     art: 'grid',
     featured: true,
     body: [
-      'DoKAD is shorthand for descendant of a Korean adoptee — the child, grandchild, or great-grandchild of someone who was adopted from Korea. It is the term this community uses for itself, and if you have never seen it before, that is normal: most people who fit the description have never heard the word.',
-      'The maths behind the term is simple. Around 200,000 children were adopted out of South Korea from the 1950s onward. The first generation are now well into adulthood; many are parents and some are grandparents. That second and third generation — the people who inherited this history without living its first chapter — is who DOKADS is for.',
+      'DoKAD is shorthand for descendant of a Korean adoptee — the child, grandchild, or great-grandchild of someone who was adopted from Korea. It is the term this community uses for itself, and if you have never seen it before, that is normal: most people who fit the description have never heard the word. It is also new and not yet standardised — some research uses it only for the adult children of adoptees — so this is how we use it here, not an official definition.',
+      'The maths behind the term is simple. Around 200,000 children were adopted out of South Korea from the 1950s onward. The earlier generations of adoptees are now well into adulthood; many are parents and some are grandparents. That second and third generation — the people who inherited this history without living its first chapter — is who DOKADS is for.',
       '> The word is a useful handle, not a test. Nobody has to qualify.',
       'Some DoKADs grew up close to Korean culture. Some grew up with almost none of it. Some are mixed race, some are not. Some have birth-family information; most do not. Some parents talk about their adoption constantly; some have never mentioned it once. All of that is inside the word.',
       'Why have a word at all? Because naming an experience makes it findable. Before there was a term, a child of a Korean adoptee wondering about their family history had nothing to search for and nobody obvious to ask. A shared word turns thousands of people quietly carrying the same odd set of facts into a community that can find each other — which is the entire point of this site.',

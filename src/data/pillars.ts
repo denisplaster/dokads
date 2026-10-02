@@ -35,7 +35,7 @@ export const pillars: Pillar[] = [
     ],
     body: [
       'A DoKAD is a descendant of a Korean adoptee — most often the child of someone adopted from Korea, sometimes the grandchild or great-grandchild.',
-      'That is the whole definition. It does not require speaking Korean, having visited Korea, being read as Korean, or knowing anything about your family’s history before the adoption. Plenty of DoKADs are mixed race. Plenty grew up in towns where nobody else looked like them, and plenty grew up somewhere it was never remarked on at all.',
+      'That is how we use the term here. The word is new and still settling, and not everyone draws the line in the same place — but on this site it does not require speaking Korean, having visited Korea, being read as Korean, or knowing anything about your family’s history before the adoption. Plenty of DoKADs are mixed race. Plenty grew up in towns where nobody else looked like them, and plenty grew up somewhere it was never remarked on at all.',
       'It also does not require having a settled relationship with any of it. People arrive here curious, angry, indifferent, homesick for a place they have never been, or just looking for someone with the same weird set of facts. All of that counts.',
     ],
   },
@@ -52,12 +52,12 @@ export const pillars: Pillar[] = [
       'Began in the 1950s',
       'Largest programme of its kind',
       'Mostly to the US and Europe',
-      'The first generation are adults now',
+      'Many adoptees are parents now',
     ],
     body: [
       'From the 1950s onward, roughly 200,000 children were adopted out of South Korea — the largest and longest-running international adoption programme in the world. Most went to families in the United States, and many to Western Europe and Australia.',
       'The reasons shifted decade to decade: war and its aftermath, poverty, the treatment of mixed-race children, the stigma attached to unmarried mothers, and a set of policies and agencies that made sending children abroad the path of least resistance. Korea has since tightened its adoption laws considerably, and adoptees themselves drove much of that change.',
-      'What matters for this site is the part that comes next. The first generation are adults now. Many are parents. The questions did not end with them — they moved.',
+      'What matters for this site is the part that comes next. The earlier generations of Korean adoptees are adults now. Many are parents, and some are grandparents. The questions did not end with them — they moved.',
     ],
   },
   {
@@ -97,7 +97,7 @@ export const pillars: Pillar[] = [
       'Nobody at school gets it',
     ],
     body: [
-      'A lot of DoKADs grow up holding a story they did not live through and cannot verify. The family tree has a hard stop. The medical history is blank. Someone at school assigns a heritage project and it lands badly, and there is no good short answer to give the teacher.',
+      'For some DoKADs, growing up means holding a story they did not live through and may not be able to verify. The family tree has a hard stop. The medical history is blank. Someone at school assigns a heritage project and it lands badly, and there is no good short answer to give the teacher.',
       'Some carry visible Korean ancestry without the cultural inheritance that people expect to come with it. Some carry none of the visibility and all of the connection. Some are close to a parent who does not want to talk about it, and some are close to a parent who cannot stop.',
       'None of that is a crisis and none of it needs fixing. But it is real, and it is much easier in company than alone. That is the entire premise of DOKADS.',
     ],

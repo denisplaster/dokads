@@ -632,10 +632,10 @@
 .gentree__node {
   position: relative;
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 1fr auto;
   grid-template-areas:
-    'gen label toggle'
-    'gen sub toggle';
+    'label toggle'
+    'sub toggle';
   align-items: center;
   gap: 0 var(--s-4);
   width: 100%;
@@ -660,14 +660,6 @@
 }
 .gentree__node--you {
   border-width: var(--bd-slab);
-}
-.gentree__gen {
-  grid-area: gen;
-  font-family: var(--font-display);
-  font-size: 1.6rem;
-  line-height: 1;
-  -webkit-text-stroke: 1.5px currentColor;
-  -webkit-text-fill-color: transparent;
 }
 .gentree__label {
   grid-area: label;

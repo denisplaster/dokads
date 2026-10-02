@@ -67,7 +67,7 @@ const GENERATIONS: Gen[] = [
   },
   {
     id: 'future',
-    label: 'Future generations',
+    label: 'Later descendants',
     sub: 'Still DoKADs',
     tone: 'lavender',
     detail:
@@ -101,7 +101,6 @@ function GenerationTree() {
               onClick={() => setOpen(open === g.id ? null : g.id)}
               style={rot('hair', i % 2 === 0 ? 1 : -1)}
             >
-              <span className="gentree__gen">Gen {i + 1}</span>
               <span className="gentree__label">{g.label}</span>
               <span className="gentree__sub">{g.sub}</span>
               {g.isYou && <span className="gentree__flag">could be you</span>}

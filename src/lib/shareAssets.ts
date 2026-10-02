@@ -256,7 +256,7 @@ export function buildAsset(kind: AssetKind): { svg: string; w: number; h: number
     ['Korean adoptee', 'your parent or grandparent'],
     ['Child of a Korean adoptee', 'a DoKAD'],
     ['Grandchild of a Korean adoptee', 'also a DoKAD'],
-    ['Future generations', 'still DoKADs'],
+    ['Later descendants', 'still DoKADs'],
   ]
   return {
     w: W,
