@@ -1,15 +1,24 @@
+import { AsyncLocalStorage } from 'node:async_hooks'
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { nextCookies } from 'better-auth/next-js'
 import { db } from '@/db'
 import * as schema from '@/db/schema'
-import { siteUrl } from './site-url'
+import { siteUrl, trustedOrigins } from './site-url'
 import { send } from './email/send'
 import { resetPasswordEmail } from './email/templates'
 
 if (!process.env.BETTER_AUTH_SECRET) {
   throw new Error('BETTER_AUTH_SECRET is not set. Generate one with: openssl rand -base64 32')
 }
+
+/**
+ * When an admin creates a "set your password" link for a new or locked-out
+ * editor, the link is handed back to that admin to pass on, rather than
+ * emailed. Better Auth calls sendResetPassword inside the same request, so a
+ * capture slot set around that call (see app/actions/cms.ts) receives it.
+ */
+export const resetLinkCapture = new AsyncLocalStorage<{ url?: string }>()
 
 /**
  * Admin authentication.
@@ -34,7 +43,12 @@ export function makeAuth({ allowSignUp = false }: { allowSignUp?: boolean } = {}
     emailAndPassword: {
       enabled: true,
       disableSignUp: !allowSignUp,
+      // the sign-up instance creates accounts for someone else (admin:create,
+      // Editors → Add). It must never sign anyone in as the new account.
+      autoSignIn: !allowSignUp,
       minPasswordLength: 12,
+      // long enough for a set-password link an admin passes on by hand
+      resetPasswordTokenExpiresIn: 60 * 60 * 48,
       /**
        * Without this an admin who forgets their password has no way back in
        * except shell access to re-run admin:create. Awaited rather than
@@ -42,6 +56,11 @@ export function makeAuth({ allowSignUp = false }: { allowSignUp?: boolean } = {}
        * nobody sits waiting for a link that was never sent.
        */
       sendResetPassword: async ({ user, url }) => {
+        const capture = resetLinkCapture.getStore()
+        if (capture) {
+          capture.url = url
+          return
+        }
         const { subject, html, text } = resetPasswordEmail({ url, site: siteUrl() })
         const res = await send({ to: user.email, subject, html, text })
         // send() resolves rather than throws so a failed confirmation can never
@@ -67,7 +86,10 @@ export function makeAuth({ allowSignUp = false }: { allowSignUp?: boolean } = {}
     },
     secret: process.env.BETTER_AUTH_SECRET,
     baseURL: siteUrl(),
-    plugins: [nextCookies()],
+    trustedOrigins: trustedOrigins(),
+    // nextCookies writes session cookies onto the current response; the
+    // sign-up instance runs inside an admin's request and must not touch theirs
+    plugins: allowSignUp ? [] : [nextCookies()],
   })
 }
 

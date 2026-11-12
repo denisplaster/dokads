@@ -3,6 +3,7 @@ import { neon } from '@neondatabase/serverless'
 import { drizzle } from 'drizzle-orm/neon-http'
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http'
 import * as schema from './schema'
+import { databaseUrlFromEnv } from './url'
 
 /**
  * Checked when a connection is first needed, not at import.
@@ -13,12 +14,12 @@ import * as schema from './schema'
  * run — so the check belongs with the connection.
  */
 function requireUrl(): string {
-  const url = process.env.DATABASE_URL
+  const url = databaseUrlFromEnv()
   if (!url) {
     throw new Error(
       'DATABASE_URL is not set.\n' +
-        '  · The site is in static mode (SITE_MODE is not "full"), so nothing\n' +
-        '    should be querying the database — this is a bug if you see it.\n' +
+        '  · In static mode (SITE_MODE unset) nothing should be querying the\n' +
+        '    database — this is a bug if you see it.\n' +
         '  · On Vercel: add the Neon integration and it is injected for you.\n' +
         '  · Locally:   copy .env.example to .env, then either paste a Neon branch\n' +
         '               connection string or use DATABASE_URL="pglite://.data/dev"\n' +

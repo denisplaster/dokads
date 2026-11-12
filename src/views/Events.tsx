@@ -14,10 +14,15 @@ import {
   ZineSection,
   rot,
 } from '../components/zine'
-import { AUDIENCE_META, EVENT_TYPES, STATUS_META, formatEventDate } from '../data/events'
+import { AUDIENCE_META, formatEventDate } from '../data/events'
 import type { DokEvent, EventAudience, EventType } from '../data/events'
 import type { Region } from '../data/regions'
 import { contactMailto } from '../lib/site-mode'
+import { Rich } from '../components/Rich'
+import { vocab } from '../content/vocab'
+import type { Copy } from '../content/copy'
+
+export type EventsText = Copy<'events'>
 
 type FormatFilter = 'all' | 'online' | 'in person'
 
@@ -25,11 +30,14 @@ export function Events({
   upcoming,
   past,
   regions,
+  text: c,
 }: {
   upcoming: DokEvent[]
   past: DokEvent[]
   regions: Region[]
+  text: EventsText
 }) {
+  const w = c.wall
   const all = upcoming
   const regionName = (slug: string) => regions.find((r) => r.slug === slug)?.name ?? 'Online'
   const [type, setType] = useState<EventType | 'all'>('all')
@@ -58,18 +66,14 @@ export function Events({
         <div className="wrap wrap--wide">
           <IssueLabel />
           <EditorialHeadline size="display" className="page-hero__head">
-            Coming{' '}
-            <br />
-            up.
+            <Rich text={c.hero.headline} />
           </EditorialHeadline>
           <p className="lead page-hero__lead">
-            {all.length
-              ? 'Coffee meetups, online gatherings, guided conversations, and the occasional workshop. Small, mostly free, and shaped by whoever turns up.'
-              : 'Nothing is on the calendar right now. The first DoKAD meetup happened in September — here is how that went, and how to hear about the next one first.'}
+            <Rich text={all.length ? c.hero.leadUpcoming : c.hero.leadNone} />
           </p>
           <p className="page-hero__aside">
             <HandwrittenNote color="ink" tiltDir={1}>
-              weekends + evenings, mostly — you told us
+              {c.hero.note}
             </HandwrittenNote>
           </p>
         </div>
@@ -80,11 +84,9 @@ export function Events({
         <div className="wrap wrap--wide">
           <PaperCard className="editor-note" tilt="hair" tiltDir={-1} shadow="lift">
             <TapeStrip position="top-right" variant="kraft" width={110} />
-            <span className="eyebrow">Read the label</span>
+            <span className="eyebrow">{c.key.eyebrow}</span>
             <p>
-              Every event here shows where it actually stands. A real plan can still be
-              tentative — date or venue not settled — and when it is, it says so. Ideas that are
-              not plans yet are not listed at all.
+              <Rich text={c.key.body} />
             </p>
             <ul className="events-key__list">
               {(
@@ -93,9 +95,9 @@ export function Events({
                 <li key={s} style={rot('hair', i % 2 === 0 ? 1 : -1)}>
                   <span className={`status-badge status-badge--${s.replace(/\s+/g, '-')}`}>
                     <span className="status-badge__dot" aria-hidden="true" />
-                    {STATUS_META[s].label}
+                    {vocab.status(s).label}
                   </span>
-                  <span className="events-key__note">{STATUS_META[s].note}</span>
+                  <span className="events-key__note">{vocab.status(s).note}</span>
                 </li>
               ))}
             </ul>
@@ -108,48 +110,45 @@ export function Events({
         <ZineSection tone="yellow" torn="both" className="events-flagship">
           <div className="wrap wrap--wide events-flagship__inner">
             <div>
-              <SectionHead number="01" kicker="Last time" />
+              <SectionHead number="01" kicker={c.latest.kicker} />
               <EditorialHeadline size={1}>{latest.title}</EditorialHeadline>
               <p className="lead" style={{ marginTop: 'var(--s-4)' }}>
                 {latest.recap ?? latest.blurb}
               </p>
               <dl className="events-flagship__facts">
                 <div>
-                  <dt>When</dt>
+                  <dt>{c.latest.when}</dt>
                   <dd>{formatEventDate(latest.date, { long: true })}</dd>
                 </div>
                 <div>
-                  <dt>Time</dt>
+                  <dt>{c.latest.time}</dt>
                   <dd>
                     {latest.time} {latest.timezone}
                   </dd>
                 </div>
                 <div>
-                  <dt>Where</dt>
+                  <dt>{c.latest.where}</dt>
                   <dd>{latest.location}</dd>
                 </div>
                 <div>
-                  <dt>Who</dt>
+                  <dt>{c.latest.who}</dt>
                   <dd>
-                    {AUDIENCE_META[latest.audience].label} · {latest.agePolicy}
+                    {vocab.audience(latest.audience).label} · {latest.agePolicy}
                   </dd>
                 </div>
                 {latest.host && (
                   <div>
-                    <dt>Hosted by</dt>
+                    <dt>{c.latest.host}</dt>
                     <dd>{latest.host.name}</dd>
                   </div>
                 )}
               </dl>
               <div className="events-flagship__ctas">
                 <Link href={`/events/${latest.slug}`} className="btn btn--red btn--lg">
-                  About this one
+                  {c.latest.cta}
                 </Link>
-                <a
-                  href={contactMailto('Interested in the next DoKAD meetup')}
-                  className="btn btn--ghost"
-                >
-                  Tell us you want the next one
+                <a href={contactMailto(c.latest.nextSubject)} className="btn btn--ghost">
+                  {c.latest.next}
                 </a>
               </div>
             </div>
@@ -158,7 +157,7 @@ export function Events({
                 <FlyerEventCard event={latest} index={1} stub />
               </Link>
               <HandwrittenNote color="red" tiltDir={1} className="events-flagship__scrawl">
-                the first one happened!
+                {c.latest.scrawl}
               </HandwrittenNote>
             </div>
           </div>
@@ -168,39 +167,35 @@ export function Events({
       {/* the wall */}
       <ZineSection tone="paper" className="events-wall">
         <div className="wrap wrap--wide">
-          <SectionHead number="02" kicker="Coming up" />
+          <SectionHead number="02" kicker={w.kicker} />
 
           {all.length === 0 ? (
             <PaperCard className="empty" tilt="nudge">
-              <p>
-                <strong>Nothing scheduled right now.</strong> When the next gathering is real —
-                date, place and host confirmed — it goes here first. Ideas that are not plans yet
-                do not get listed.
-              </p>
-              <p style={{ marginTop: 'var(--s-3)' }}>
-                Want a say in what happens next? Tell us what would suit you: a time, a kind of
-                gathering, a part of the world.
-              </p>
+              {w.empty.map((para, i) => (
+                <p key={para.slice(0, 32)} style={i ? { marginTop: 'var(--s-3)' } : undefined}>
+                  <Rich text={para} />
+                </p>
+              ))}
               <a
-                href={contactMailto('Event idea for DOKADS')}
+                href={contactMailto(w.ideaSubject)}
                 className="btn btn--red"
                 style={{ marginTop: 'var(--s-4)' }}
               >
-                Email us an idea
+                {w.emptyCta}
               </a>
             </PaperCard>
           ) : (
           <>
           <div className="filters">
             <div className="filters__row" role="group" aria-label="Filter by event type">
-              <span className="filters__label">Type</span>
+              <span className="filters__label">{w.filterType}</span>
               <button
                 type="button"
                 className={`filterbar__chip ${type === 'all' ? 'is-on' : ''}`}
                 aria-pressed={type === 'all'}
                 onClick={() => setType('all')}
               >
-                All
+                {w.filterAll}
               </button>
               {usedTypes.map((t, i) => (
                 <button
@@ -211,13 +206,13 @@ export function Events({
                   onClick={() => setType(t)}
                   style={rot('hair', i % 2 === 0 ? 1 : -1)}
                 >
-                  {EVENT_TYPES[t]}
+                  {vocab.eventType(t)}
                 </button>
               ))}
             </div>
 
             <div className="filters__row" role="group" aria-label="Filter by format">
-              <span className="filters__label">Format</span>
+              <span className="filters__label">{w.filterFormat}</span>
               {(['all', 'online', 'in person'] as FormatFilter[]).map((f) => (
                 <button
                   key={f}
@@ -226,20 +221,20 @@ export function Events({
                   aria-pressed={format === f}
                   onClick={() => setFormat(f)}
                 >
-                  {f === 'all' ? 'All' : f}
+                  {f === 'all' ? w.filterAll : f === 'online' ? w.formatOnline : w.formatInPerson}
                 </button>
               ))}
             </div>
 
             <div className="filters__row" role="group" aria-label="Filter by who it is for">
-              <span className="filters__label">Who it’s for</span>
+              <span className="filters__label">{w.filterWho}</span>
               <button
                 type="button"
                 className={`filterbar__chip ${audience === 'all' ? 'is-on' : ''}`}
                 aria-pressed={audience === 'all'}
                 onClick={() => setAudience('all')}
               >
-                All
+                {w.filterAll}
               </button>
               {(Object.keys(AUDIENCE_META) as EventAudience[]).map((a, i) => (
                 <button
@@ -250,28 +245,27 @@ export function Events({
                   onClick={() => setAudience(a)}
                   style={rot('hair', i % 2 === 0 ? -1 : 1)}
                 >
-                  {AUDIENCE_META[a].label}
+                  {vocab.audience(a).label}
                 </button>
               ))}
             </div>
           </div>
 
           <p className="filterbar__count" aria-live="polite">
-            {list.length} {list.length === 1 ? 'event' : 'events'}
+            {list.length} {list.length === 1 ? w.one : w.many}
           </p>
 
           {list.length === 0 ? (
             <PaperCard className="empty" tilt="nudge">
               <p>
-                <strong>Nothing matches that combination yet.</strong> Tell us what you want and
-                we will try to make it exist.
+                <Rich text={w.noMatch} />
               </p>
               <a
-                href={contactMailto('Event idea for DOKADS')}
+                href={contactMailto(w.ideaSubject)}
                 className="btn btn--red"
                 style={{ marginTop: 'var(--s-4)' }}
               >
-                Request an event
+                {w.noMatchCta}
               </a>
             </PaperCard>
           ) : (
@@ -292,7 +286,7 @@ export function Events({
           {earlier.length > 0 && (
             <>
               <h3 className="event-detail__sub" style={{ marginTop: 'var(--s-8)' }}>
-                Earlier
+                {w.earlier}
               </h3>
               <div className="events-wall__grid">
                 {earlier.map((e, i) => (
@@ -310,30 +304,17 @@ export function Events({
       <ZineSection tone="blue" torn="top" className="events-venues">
         <div className="wrap wrap--wide events-venues__inner">
           <div>
-            <SectionHead number="03" kicker="On venues" />
+            <SectionHead number="03" kicker={c.venues.kicker} />
             <div className="prose">
-              <p>
-                A lot of adoptee and diaspora events default to breweries. That does not work
-                for everyone here — some of you are under 21, some do not drink, and some just
-                want to hear the person across the table.
-              </p>
-              <p>
-                So the default is coffee shops, libraries, community centres, parks,
-                restaurants, universities, and video calls. Alcohol-serving venues are an
-                option, not the baseline.
-              </p>
+              {c.venues.body.map((para) => (
+                <p key={para.slice(0, 32)}>
+                  <Rich text={para} />
+                </p>
+              ))}
             </div>
           </div>
           <div className="events-venues__stickers">
-            {[
-              'Coffee shop',
-              'Library',
-              'Community center',
-              'Park',
-              'Restaurant',
-              'University',
-              'Online',
-            ].map((v, i) => (
+            {c.venues.stickers.map((v, i) => (
               <Sticker
                 key={v}
                 color={

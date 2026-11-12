@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
+import { copy } from '@/content/copy'
 import { Learn } from '@/views/Learn'
 
+const meta = copy('learn').meta
+
 export const metadata: Metadata = {
-  title: 'The big questions',
-  description:
-    'Who DoKADs are, what Korean adoption was, where the community is, and why any of it matters for the second generation.',
+  title: meta.title,
+  description: meta.description,
 }
 
 export default function Page() {

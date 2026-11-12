@@ -1,6 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireStaff } from '@/lib/auth-guard'
+import { collectsData } from '@/lib/site-mode'
+import { PublishBar } from '@/components/admin/PublishBar'
+import { db } from '@/db'
+import { eventRegistrations, members, submissions } from '@/db/schema'
 import { SignOutButton } from './sign-out-button'
 
 export const metadata: Metadata = {
@@ -8,20 +12,44 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 }
 
-const NAV = [
+/** Content — always present when the admin exists. */
+const CONTENT_NAV = [
   { href: '/admin', label: 'Overview' },
+  { href: '/admin/pages', label: 'Pages' },
   { href: '/admin/events', label: 'Events' },
-  { href: '/admin/registrations', label: 'Registrations' },
-  { href: '/admin/members', label: 'Members' },
-  { href: '/admin/inbox', label: 'Inbox' },
   { href: '/admin/stories', label: 'Stories' },
   { href: '/admin/resources', label: 'Resources' },
   { href: '/admin/regions', label: 'Regions' },
 ] as const
 
+/**
+ * Personal data — shown when the site collects it (SITE_MODE=full), and also
+ * whenever any is still stored from a time it did, so that a request to
+ * delete someone's data can always be carried out.
+ */
+const PEOPLE_NAV = [
+  { href: '/admin/registrations', label: 'Registrations' },
+  { href: '/admin/members', label: 'Members' },
+  { href: '/admin/inbox', label: 'Inbox' },
+] as const
+
+async function holdsPersonalData(): Promise<boolean> {
+  const [m, r, s] = await Promise.all([
+    db.select({ id: members.id }).from(members).limit(1),
+    db.select({ id: eventRegistrations.id }).from(eventRegistrations).limit(1),
+    db.select({ id: submissions.id }).from(submissions).limit(1),
+  ])
+  return m.length + r.length + s.length > 0
+}
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // the real gate — middleware only checks that a cookie exists
   const staff = await requireStaff()
+  const NAV = [
+    ...CONTENT_NAV,
+    ...(collectsData() || (await holdsPersonalData()) ? PEOPLE_NAV : []),
+    ...(staff.role === 'admin' ? [{ href: '/admin/editors', label: 'Editors' } as const] : []),
+  ]
 
   return (
     <div className="adm">
@@ -47,7 +75,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <SignOutButton />
         </div>
       </header>
-      <main className="adm-main">{children}</main>
+      <main className="adm-main">
+        <PublishBar />
+        {children}
+      </main>
     </div>
   )
 }

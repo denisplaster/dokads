@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Anton, Archivo, Caveat, Permanent_Marker } from 'next/font/google'
 import { siteUrl } from '@/lib/site-url'
+import { copy } from '@/content/copy'
 import '@/styles/tokens.css'
 import '@/styles/base.css'
 import '@/styles/zine.css'
@@ -32,20 +33,20 @@ const marker = Permanent_Marker({
   display: 'swap',
 })
 
+const meta = copy('shared').meta
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
   title: {
-    default: 'DOKADS — For the next generation of Korean adoption stories',
+    default: meta.title,
     template: '%s — DOKADS',
   },
-  description:
-    'DOKADS is a community and learning hub for children, grandchildren, and other descendants of Korean adoptees.',
+  description: meta.description,
   openGraph: {
     type: 'website',
     siteName: 'DOKADS',
-    title: 'DOKADS / Issue 001',
-    description:
-      'Was your parent or grandparent adopted from Korea? A community for descendants of Korean adoptees.',
+    title: meta.shareTitle,
+    description: meta.shareDescription,
   },
   twitter: { card: 'summary_large_image' },
   icons: { icon: '/favicon.svg' },

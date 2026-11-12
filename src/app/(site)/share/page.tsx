@@ -1,12 +1,14 @@
 import type { Metadata } from 'next'
+import { copy } from '@/content/copy'
 import { Share } from '@/views/Share'
 
+const meta = copy('share').meta
+
 export const metadata: Metadata = {
-  title: 'Share DOKADS',
-  description:
-    'Copy you can send, graphics you can post, and a flyer you can print. An invitation, not an assignment.',
+  title: meta.title,
+  description: meta.description,
 }
 
 export default function Page() {
-  return <Share />
+  return <Share text={copy('share')} />
 }

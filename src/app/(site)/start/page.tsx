@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
+import { copy } from '@/content/copy'
 import { Start } from '@/views/Start'
 
+const meta = copy('start').meta
+
 export const metadata: Metadata = {
-  title: 'Start here',
-  description:
-    'Six ways into DOKADS. Pick whichever one sounds most like you today — there is no correct order.',
+  title: meta.title,
+  description: meta.description,
 }
 
 export default function Page() {

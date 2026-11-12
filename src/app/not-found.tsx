@@ -1,9 +1,12 @@
 import type { Metadata } from 'next'
 import { NotFound } from '@/views/NotFound'
+import { copy } from '@/content/copy'
+
+const t = copy('shared').notFound
 
 export const metadata: Metadata = {
-  title: 'Not here',
-  description: 'This page does not exist, or it moved, or it was never made.',
+  title: t.metaTitle,
+  description: t.metaDescription,
 }
 
 export default function NotFoundPage() {

@@ -4,6 +4,7 @@ import {
   integer,
   jsonb,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uniqueIndex,
@@ -150,6 +151,13 @@ export const stories = pgTable('stories', {
   status: text('status').notNull().default('draft'),
   /** layout copy rather than a real contribution — shown with a visible flag */
   isPlaceholder: boolean('is_placeholder').notNull().default(false),
+  /** legal / immigration / citizenship content — see LEGAL_RULES in data/topics.ts */
+  sensitive: boolean('sensitive').notNull().default(false),
+  /** ISO date the piece was last checked against current official sources */
+  lastReviewed: text('last_reviewed'),
+  sources: jsonb('sources').$type<{ label: string; href: string }[]>().notNull().default([]),
+  /** lower comes first; the first featured story leads the homepage */
+  sortOrder: integer('sort_order').notNull().default(100),
   publishedAt: timestamp('published_at'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
@@ -169,6 +177,35 @@ export const resources = pgTable('resources', {
   published: boolean('published').notNull().default(true),
   sortOrder: integer('sort_order').notNull().default(100),
   createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
+/**
+ * Editable page text. The defaults live in code (src/content/pages); a row
+ * here exists only where an editor has changed a field, so deleting a row
+ * restores the default.
+ */
+export const pageCopy = pgTable(
+  'page_copy',
+  {
+    page: text('page').notNull(),
+    /** "<section>.<field>" */
+    key: text('key').notNull(),
+    value: jsonb('value').$type<unknown>().notNull(),
+    updatedBy: text('updated_by'),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.page, t.key] })],
+)
+
+/**
+ * Small bookkeeping values: when content last changed, when a publish was
+ * requested, which snapshot the live site was built from, and the one-time
+ * import of the original site content.
+ */
+export const siteMeta = pgTable('site_meta', {
+  key: text('key').primaryKey(),
+  value: jsonb('value').$type<Record<string, unknown>>().notNull(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
 
@@ -264,3 +301,4 @@ export type DbResource = typeof resources.$inferSelect
 export type DbMember = typeof members.$inferSelect
 export type DbEventRegistration = typeof eventRegistrations.$inferSelect
 export type DbSubmission = typeof submissions.$inferSelect
+export type DbPageCopy = typeof pageCopy.$inferSelect

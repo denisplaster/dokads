@@ -16,8 +16,20 @@ import {
 import { AUDIENCES, FORMATS } from '../data/resources'
 import { contactMailto } from '../lib/site-mode'
 import type { Audience, Resource, ResourceFormat } from '../data/resources'
+import { Rich } from '../components/Rich'
+import { vocab } from '../content/vocab'
+import type { Copy } from '../content/copy'
 
-export function Resources({ resources }: { resources: Resource[] }) {
+export type ResourcesText = Copy<'resources'>
+
+export function Resources({
+  resources,
+  text: c,
+}: {
+  resources: Resource[]
+  text: ResourcesText
+}) {
+  const t = c.list
   const [format, setFormat] = useState<ResourceFormat | 'all'>('all')
   const [audience, setAudience] = useState<Audience | 'all'>('all')
 
@@ -37,17 +49,14 @@ export function Resources({ resources }: { resources: Resource[] }) {
         <div className="wrap wrap--wide">
           <IssueLabel />
           <EditorialHeadline size="display" className="page-hero__head">
-            The reading{' '}
-            <br />
-            pile.
+            <Rich text={c.hero.headline} />
           </EditorialHeadline>
           <p className="lead page-hero__lead">
-            Not a database — a set of shelves the community fills in. Books, films, podcasts,
-            organisations, and the practical stuff nobody hands you.
+            <Rich text={c.hero.lead} />
           </p>
           <p className="page-hero__aside">
             <HandwrittenNote color="red" tiltDir={1}>
-              recommend something ↓
+              {c.hero.note}
             </HandwrittenNote>
           </p>
         </div>
@@ -57,36 +66,30 @@ export function Resources({ resources }: { resources: Resource[] }) {
         <div className="wrap wrap--wide">
           <PaperCard className="editor-note" tilt="hair" tiltDir={-1} shadow="lift" ruled>
             <TapeStrip position="top-left" variant="kraft" width={120} />
-            <span className="eyebrow">How this list works</span>
-            <p>
-              <strong>Everything named below is real</strong> — books and films you can find at
-              a library or bookshop, and organisations whose links go where they claim.
-              Shelves marked <em>open call</em> are ones we are honestly still collecting for;
-              the suggestion form below keeps this page growing.
-            </p>
-            <p>
-              Anything about immigration, citizenship, visas, or law gets checked and dated
-              before it goes up — see how we handle that on{' '}
-              <Link href="/learn#topics">the learn page</Link>.
-            </p>
+            <span className="eyebrow">{c.note.eyebrow}</span>
+            {c.note.body.map((para) => (
+              <p key={para.slice(0, 32)}>
+                <Rich text={para} />
+              </p>
+            ))}
           </PaperCard>
         </div>
       </ZineSection>
 
       <ZineSection tone="bright" torn="both" className="resources-list">
         <div className="wrap wrap--wide">
-          <SectionHead number="01" kicker="Browse the shelves" />
+          <SectionHead number="01" kicker={t.kicker} />
 
           <div className="filters">
             <div className="filters__row" role="group" aria-label="Filter by format">
-              <span className="filters__label">Format</span>
+              <span className="filters__label">{t.format}</span>
               <button
                 type="button"
                 className={`filterbar__chip ${format === 'all' ? 'is-on' : ''}`}
                 aria-pressed={format === 'all'}
                 onClick={() => setFormat('all')}
               >
-                Everything
+                {t.formatAll}
               </button>
               {(Object.keys(FORMATS) as ResourceFormat[]).map((f, i) => (
                 <button
@@ -97,20 +100,20 @@ export function Resources({ resources }: { resources: Resource[] }) {
                   onClick={() => setFormat(f)}
                   style={rot('hair', i % 2 === 0 ? 1 : -1)}
                 >
-                  {FORMATS[f].verb}
+                  {vocab.format(f).verb}
                 </button>
               ))}
             </div>
 
             <div className="filters__row" role="group" aria-label="Filter by who it is for">
-              <span className="filters__label">Who for</span>
+              <span className="filters__label">{t.who}</span>
               <button
                 type="button"
                 className={`filterbar__chip ${audience === 'all' ? 'is-on' : ''}`}
                 aria-pressed={audience === 'all'}
                 onClick={() => setAudience('all')}
               >
-                Anyone
+                {t.whoAll}
               </button>
               {(Object.keys(AUDIENCES) as Audience[]).map((a, i) => (
                 <button
@@ -121,14 +124,14 @@ export function Resources({ resources }: { resources: Resource[] }) {
                   onClick={() => setAudience(a)}
                   style={rot('hair', i % 2 === 0 ? -1 : 1)}
                 >
-                  {AUDIENCES[a]}
+                  {vocab.resourceAudience(a)}
                 </button>
               ))}
             </div>
           </div>
 
           <p className="filterbar__count" aria-live="polite">
-            {list.length} {list.length === 1 ? 'shelf' : 'shelves'}
+            {list.length} {list.length === 1 ? t.one : t.many}
           </p>
 
           <div className="resources-grid">
@@ -145,12 +148,14 @@ export function Resources({ resources }: { resources: Resource[] }) {
                     </Sticker>
                   </span>
                 )}
-                <span className="res-card__format">{FORMATS[r.format].verb}</span>
+                <span className="res-card__format">{vocab.format(r.format).verb}</span>
                 <h3 className="res-card__title">{r.title}</h3>
-                <p className="res-card__blurb">{r.blurb}</p>
+                <p className="res-card__blurb">
+                  <Rich text={r.blurb} />
+                </p>
                 <div className="res-card__foot">
                   <span className="res-card__audience">
-                    {r.audience.map((a) => AUDIENCES[a]).join(' · ')}
+                    {r.audience.map((a) => vocab.resourceAudience(a)).join(' · ')}
                   </span>
                   {r.link ? (
                     <a
@@ -159,14 +164,12 @@ export function Resources({ resources }: { resources: Resource[] }) {
                       target="_blank"
                       rel="noreferrer"
                     >
-                      Visit ↗
+                      {t.visit}
                     </a>
                   ) : r.status === 'listed' ? (
-                    <span className="res-card__status res-card__status--listed">
-                      Library · bookshop
-                    </span>
+                    <span className="res-card__status res-card__status--listed">{t.listed}</span>
                   ) : (
-                    <span className="res-card__status">Open call</span>
+                    <span className="res-card__status">{t.openCall}</span>
                   )}
                 </div>
               </article>
@@ -178,22 +181,16 @@ export function Resources({ resources }: { resources: Resource[] }) {
       <ZineSection tone="ink" id="suggest" torn="top" className="resources-suggest">
         <div className="wrap wrap--wide resources-suggest__inner">
           <div>
-            <SectionHead number="02" kicker="Suggest something" />
+            <SectionHead number="02" kicker={c.suggest.kicker} />
             <EditorialHeadline size={1}>
-              What got you{' '}
-              <br />
-              through?
+              <Rich text={c.suggest.headline} />
             </EditorialHeadline>
             <div className="prose" style={{ marginTop: 'var(--s-5)' }}>
-              <p>
-                A book, a film, a podcast episode, an organisation, a single blog post from
-                2011. If it helped you understand your family, your parent, Korea, or yourself,
-                it belongs on a shelf here.
-              </p>
-              <p>
-                Tell us which shelf, what it is, and one line on why. We will credit you or not,
-                whichever you prefer.
-              </p>
+              {c.suggest.body.map((para) => (
+                <p key={para.slice(0, 32)}>
+                  <Rich text={para} />
+                </p>
+              ))}
             </div>
           </div>
           <div className="resources-suggest__stickers">
@@ -204,14 +201,11 @@ export function Resources({ resources }: { resources: Resource[] }) {
                 large
                 tiltDir={i % 2 === 0 ? 1 : -1}
               >
-                {FORMATS[f].verb}
+                {vocab.format(f).verb}
               </Sticker>
             ))}
-            <a
-              href={contactMailto('Resource suggestion for DOKADS')}
-              className="btn btn--yellow btn--lg"
-            >
-              Send a recommendation
+            <a href={contactMailto(c.suggest.subject)} className="btn btn--yellow btn--lg">
+              {c.suggest.cta}
             </a>
           </div>
         </div>

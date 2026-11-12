@@ -13,6 +13,7 @@ const ART = ['cut', 'arc', 'grid', 'halftone', 'strip', 'stack']
 export function StoryForm({ story }: { story?: DbStory }) {
   const [status, setStatus] = useState(story?.status ?? 'draft')
   const [placeholder, setPlaceholder] = useState(story?.isPlaceholder ?? false)
+  const [sensitive, setSensitive] = useState(story?.sensitive ?? false)
   const [error, setError] = useState<string | null>(null)
   const [pending, start] = useTransition()
   const router = useRouter()
@@ -42,6 +43,10 @@ export function StoryForm({ story }: { story?: DbStory }) {
             bodyText: String(f.get('bodyText') ?? ''),
             status,
             isPlaceholder: placeholder,
+            sensitive,
+            lastReviewed: String(f.get('lastReviewed') ?? ''),
+            sourcesText: String(f.get('sourcesText') ?? ''),
+            sortOrder: String(f.get('sortOrder') ?? '100'),
           })
           if (!res.ok) setError(res.error)
           else {
@@ -149,6 +154,51 @@ export function StoryForm({ story }: { story?: DbStory }) {
           pull quote.
         </span>
       </div>
+
+      <div className="adm-field">
+        <label htmlFor="st-sources">Sources</label>
+        <textarea
+          id="st-sources"
+          name="sourcesText"
+          defaultValue={(story?.sources ?? []).map((s) => `${s.label} | ${s.href}`).join('\n')}
+          placeholder={'One per line, as: Name of the source | https://address'}
+          style={{ minHeight: '5rem' }}
+        />
+        <span className="adm-field__help">
+          Listed at the end of the story. One per line: the name, a | character, then the web
+          address.
+        </span>
+      </div>
+
+      <div className="adm-grid-2">
+        <div className="adm-field">
+          <label htmlFor="st-order">Order</label>
+          <input id="st-order" name="sortOrder" type="number" min={0} defaultValue={story?.sortOrder ?? 100} />
+          <span className="adm-field__help">
+            Lower numbers come first. The first featured story leads the homepage.
+          </span>
+        </div>
+        <label className="adm-check">
+          <input type="checkbox" checked={sensitive} onChange={(e) => setSensitive(e.target.checked)} />
+          Legal, immigration, citizenship or visa content
+        </label>
+      </div>
+
+      {sensitive && (
+        <div className="adm-note">
+          <p>
+            <strong>Legal and immigration stories carry extra rules.</strong> Before this can be
+            published it needs: the date it was last checked, at least one official government
+            source (for Korea, a site ending in .go.kr), no promises that anyone qualifies, and a
+            plain statement that eligibility is not automatic. The site adds the “not legal
+            advice” disclaimer and the review date automatically.
+          </p>
+          <div className="adm-field" style={{ marginTop: 'var(--s-3)' }}>
+            <label htmlFor="st-reviewed">Last checked against official sources on</label>
+            <input id="st-reviewed" name="lastReviewed" type="date" defaultValue={story?.lastReviewed ?? ''} />
+          </div>
+        </div>
+      )}
 
       <div className="adm-grid-2">
         <label className="adm-check">

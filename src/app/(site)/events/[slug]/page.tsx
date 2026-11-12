@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { EventPage } from '@/views/EventPage'
-import { STATUS_META, formatEventDate } from '@/data/events'
+import { formatEventDate } from '@/data/events'
+import { vocab } from '@/content/vocab'
 import { getEventBySlug, getPublicEvents, getPublishedRegion } from '@/lib/content'
 
 /**
@@ -22,7 +23,7 @@ export async function generateMetadata({
   if (!event) return { title: 'Event not found' }
   // the status belongs in the link preview too — a shared link must not
   // imply an event is confirmed when it is not
-  const status = STATUS_META[event.status].label
+  const status = vocab.status(event.status).label
   return {
     title: `${event.title} — ${status}`,
     description: `${formatEventDate(event.date, { long: true })} · ${event.location}. ${event.blurb}`,

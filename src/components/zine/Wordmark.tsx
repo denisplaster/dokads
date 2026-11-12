@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import { vocab } from '../../content/vocab'
 
 /**
  * DOKADS wordmark — cut-paper letter blocks with a deliberate
@@ -51,7 +52,7 @@ export function Wordmark({
       </span>
       {withNote && (
         <span className="wordmark__note" aria-hidden="true">
-          Descendants of Korean Adoptees
+          {vocab.brand.tagline}
         </span>
       )}
     </span>

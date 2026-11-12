@@ -1,30 +1,50 @@
 /**
- * The static content layer.
+ * The public read layer.
  *
- * Mirrors the read side of src/db/queries.ts, but sourced from the committed
- * TypeScript modules in src/data — so public pages render with no database, no
- * connection string, and nothing to wake up or pay for. Signatures match the
- * database versions deliberately: switching back is an import swap.
+ * Reads only the build-time content snapshot (src/content/snapshot.ts), never
+ * the database — so public pages prerender from a file, and no visitor can
+ * cause a query. In static mode the snapshot is made from src/data; in cms and
+ * full mode, from Postgres. Either way these functions are synchronous and
+ * return the view types directly.
  *
- * These return the view types directly, so pages need no adapter.
+ * The snapshot already excludes drafts; the filters below are kept anyway so
+ * a draft can never become public through a malformed snapshot.
  */
-import { events as allEvents, getEvent, STATUS_META } from '@/data/events'
+import { STATUS_META } from '@/data/events'
 import type { DokEvent } from '@/data/events'
-import { stories, getStory, relatedStories } from '@/data/stories'
 import type { Story } from '@/data/stories'
-import { regions, getRegion } from '@/data/regions'
 import type { Region } from '@/data/regions'
-import { resources } from '@/data/resources'
 import type { Resource } from '@/data/resources'
+import { snapshot } from '@/content/snapshot'
+
+const allEvents = snapshot.events
+const stories = snapshot.stories
+const regions = snapshot.regions
+const resources = snapshot.resources
+
+const getEvent = (slug: string) => allEvents.find((e) => e.slug === slug)
+const getStory = (slug: string) => stories.find((s) => s.slug === slug)
+const getRegion = (slug: string) => regions.find((r) => r.slug === slug)
+
+function relatedStories(slug: string, count: number) {
+  const current = getStory(slug)
+  return stories
+    .filter((s) => s.slug !== slug)
+    .sort((a, b) => {
+      const aMatch = a.kind === current?.kind ? 0 : 1
+      const bMatch = b.kind === current?.kind ? 0 : 1
+      return aMatch - bMatch
+    })
+    .slice(0, count)
+}
 
 /* ---------- events ---------- */
 
 /**
  * Drafts are excluded, exactly as the database queries did.
  *
- * Note this deliberately does NOT use data/events.publicEvents(), which also
- * returns drafts so the admin can preview them. Reusing it here leaked both
- * draft events onto the public list and prerendered their detail pages.
+ * Note this deliberately does NOT mirror data/events.publicEvents(), which
+ * also returns drafts so the admin can preview them.
  */
 export function getPublicEvents(): DokEvent[] {
   return allEvents

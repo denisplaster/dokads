@@ -43,7 +43,7 @@ export const eventRows: InferInsertModel<typeof events>[] = seedEvents.map((e) =
   recap: e.recap ?? null,
 }))
 
-export const storyRows: InferInsertModel<typeof stories>[] = seedStories.map((s) => ({
+export const storyRows: InferInsertModel<typeof stories>[] = seedStories.map((s, i) => ({
   slug: s.slug,
   title: s.title,
   dek: s.dek,
@@ -59,6 +59,10 @@ export const storyRows: InferInsertModel<typeof stories>[] = seedStories.map((s)
   body: s.body,
   status: 'published',
   isPlaceholder: s.isPlaceholder,
+  sensitive: s.sensitive ?? false,
+  lastReviewed: s.lastReviewed ?? null,
+  sources: s.sources ?? [],
+  sortOrder: i,
 }))
 
 export const regionRows: InferInsertModel<typeof regions>[] = seedRegions.map((r, i) => ({

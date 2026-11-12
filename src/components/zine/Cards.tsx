@@ -1,9 +1,8 @@
 import Link from 'next/link'
 import type { CSSProperties } from 'react'
 import type { DokEvent, EventStatus } from '../../data/events'
-import { AUDIENCE_META, EVENT_TYPES, STATUS_META } from '../../data/events'
 import type { Story } from '../../data/stories'
-import { STORY_KINDS } from '../../data/stories'
+import { vocab } from '../../content/vocab'
 import { CollageFrame } from './CollageFrame'
 import { CategorySticker, Sticker } from './Sticker'
 import { TapeStrip, rot } from './Paper'
@@ -16,7 +15,7 @@ const FLYER_TONES = ['yellow', 'blue', 'red', 'pink', 'acid', 'lavender'] as con
 
 /** Status badge — required on every surface an event appears on. */
 export function EventStatusBadge({ status }: { status: EventStatus }) {
-  const meta = STATUS_META[status]
+  const meta = vocab.status(status)
   return (
     <span className={`status-badge status-badge--${status.replace(/\s+/g, '-')}`}>
       <span className="status-badge__dot" aria-hidden="true" />
@@ -40,6 +39,7 @@ export function FlyerEventCard({
   const mo = d.toLocaleDateString('en-US', { month: 'short' })
   const weekday = d.toLocaleDateString('en-US', { weekday: 'long' })
   const provisional = event.status === 'draft' || event.status === 'tentative'
+  const t = vocab.event
 
   return (
     <article
@@ -62,35 +62,33 @@ export function FlyerEventCard({
       </div>
       <div className="flyer__body">
         <div className="flyer__tags">
-          <span className="cat-sticker">{EVENT_TYPES[event.type]}</span>
-          <span className="cat-sticker">{AUDIENCE_META[event.audience].label}</span>
-          <span className="cat-sticker">{event.format === 'online' ? 'Online' : 'In person'}</span>
+          <span className="cat-sticker">{vocab.eventType(event.type)}</span>
+          <span className="cat-sticker">{vocab.audience(event.audience).label}</span>
+          <span className="cat-sticker">{event.format === 'online' ? t.online : t.inPerson}</span>
           {event.cost.toLowerCase().startsWith('free') && (
-            <span className="cat-sticker cat--question">Free</span>
+            <span className="cat-sticker cat--question">{t.free}</span>
           )}
         </div>
         <h3 className="flyer__title">{event.title}</h3>
         <p style={{ fontSize: 'var(--t-small)', lineHeight: 1.45 }}>{event.blurb}</p>
         <dl className="flyer__meta">
           <div className="flyer__row">
-            <dt>When</dt>
+            <dt>{t.when}</dt>
             <dd>
               {weekday} · {event.time} {event.timezone}
             </dd>
           </div>
           <div className="flyer__row">
-            <dt>Where</dt>
+            <dt>{t.where}</dt>
             <dd>{event.location}</dd>
           </div>
           <div className="flyer__row">
-            <dt>Ages</dt>
+            <dt>{t.ages}</dt>
             <dd>{event.agePolicy}</dd>
           </div>
         </dl>
         {provisional && (
-          <p className="flyer__provisional">
-            Not confirmed yet — details can still change.
-          </p>
+          <p className="flyer__provisional">{t.provisional}</p>
         )}
       </div>
     </article>
@@ -114,7 +112,8 @@ export function ZineArticleCard({
   index?: number
   style?: CSSProperties
 }) {
-  const kind = STORY_KINDS[story.kind]
+  const kind = vocab.storyKind(story.kind)
+  const t = vocab.story
   const dir: 1 | -1 = index % 2 === 0 ? 1 : -1
 
   if (layout === 'quote') {
@@ -163,7 +162,9 @@ export function ZineArticleCard({
         <p className="zcard__dek">{story.dek}</p>
         <span className="zcard__byline">
           <span>{story.byline}</span>
-          <span>{story.readingTime} min</span>
+          <span>
+            {story.readingTime} {t.minShort}
+          </span>
         </span>
       </Link>
     )
@@ -179,7 +180,9 @@ export function ZineArticleCard({
         <p className="zcard__dek">{story.dek}</p>
         <span className="zcard__byline">
           <span>{story.byline}</span>
-          <span>{story.readingTime} min read</span>
+          <span>
+            {story.readingTime} {t.minRead}
+          </span>
         </span>
       </Link>
     )
@@ -215,8 +218,10 @@ export function ZineArticleCard({
       </p>
       <span className="zcard__byline">
         <span>{story.byline}</span>
-        <span>{story.readingTime} min read</span>
-        {isLead && <Sticker color="red">Read this</Sticker>}
+        <span>
+          {story.readingTime} {t.minRead}
+        </span>
+        {isLead && <Sticker color="red">{t.readThis}</Sticker>}
       </span>
     </Link>
   )

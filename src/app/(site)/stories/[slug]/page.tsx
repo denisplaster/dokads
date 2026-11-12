@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { StoryPage } from '@/views/StoryPage'
-import { STORY_KINDS } from '@/data/stories'
+import { vocab } from '@/content/vocab'
 import { getPublishedStories, getRelatedStories, getStoryBySlug } from '@/lib/content'
 
 /**
@@ -29,7 +29,7 @@ export async function generateMetadata({
       type: 'article',
       authors: [story.byline],
     },
-    other: { 'article:section': STORY_KINDS[story.kind].label },
+    other: { 'article:section': vocab.storyKind(story.kind).label },
   }
 }
 

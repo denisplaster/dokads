@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { RegionPage } from '@/views/RegionPage'
-import { REGION_STATUS_META } from '@/data/regions'
+import { vocab } from '@/content/vocab'
+import { copy } from '@/content/copy'
 import { getAllRegions, getEventsInRegion, getPublishedRegion } from '@/lib/content'
 
 /**
@@ -26,7 +27,7 @@ export async function generateMetadata({
     title: region.name,
     description:
       region.intro ??
-      `${region.name} — ${REGION_STATUS_META[region.status].blurb}. A DoKAD community for descendants of Korean adoptees.`,
+      `${region.name} — ${vocab.regionStatus(region.status).blurb}. ${copy('regions').meta.regionSuffix}`,
   }
 }
 

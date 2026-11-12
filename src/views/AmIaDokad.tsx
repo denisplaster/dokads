@@ -16,67 +16,28 @@ import {
   rot,
 } from '../components/zine'
 import { DokadDefinition } from '../components/DokadDefinition'
+import type { DefinitionText } from '../components/DokadDefinition'
+import { Rich } from '../components/Rich'
+import type { Copy } from '../content/copy'
 
 /* ------------------------------------------------------------------ */
 /* The generation diagram                                              */
 /* ------------------------------------------------------------------ */
 
-type Gen = {
-  id: string
-  label: string
-  sub: string
-  tone: string
-  detail: string
-  isYou?: boolean
-}
-
-const GENERATIONS: Gen[] = [
-  {
-    id: 'birth',
-    label: 'Korean birth family',
-    sub: 'In Korea',
-    tone: 'kraft',
-    detail:
-      'Sometimes known, more often not. Many adoptees have little or no information here, and many DoKADs grow up with this part of the tree simply blank.',
-  },
-  {
-    id: 'adoptee',
-    label: 'Korean adoptee',
-    sub: 'Adopted from Korea, raised abroad',
-    tone: 'blue',
-    detail:
-      'Your parent or grandparent. Roughly 200,000 people were adopted out of Korea from the 1950s onward — most to the United States and Western Europe.',
-  },
-  {
-    id: 'child',
-    label: 'Child of a Korean adoptee',
-    sub: 'This is a DoKAD',
-    tone: 'yellow',
-    isYou: true,
-    detail:
-      'If your mother or father was adopted from Korea, this is you. It is the most common way into this community.',
-  },
-  {
-    id: 'grandchild',
-    label: 'Grandchild of a Korean adoptee',
-    sub: 'Also a DoKAD',
-    tone: 'peach',
-    isYou: true,
-    detail:
-      'If your grandparent was adopted from Korea, this is you too. The generation gap does not disqualify anyone.',
-  },
-  {
-    id: 'future',
-    label: 'Later descendants',
-    sub: 'Still DoKADs',
-    tone: 'lavender',
-    detail:
-      'Great-grandchildren and onward. The history keeps travelling, and so does the invitation.',
-  },
+/** Colour and "could be you" per row; the words are editable. */
+const ROWS: { id: string; tone: string; isYou?: boolean }[] = [
+  { id: 'birth', tone: 'kraft' },
+  { id: 'adoptee', tone: 'blue' },
+  { id: 'child', tone: 'yellow', isYou: true },
+  { id: 'grandchild', tone: 'peach', isYou: true },
+  { id: 'future', tone: 'lavender' },
 ]
 
-function GenerationTree() {
+export type AmIaDokadText = Copy<'am-i-a-dokad'>
+
+function GenerationTree({ t }: { t: AmIaDokadText['tree'] }) {
   const [open, setOpen] = useState<string | null>('child')
+  const GENERATIONS = ROWS.map((r, i) => ({ ...r, ...t.rows[i] }))
 
   return (
     <div className="gentree">
@@ -103,20 +64,21 @@ function GenerationTree() {
             >
               <span className="gentree__label">{g.label}</span>
               <span className="gentree__sub">{g.sub}</span>
-              {g.isYou && <span className="gentree__flag">could be you</span>}
+              {g.isYou && <span className="gentree__flag">{t.flag}</span>}
               <span className="gentree__toggle" aria-hidden="true">
                 {open === g.id ? '−' : '+'}
               </span>
             </button>
-            {open === g.id && <p className="gentree__detail">{g.detail}</p>}
+            {open === g.id && (
+              <p className="gentree__detail">
+                <Rich text={g.detail} />
+              </p>
+            )}
           </li>
         ))}
       </ol>
       <p className="gentree__caveat">
-        <strong>This diagram is simplified.</strong> Real families are messier than five boxes
-        in a column — step-families, adoptions in more than one generation, relatives who are
-        not on any paperwork, people raised by someone other than a parent. If the shape of
-        your family is not on here, that does not mean you are not.
+        <Rich text={t.caveat} />
       </p>
     </div>
   )
@@ -126,27 +88,24 @@ function GenerationTree() {
 /* The checklist                                                       */
 /* ------------------------------------------------------------------ */
 
-const EXAMPLES = [
-  { id: 'mother', text: 'My mother was adopted from Korea' },
-  { id: 'father', text: 'My father was adopted from Korea' },
-  { id: 'one-or-both', text: 'One or both of my parents are Korean adoptees' },
-  { id: 'grandparent', text: 'My grandparent was adopted from Korea' },
-  { id: 'more-than-one', text: 'More than one person in my family was adopted from Korea' },
-  { id: 'figuring', text: 'I am still figuring out how this history relates to me', soft: true },
-]
+const SOFT = 'figuring'
 
-function Checklist() {
+function Checklist({ t }: { t: AmIaDokadText['check'] }) {
+  const EXAMPLES: { id: string; text: string; soft?: boolean }[] = [
+    ...t.examples.map((text, i) => ({ id: `ex-${i}`, text })),
+    ...(t.soft ? [{ id: SOFT, text: t.soft, soft: true }] : []),
+  ]
   const [picked, setPicked] = useState<string[]>([])
   const toggle = (id: string) =>
     setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]))
 
   const answered = picked.length > 0
-  const onlySoft = answered && picked.every((p) => p === 'figuring')
+  const onlySoft = answered && picked.every((p) => p === SOFT)
 
   return (
     <div className="checklist">
       <fieldset className="checklist__set">
-        <legend className="checklist__legend">Tick anything that sounds like you</legend>
+        <legend className="checklist__legend">{t.legend}</legend>
         <div className="checklist__grid">
           {EXAMPLES.map((ex, i) => (
             <label
@@ -160,7 +119,9 @@ function Checklist() {
                 onChange={() => toggle(ex.id)}
               />
               <span className="checklist__box" aria-hidden="true" />
-              <span className="checklist__text">{ex.text}</span>
+              <span className="checklist__text">
+                <Rich text={ex.text} />
+              </span>
             </label>
           ))}
         </div>
@@ -169,7 +130,7 @@ function Checklist() {
       <div className="checklist__result" aria-live="polite">
         {!answered && (
           <p className="checklist__waiting">
-            <HandwrittenNote>pick as many as you like — or none</HandwrittenNote>
+            <HandwrittenNote>{t.waiting}</HandwrittenNote>
           </p>
         )}
         {answered && (
@@ -182,20 +143,16 @@ function Checklist() {
             style={{ background: 'var(--surface)' }}
           >
             <TapeStrip position="top-left" variant="clear" />
-            <EditorialHeadline size={2}>
-              {onlySoft ? 'That counts too.' : 'Then yes — that’s you.'}
-            </EditorialHeadline>
+            <EditorialHeadline size={2}>{onlySoft ? t.softHead : t.yesHead}</EditorialHeadline>
             <p style={{ marginTop: 'var(--s-4)' }}>
-              {onlySoft
-                ? 'Plenty of people show up here without a clear sense of whether it applies to them, or how much they want it to. You do not have to resolve that before joining anything. Come and be uncertain in company.'
-                : 'You are a descendant of a Korean adoptee — a DoKAD, if you want the word. You do not have to use the term, identify with it, feel any particular way about Korea, or know anything about your family history to take part.'}
+              <Rich text={onlySoft ? t.softBody : t.yesBody} />
             </p>
             <div className="checklist__ctas">
               <Link href="/join" className="btn btn--red">
-                Join DOKADS
+                {t.ctaJoin}
               </Link>
               <Link href="/events" className="btn btn--ghost">
-                See what’s coming up
+                {t.ctaEvents}
               </Link>
             </div>
           </PaperCard>
@@ -205,100 +162,98 @@ function Checklist() {
   )
 }
 
+const CLOSE_STICKERS = ['yellow', 'paper', 'red'] as const
+
 /* ------------------------------------------------------------------ */
 
-export function AmIaDokad() {
+export function AmIaDokad({
+  definition,
+  text: c,
+}: {
+  definition: DefinitionText
+  text: AmIaDokadText
+}) {
   return (
     <>
       <ZineSection tone="yellow" torn="bottom" className="page-hero">
         <div className="wrap wrap--wide">
-          <IssueLabel prefix="DOKADS" issue="001" />
+          <IssueLabel />
           <EditorialHeadline size="display" className="page-hero__head">
-            Am I a<br />
-            <span className="knock">DoKAD?</span>
+            {c.hero.headline}
+            <br />
+            <span className="knock">{c.hero.knockout}</span>
           </EditorialHeadline>
           <ScribbleUnderline color="red" variant={3} />
           <p className="lead page-hero__lead">
-            Probably a fair question, since most people have never heard the word. Here is the
-            whole thing in about thirty seconds.
+            <Rich text={c.hero.lead} />
           </p>
           <p className="page-hero__aside">
             <HandArrow turn={100} size={54} color="blue" />
-            <HandwrittenNote tiltDir={1}>
-              no test. no proof. no forms about your family.
-            </HandwrittenNote>
+            <HandwrittenNote tiltDir={1}>{c.hero.note}</HandwrittenNote>
           </p>
         </div>
       </ZineSection>
 
       <ZineSection tone="paper" className="aiad-def">
         <div className="wrap wrap--wide aiad-def__inner">
-          <DokadDefinition showCta={false} />
+          <DokadDefinition text={definition} showCta={false} />
           <div className="aiad-def__body">
-            <SectionHead number="01" kicker="The short version" />
-            <p className="prose">
-              A DoKAD is a <strong>descendant of a Korean adoptee</strong>. If your parent or
-              your grandparent was adopted from Korea, you are one.
-            </p>
-            <p className="prose">
-              That is the entire definition. It does not depend on whether you speak Korean,
-              whether you have been to Korea, whether people read you as Korean, whether you
-              are mixed race, whether you know anything about your family before the adoption,
-              or whether you have ever thought about any of this before today.
-            </p>
-            <p className="prose">
-              Some people use the word about themselves straight away. Some never use it and
-              just come to things. Both are completely normal.
-            </p>
+            <SectionHead number="01" kicker={c.short.kicker} />
+            {c.short.body.map((para) => (
+              <p className="prose" key={para}>
+                <Rich text={para} />
+              </p>
+            ))}
           </div>
         </div>
       </ZineSection>
 
       <ZineSection tone="bright" torn="both" className="aiad-tree">
         <div className="wrap wrap--wide">
-          <SectionHead number="02" kicker="Where you might sit" />
-          <GenerationTree />
+          <SectionHead number="02" kicker={c.tree.kicker} />
+          <GenerationTree t={c.tree} />
         </div>
       </ZineSection>
 
       <ZineSection tone="paper" className="aiad-check">
         <div className="wrap wrap--wide">
-          <SectionHead number="03" kicker="Try it against your own family" />
-          <Checklist />
+          <SectionHead number="03" kicker={c.check.kicker} />
+          <Checklist t={c.check} />
         </div>
       </ZineSection>
 
       <ZineSection tone="ink" torn="top" className="aiad-close">
         <div className="wrap">
           <EditorialHeadline size={1} sentence className="aiad-close__head">
-            There is no test you need to pass and no single way to identify as a DoKAD.
+            <Rich text={c.close.headline} />
           </EditorialHeadline>
           <p className="lead" style={{ marginTop: 'var(--s-5)' }}>
-            Come as you are, including unsure. You can read everything here without telling us
-            anything about yourself.
+            <Rich text={c.close.lead} />
           </p>
           <div className="aiad-close__ctas">
             <Link href="/start" className="btn btn--yellow btn--lg">
-              Start here
+              {c.close.ctaStart}
             </Link>
             <Link href="/join" className="btn btn--paper btn--lg">
-              Join DOKADS
+              {c.close.ctaJoin}
             </Link>
             <Link href="/share" className="btn btn--ghost">
-              Send this to someone
+              {c.close.ctaShare}
             </Link>
           </div>
           <div className="aiad-close__stickers" aria-hidden="true">
-            <Sticker color="yellow">Print it</Sticker>
-            <Sticker color="paper" tiltDir={1}>
-              Share it
-            </Sticker>
-            <Sticker color="red">QR it</Sticker>
+            {c.close.stickers.map((label, i) => (
+              <Sticker
+                key={label}
+                color={CLOSE_STICKERS[i % CLOSE_STICKERS.length]}
+                tiltDir={i % 3 === 1 ? 1 : undefined}
+              >
+                {label}
+              </Sticker>
+            ))}
           </div>
           <p className="aiad-close__print">
-            This page is built to work as a handout too — use your browser’s print option for a
-            clean one-page version, or grab the assets on the{' '}
-            <Link href="/share">Share DOKADS</Link> page.
+            <Rich text={c.close.print} />
           </p>
         </div>
       </ZineSection>

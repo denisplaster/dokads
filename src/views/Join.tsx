@@ -15,6 +15,7 @@ import {
   rot,
 } from '../components/zine'
 import { DokadDefinition } from '../components/DokadDefinition'
+import type { DefinitionText } from '../components/DokadDefinition'
 import {
   AGE_CHOICES,
   AGGREGATE_LINE,
@@ -101,7 +102,7 @@ function ChoiceGrid({
   )
 }
 
-export function Join() {
+export function Join({ definition }: { definition: DefinitionText }) {
   const [step, setStep] = useState(1)
   const [connection, setConnection] = useState<string[]>([])
   const [description, setDescription] = useState<string[]>([])
@@ -203,7 +204,7 @@ export function Join() {
               <HandwrittenNote>skip anything you’d rather not answer</HandwrittenNote>
             </p>
           </div>
-          <DokadDefinition showCta={false} />
+          <DokadDefinition text={definition} showCta={false} />
         </div>
       </ZineSection>
 

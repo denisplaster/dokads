@@ -15,106 +15,138 @@ npm run dev
 ```
 
 Dev server: <http://localhost:5190>. **No configuration, no database, no
-accounts** — the site runs in static mode by default.
+accounts** — with nothing set, the site runs in static mode from the files in
+`src/data`.
 
-### Static mode
+### Three modes
 
-The site is currently an informational brochure. Nothing it serves touches the
-network:
+`SITE_MODE` picks one. The public pages are prerendered in all three; what
+changes is where their content comes from and what else exists.
 
-- **Content** comes from the committed TypeScript modules in `src/data`, not
-  Postgres. Every public page is prerendered at build time.
-- **Nothing is collected.** No join form, no event registration, no analytics,
-  no cookies. Pages that used to post a form now point at
-  `dokads@akconnection.com`.
-- **No email is sent.**
-- **The admin is unreachable** — `/admin` and `/api/auth/*` return 404.
-- **Fonts are self-hosted**, so loading a page reports nothing to anyone.
+| | `static` (unset) | `cms` — **live site** | `full` |
+| --- | --- | --- | --- |
+| Public content from | `src/data` files | Postgres, read **once per build** | Postgres, read once per build |
+| Admin at `/admin` | 404 | yes — content, page text, editors, publish | yes, plus people |
+| Forms, sign-ups, email to visitors | none | none | join, registration, submissions |
+| Needs | nothing | `DATABASE_URL`, `BETTER_AUTH_SECRET`, `DEPLOY_HOOK_URL` | the same, plus optionally `RESEND_API_KEY` |
 
-The database, auth, email and admin code all remain in the repository and keep
-passing their suites. One switch turns them back on:
+**Why the database is only read at build time.** In August the public pages
+queried Neon on every request; crawlers sweeping the sitemap every few minutes
+kept the compute from ever scaling to zero, and that was the bill. Now
+`scripts/snapshot.ts` reads Postgres once, before `next build`, and writes
+`src/generated/content.json`. Every public page renders from that file. A
+visitor can never cause a query — `npm run static:verify` fails the build if
+anything a public page renders imports the database. Neon wakes for exactly
+two things: a build, and an editor using `/admin`.
+
+### How editing works (cms)
+
+1. An editor changes something in `/admin` and saves. That writes Postgres
+   and marks content as changed (`site_meta`).
+2. The yellow bar on every admin page says there are unpublished changes.
+   **Publish site** POSTs to the Vercel deploy hook in `DEPLOY_HOOK_URL`.
+3. Vercel rebuilds from `main`: `scripts/snapshot.ts` applies pending
+   migrations (production builds only), reads the database, and the new pages
+   go live in a minute or two. `scripts/mark-built.ts` records which snapshot
+   is live, which is how the bar knows to say "up to date".
+
+If the database cannot be read, the build fails and Vercel keeps serving the
+previous deployment — a failed read never publishes an empty site. Preview
+deployments have no `SITE_MODE`, so they build from the files and never touch
+the database.
+
+**What is editable.** Events, stories, resources and regions each have an
+admin section. *Everything else* a visitor reads — every headline, paragraph,
+button, note, menu label, footer line, status badge and page description — is
+under **Pages**. Each piece of wording is declared once in
+`src/content/pages/*.ts` with a label for the editor and a default (the text
+the site shipped with). The admin stores only overrides (`page_copy`), so code
+and database never need syncing by hand, and "Reset to original" just deletes
+the override. To make new wording editable, add a field to the page's
+definition and read it in the view with `copy('<page>')`; it appears in the
+admin automatically. The rendered text of every page was verified identical to
+the pre-CMS site when this was introduced.
+
+Inline formatting editors can use anywhere: `**bold**`, `*italic*`,
+`==highlight==`, `[link](https://…)` or `[link](/page)`. `src/components/Rich.tsx`
+renders it; links to anything but http(s), mailto, tel or a site path are
+dropped, and everything else is escaped text.
+
+**The first time cms mode runs against a database**, the snapshot step copies
+the site files into it (`importFilesIfNeeded`): records in the files overwrite
+their database twins, and older database rows that the site was not showing are
+hidden (draft / unpublished), never deleted. It runs once — after that the
+database is the source of truth and `src/data` is only the static-mode
+fallback and the vocabulary of types.
+
+### Editors and access
+
+Editors are managed in the admin under **Editors**: add someone and you get a
+one-time link (48 hours) for them to choose their own password. Nobody else
+ever sees it. The same page makes a new link for a locked-out editor, and
+removes people (never yourself, never the last admin).
+
+"Forgot password" emails need `RESEND_API_KEY`; without it, ask another
+editor for a link. **If nobody can sign in at all**, run this with the
+production connection string from the Neon console:
 
 ```bash
-SITE_MODE=full      # + DATABASE_URL, BETTER_AUTH_SECRET, and optionally RESEND_API_KEY
+cd ~/code/dokads
+export DATABASE_URL="postgresql://…neon.tech/neondb?sslmode=require"
+ADMIN_EMAIL="person@example.com" npm run admin:link
+unset DATABASE_URL
 ```
 
-`npm run static:verify` asserts the guarantees above so they cannot erode
-quietly — including that drafts stay out of the public list, that no public
-page imports the database, and that the mode switch actually works.
+It creates the account if needed and prints a set-password link.
+
+### Commands
 
 | Command | Does |
 | --- | --- |
-| `npm run dev` | Dev server on :5190 |
-| `npm run build` / `start` | Production build and serve |
+| `npm run dev` | Snapshot, then the dev server on :5190 |
+| `npm run build` / `start` | Snapshot, production build, mark live; serve |
+| `npm run snapshot` | Rewrite `src/generated/` from the files or the database |
 | `npm run typecheck` | Types only |
-| `npm run static:verify` | Assert the static-mode guarantees |
-| `npm run db:verify` | Schema + queries against in-process Postgres (full mode) |
+| `npm run static:verify` | Public-site guarantees: drafts hidden, no database in the public tree, legal rules, modes |
+| `npm run cms:verify` | Migrate → import → snapshot against in-process Postgres; db-built site equals file-built site |
+| `npm run db:verify` | Schema + queries + privacy rules against in-process Postgres |
 | `npm run email:verify` | Email failures cannot lose a registration (full mode) |
-| `npm run db:setup` | `db:migrate` then `db:seed` — first-time setup (full mode) |
-| `npm run db:seed` | Seed content. `-- --refresh-editorial` ships copy updates |
-| `npm run admin:create` | Create or promote an admin (full mode) |
-| `npm run email:test` | Send one real email to check a configuration |
+| `npm run admin:link` | Set-password link for an editor (creates the account if needed) |
+| `npm run admin:create` | Create or promote an admin with a password you supply |
+| `npm run db:generate` | New migration from `src/db/schema.ts` changes |
+| `npm run db:migrate` | Apply migrations by hand (production builds also apply them) |
+
+To try cms mode locally against a throwaway database:
+
+```bash
+SITE_MODE=cms DATABASE_URL=pglite://.data/cms npm run dev
+ADMIN_EMAIL=you@example.com DATABASE_URL=pglite://.data/cms npm run admin:link
+```
+
+Locally, **Publish site** rewrites the snapshot the dev server is reading
+instead of calling a deploy hook. PGlite is single-process: stop the dev server
+before running a build against the same `.data` folder.
 
 ### Deploying to Vercel
 
-Import the repo and deploy. Static mode needs no environment variables, so the
-first deploy works with nothing configured.
+The production project runs `SITE_MODE=cms`. It needs, on **Production**:
 
-To go back to the full site: set `SITE_MODE=full`, add the Neon integration
-(which injects `DATABASE_URL`), set `BETTER_AUTH_SECRET`, then run
-`npm run db:setup` and `npm run admin:create` against the Neon connection
-string from the Neon console. Resend is optional on top of that — see **Email**
-below.
+| Variable | Where it comes from |
+| --- | --- |
+| `SITE_MODE` | `cms` |
+| `POSTGRES_URL` (or `DATABASE_URL`) | the Neon integration — already there |
+| `BETTER_AUTH_SECRET` | `openssl rand -base64 32` — already there |
+| `BETTER_AUTH_URL` | `https://www.dokads.com` (recommended; links in emails use it) |
+| `DEPLOY_HOOK_URL` | Vercel → Settings → Git → Deploy Hooks → create one for `main` |
+| `RESEND_API_KEY` | optional — turns on forgot-password and invite emails |
 
---- | --- |
-| `npm run dev` | Dev server on :5190 |
-| `npm run build` / `start` | Production build and serve |
-| `npm run typecheck` | Types only |
-| `npm run db:generate` | Generate a migration from schema changes |
-| `npm run db:migrate` | Apply migrations (Neon) |
-| `npm run db:setup` | `db:migrate` then `db:seed` — first-time setup |
-| `npm run db:seed` | Seed content. Leaves existing rows alone; `-- --force` overwrites them |
-| `npm run db:verify` | Run schema + queries against in-process Postgres |
-| `npm run email:verify` | Prove email failures cannot lose a registration |
-| `npm run email:test` | Send one real email to check a new configuration |
-| `npm run db:studio` | Drizzle Studio |
-| `npm run admin:create` | Create or promote an admin |
+Leave `SITE_MODE` unset on Preview so branch builds stay off the database.
+Pushing to `main` deploys exactly like pressing Publish.
 
-### Deploying to Vercel
-
-1. Import the repo. Next.js is detected automatically.
-2. Storage → add the **Neon** integration. It injects `DATABASE_URL`.
-3. Set `BETTER_AUTH_SECRET` (`openssl rand -base64 32`) and `BETTER_AUTH_URL`
-   (your production URL).
-4. Deploy. **The build does not touch the database**, so this succeeds before
-   the schema exists.
-5. Create the schema and content — once, from your machine. Get the real
-   connection string from **Vercel → Storage → your Neon database → `.env.local`**
-   (or the Neon console). Note the `cd`: these scripts only exist inside the
-   project.
-
-   ```bash
-   cd ~/code/dokads
-   export DATABASE_URL="postgresql://USER:PASSWORD@ep-xxxx.us-east-2.aws.neon.tech/neondb?sslmode=require"
-   npm run db:setup
-   ADMIN_EMAIL="you@example.com" ADMIN_PASSWORD="choose-a-long-passphrase" npm run admin:create
-   unset DATABASE_URL ADMIN_PASSWORD
-   ```
-
-   `db:setup` runs `db:migrate` then `db:seed`. Pasting a connection string
-   that still contains placeholder text fails immediately with an explanation
-   rather than a confusing connection error.
-
-Until step 5 runs, the static pages work and anything reading content returns
-a Postgres `42P01` ("undefined table") — that error always means migrations
-have not been applied to that database.
-
-**Migrations are deliberately not part of the build.** Running them on every
-deploy races across concurrent builds, and seeding on every deploy would fight
-the admin. Run them when the schema actually changes.
-
-Deploying with `DATABASE_URL` still set to `pglite://` is blocked with an
-explicit error rather than failing mysteriously.
+Migrations run automatically on production builds (`MIGRATE_ON_BUILD=1`
+forces them elsewhere). Builds on Vercel run one at a time per project, which
+is what makes that safe; if that ever changes, move migrations back to
+`npm run db:migrate`.
 
 ---
 
@@ -142,39 +174,44 @@ The site's first question is never *"Do you identify as a DoKAD?"* It is
 | `/am-i-a-dokad` | The explainer: definition, generation diagram, interactive checklist. Print-ready. |
 | `/learn` | Long-form Who/What/Where/Why + the editorial topic queue |
 | `/stories` · `/stories/:slug` | The publication. Mixed layouts by piece type. |
-| `/events` · `/events/:slug` | Flyer wall with status labels; per-event registration form |
+| `/events` · `/events/:slug` | Flyer wall with status labels; email-to-come card (registration form in full mode) |
 | `/regions` · `/regions/:slug` | Chapter index + regional landing pages (Minnesota is the pilot) |
 | `/resources` | Community-nominated shelves with filters |
-| `/join` | Four-step questionnaire |
+| `/join` | How to get in touch (the four-step questionnaire in full mode) |
 | `/about` · `/guidelines` · `/privacy` | Community-led principle, conduct, data handling |
 | `/share` | Outreach kit: copy snippets + four downloadable SVG assets |
-| `/admin` | Staff only — see below |
+| `/admin` | Editors only — see below |
 
 ## Admin
 
-Sign in at `/admin/sign-in`. There is no public sign-up.
+Sign in at `/admin` (the padlock in the footer). There is no public sign-up.
 
 | Screen | Does |
 | --- | --- |
-| Overview | Counts and aggregate planning tallies — interests, timing, venues, regions, age brackets. Deliberately the anonymous view. |
-| Events | The status lifecycle, capacity, waitlist, age rules, and the "what is not settled yet" notes |
-| Registrations | Per-event sign-ups, accommodation requests, waitlist moves, CSV export |
-| Members | Join-form responses, CSV export, one-click delete |
-| Inbox | Resource suggestions and story pitches |
-| Stories / Resources / Regions | Content editing without a redeploy |
+| Overview | How editing works, content counts, where the content came from |
+| Pages | Every piece of public wording that is not an event, story, resource or region |
+| Events | Status lifecycle, details, host and recap, the "what is not settled yet" notes |
+| Stories | Articles, credit style, order, sources, and the legal / immigration rules |
+| Resources · Regions | The reading pile and the local groups |
+| Editors | Add, unlock and remove the people who can sign in |
+| Registrations · Members · Inbox | Personal data — shown in full mode, or while any is still stored |
 
-**Authorisation.** Middleware redirects when a session cookie is missing, but
-it is not the security boundary — every admin page and every admin action
-calls `requireStaff()`, which validates the session against the database.
-`role` and `regionSlug` already exist on `user`, and `regionScope()` is wired,
-so scoping a Minnesota organiser to Minnesota data is a config change rather
-than a migration.
+The yellow **Publish site** bar sits on every screen; nothing an editor saves is
+public until someone presses it.
+
+**Authorisation.** Middleware bounces requests without a session cookie and
+never touches the database, so bots probing `/admin` cost nothing. It is not
+the security boundary — every admin page and every admin action calls
+`requireStaff()`, which validates the session against the database. Page text
+and editors are admin-only. `role` and `regionSlug` exist on `user` and
+`regionScope()` is wired, so a regional organiser account is a config change.
 
 **Enforced, not just documented.** A region cannot be set to *forming* or
-*active* without at least one organiser — the server refuses it, matching what
-the site says publicly. Draft events are invisible to the public, including by
-direct URL. Minors are badged, excluded from CSV exports unless you explicitly
-tick the box, and surfaced on the dashboard.
+*active* without at least one organiser. Draft events and stories never reach
+the snapshot. A story marked legal / immigration cannot be published without a
+review date, an official source and plain "not automatic" wording
+(`src/content/legal.ts`, shared with `static:verify`). Minors are badged and
+excluded from CSV exports unless you explicitly tick the box.
 
 ---
 
@@ -247,10 +284,8 @@ resource URL, book attribution, and historical date). Personal narratives — es
 interviews, poems, photo stories — come only from community submissions; the old
 placeholder layouts were retired to draft, not passed off as real. Resource entries
 name real books, films, podcasts, and organisations; shelves still marked *open call*
-are honestly empty. Content updates ship with
-`npm run db:seed -- --refresh-editorial`, which updates stories and resources but
-never touches events or regions, so it cannot revert an event status set in the
-admin.
+are honestly empty. In cms mode all of this is edited in the admin; the files
+under `src/data` no longer feed the live site.
 
 **No stock photos of Korean or mixed-race families, and no AI-generated people.**
 `src/lib/collage.ts` generates deterministic abstract cut-paper artwork from a seed
@@ -261,11 +296,11 @@ reviewed for accuracy, show its review date, cite official sources, carry the
 educational-not-legal-advice disclaimer, and never imply eligibility from a family
 relationship alone. See `LEGAL_RULES` in `src/data/topics.ts`.
 
-These are **enforced, not just documented**. A story with `sensitive: true` must also
-set `lastReviewed` and `sources`; `StoryPage` renders the disclaimer, the review date
-and the source list automatically, and `npm run static:verify` fails if a sensitive
-story is missing any of them, cites no official `.go.kr` source, or contains language
-promising eligibility outright. Re-check the sources and bump `lastReviewed` whenever
+These are **enforced, not just documented**. A story marked legal / immigration must
+have a review date and sources; `StoryPage` renders the disclaimer, the review date
+and the source list automatically. The admin refuses to publish one that is missing
+any of them, cites no official government source, or promises eligibility outright —
+and `npm run static:verify` fails the build if one gets through anyway. Re-check the sources and bump `lastReviewed` whenever
 you touch that content — immigration rules move.
 
 **The community-led principle** — *DoKAD programming should be shaped and led by
@@ -280,52 +315,26 @@ another organisation.
 
 ---
 
-## Rendering
+## Rendering and data
 
-Content pages (`/`, `/events`, `/stories`, `/regions`, `/resources` and their
-detail routes) are **server-rendered per request**. They were prerendered at
-build time originally, which coupled every deploy to the database being both
-reachable and migrated — a first deploy or a paused Neon branch failed the
-build outright. A build should not depend on a database it does not own.
+Every public page is prerendered at build time from `src/generated/content.json`
+(see **Three modes** above). Slug routes enumerate only published records, so a
+draft has no page to find. Nothing public is server-rendered per request, which
+is the point: there is nothing for traffic to wake.
 
-They are still server-rendered HTML, so nothing is lost for search engines or
-link previews, and CMS edits appear with no revalidation to reason about. If
-traffic ever justifies caching, add it back deliberately.
-
-Everything without a database dependency — `/start`, `/am-i-a-dokad`,
-`/learn`, `/about`, `/guidelines`, `/privacy`, `/share`, `/join` — is fully
-static.
-
----
-
-## Data
-
-Postgres via Drizzle is the source of truth. The modules under `src/data/` are
-now **seed material and the shared type vocabulary** — statuses, event types,
-audiences, and the join-form choice lists. Do not edit content in both places.
-
-`src/lib/adapt.ts` maps database rows onto the view types the components
-speak, which is why moving content into Postgres left the design system
-untouched.
-
-`npm run db:verify` runs the real migration and seed against in-process
-Postgres and asserts the rules that matter: drafts stay out of public reads,
-interest-only regions are not publishable, duplicate emails and double
-registrations are rejected, deletion works, and registrations cascade with
-their event.
-
-### Seed modules
-
-| File | Holds |
+| Where | Holds |
 | --- | --- |
-| `pillars.ts` | Who / What / Where / Why |
-| `stories.ts` | Articles + byline options (full name, first name, pseudonym, anonymous) |
-| `events.ts` | Events, statuses, types, audiences, registration rules |
-| `regions.ts` | Chapters and their publication status |
-| `resources.ts` | Directory shelves |
-| `topics.ts` | Editorial queue + the rules for sensitive content |
-| `joinForm.ts` | Question bank, age brackets, minors notice, privacy lines |
-| `community.ts` | Guidelines, community-led principle, tone bank |
+| Postgres (cms / full) | Events, stories, regions, resources, page-text overrides, editors, `site_meta` |
+| `src/content/pages/*.ts` | Every piece of page wording, its admin label, and its default |
+| `src/content/snapshot.ts` | The build-time snapshot the public site reads |
+| `src/content/vocab.ts` | Status / type / kind labels with edits applied — small enough for client components |
+| `src/data/*.ts` | Static-mode content, the one-time import source, and the type vocabulary |
+| `src/lib/adapt.ts` | Database rows → the view types the components speak |
+
+`npm run cms:verify` proves the database-built snapshot is identical to the
+file-built one, that the import never deletes or touches personal data, that
+edits survive later builds, and that malformed page-text overrides fall back to
+the default instead of breaking a page.
 
 ---
 
@@ -345,7 +354,9 @@ their event.
 
 ## Email
 
-**Dormant in static mode** — nothing is sent, because nothing is collected.
+**Mostly dormant.** In static and cms mode nothing is sent to visitors, because
+nothing is collected. With `RESEND_API_KEY` set, cms mode sends exactly two
+kinds of email, both to editors: forgot-password links and new-editor links.
 The rest of this section applies when `SITE_MODE=full`.
 
 Transactional only, via [Resend](https://resend.com). Set these and it turns on;
@@ -398,6 +409,10 @@ sends to them yet.
   before it ships.
 - **QR codes.** `/share` leaves a slot; generate against the live domain.
 - **Regional organiser accounts.** The role and scoping helper exist and are
-  wired; no second account has been created yet.
+  wired; Editors currently creates full admins only.
+- **Preview before publishing.** Saving and publishing is the only way to see a
+  change on the real pages; there is no draft preview of page text.
+- **Downloadable share graphics** (`src/lib/shareAssets.ts`) are designed
+  images whose wording is still in code.
 - **No private social network**, deliberately — the site is the permanent
   searchable hub, and social platforms handle day-to-day conversation.

@@ -1,10 +1,12 @@
+import { databaseUrlFromEnv } from '../src/db/url'
+
 /**
  * Resolves DATABASE_URL and rejects the things people actually paste by
  * mistake — an unedited placeholder, or a local pglite URL when the intent
  * was clearly a remote database.
  */
 export function requireDatabaseUrl(): string {
-  const url = process.env.DATABASE_URL?.trim()
+  const url = databaseUrlFromEnv()
 
   if (!url) {
     throw new Error(

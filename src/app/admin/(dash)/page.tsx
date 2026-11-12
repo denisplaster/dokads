@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { getAdminCounts, getPlanningTallies } from '@/db/queries'
+import { collectsData } from '@/lib/site-mode'
+import { ContentOverview } from './content-overview'
 import { INTEREST_CHOICES, TIMING_CHOICES, VENUE_CHOICES } from '@/data/joinForm'
 import { emailConfigured } from '@/lib/email/send'
 import type { Tally } from '@/db/queries'
@@ -51,6 +53,8 @@ function TallyBlock({
 }
 
 export default async function AdminHome() {
+  // nothing is collected from visitors in cms mode, so there are no people to count
+  if (!collectsData()) return <ContentOverview />
   const [counts, tallies] = await Promise.all([getAdminCounts(), getPlanningTallies()])
   const mailOn = emailConfigured()
   const notifyOn = Boolean(process.env.ADMIN_NOTIFY_EMAIL)

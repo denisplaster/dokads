@@ -1,16 +1,18 @@
 import type { Metadata } from 'next'
 import { Join } from '@/views/Join'
 import { JoinInfo } from '@/views/JoinInfo'
-import { isStatic } from '@/lib/site-mode'
+import { collectsData } from '@/lib/site-mode'
+import { copy } from '@/content/copy'
+
+const meta = copy('join').meta
 
 export const metadata: Metadata = {
-  title: 'Join DOKADS',
-  description:
-    'Sign-ups are not open yet. Read everything here, and email us if you want to hear when something starts.',
+  title: meta.title,
+  description: meta.description,
 }
 
 export default function Page() {
   // static mode collects nothing, so the questionnaire is replaced by an
   // honest informational page rather than a form that goes nowhere
-  return isStatic() ? <JoinInfo /> : <Join />
+  return collectsData() ? <Join definition={copy('shared').definition} /> : <JoinInfo />
 }

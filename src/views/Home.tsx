@@ -17,13 +17,16 @@ import {
   rot,
 } from '../components/zine'
 import { DokadDefinition } from '../components/DokadDefinition'
-import { pillars } from '../data/pillars'
+import { Rich } from '../components/Rich'
 import type { Story } from '../data/stories'
 import type { DokEvent } from '../data/events'
-import { COMMUNITY_LED_PRINCIPLE } from '../data/community'
 import { CollageFrame } from '../components/zine/CollageFrame'
 import { RotatingPhrase } from '../components/RotatingPhrase'
 import { contactMailto } from '../lib/site-mode'
+import { copy } from '../content/copy'
+import { pillarList } from '../content/derived'
+
+const STICKER_COLORS = ['paper', 'yellow', 'ink', 'paper'] as const
 
 export function Home({
   stories,
@@ -34,6 +37,9 @@ export function Home({
   upcoming: DokEvent[]
   past: DokEvent[]
 }) {
+  const c = copy('home')
+  const shared = copy('shared')
+  const pillars = pillarList()
   const featured = stories.filter((s) => s.featured)
   const rest = stories.filter((s) => !s.featured).slice(0, 4)
   const nextEvents = upcoming.slice(0, 3)
@@ -53,88 +59,72 @@ export function Home({
         <div className="wrap wrap--wide hero__inner">
           <div className="hero__top">
             <IssueLabel />
-            <RotatingPhrase />
+            <RotatingPhrase phrases={c.hero.rotating} />
           </div>
 
           <p className="hero__eyebrow">
-            Your family’s adoption story may be part of your story too.
+            <Rich text={c.hero.eyebrow} />
           </p>
 
           <EditorialHeadline size="display" sentence className="hero__headline">
             <span className="hero__headline-premise">
-              Your parent or grandparent was{' '}
-              <span className="highlight">adopted from Korea</span>.
+              <Rich text={c.hero.premise} />
             </span>{' '}
-            <span className="hero__headline-ask">So, what does that mean for you?</span>
+            <span className="hero__headline-ask">
+              <Rich text={c.hero.ask} />
+            </span>
           </EditorialHeadline>
 
           <div className="hero__body">
             <p className="lead">
-              DOKADS is a community and learning hub for children, grandchildren, and other
-              descendants of Korean adoptees. Come explore the questions, stories, cultures,
-              relationships, and identities that can continue across generations.
+              <Rich text={c.hero.lead} />
             </p>
 
             <div className="hero__ctas">
               <Link href="/start" className="btn btn--red btn--lg">
-                Start here
+                {c.hero.ctaStart}
               </Link>
               <Link href="/am-i-a-dokad" className="btn btn--paper btn--lg">
-                Am I a DoKAD?
+                {c.hero.ctaAmI}
               </Link>
               <Link href="/events" className="btn btn--ghost">
-                Meet other DoKADs
+                {c.hero.ctaEvents}
               </Link>
             </div>
 
             <p className="hero__note">
               <HandArrow turn={22} size={64} color="blue" className="hero__note-arrow" />
-              <HandwrittenNote>
-                Never heard the word DoKAD before? You’re not alone.
-              </HandwrittenNote>
+              <HandwrittenNote>{c.hero.note}</HandwrittenNote>
             </p>
           </div>
 
           <div className="hero__def">
-            <DokadDefinition />
+            <DokadDefinition text={shared.definition} />
           </div>
         </div>
       </ZineSection>
 
-      <Marquee
-        tone="ink"
-        items={[
-          'Descendants of Korean adoptees',
-          'Issue 001',
-          'Start with curiosity',
-          'You belong in the conversation',
-          'Minnesota + everywhere else',
-        ]}
-      />
+      <Marquee tone="ink" items={c.hero.marquee} />
 
       {/* ================= AM I A DOKAD teaser ================= */}
       <ZineSection tone="acid" torn="bottom" className="teaser">
         <div className="wrap wrap--wide">
-          <SectionHead number="00" kicker="The first question" />
+          <SectionHead number="00" kicker={c.teaser.kicker} />
           <div className="teaser__grid">
             <div>
               <EditorialHeadline size={1}>
-                Was your parent or grandparent{' '}
-                <br />
-                adopted from Korea?
+                <Rich text={c.teaser.headline} />
               </EditorialHeadline>
               <ScribbleUnderline color="red" variant={2} />
               <p className="lead" style={{ marginTop: 'var(--s-5)' }}>
-                That is the only question that matters to start. If the answer is yes — or
-                probably, or you think so but nobody has ever really explained it — you are in
-                the right place.
+                <Rich text={c.teaser.lead} />
               </p>
               <div className="teaser__ctas">
                 <Link href="/am-i-a-dokad" className="btn btn--blue btn--lg">
-                  Walk me through it
+                  {c.teaser.cta}
                 </Link>
                 <HandwrittenNote color="red" tiltDir={1}>
-                  takes 30 seconds
+                  {c.teaser.note}
                 </HandwrittenNote>
               </div>
             </div>
@@ -142,17 +132,19 @@ export function Home({
               <PaperCard tilt="tilt" shadow="slab">
                 <TapeStrip position="top-left" variant="blue" />
                 <ul className="teaser__list">
-                  <li>My mother was adopted from Korea</li>
-                  <li>My father was adopted from Korea</li>
-                  <li>One or both of my parents are Korean adoptees</li>
-                  <li>My grandparent was adopted from Korea</li>
-                  <li>More than one person in my family was adopted from Korea</li>
-                  <li className="teaser__list-soft">
-                    I am still figuring out how this history relates to me
-                  </li>
+                  {c.teaser.examples.map((e) => (
+                    <li key={e}>
+                      <Rich text={e} />
+                    </li>
+                  ))}
+                  {c.teaser.softExample && (
+                    <li className="teaser__list-soft">
+                      <Rich text={c.teaser.softExample} />
+                    </li>
+                  )}
                 </ul>
                 <p className="teaser__foot">
-                  Any of these? <strong>Then yes.</strong>
+                  <Rich text={c.teaser.foot} />
                 </p>
               </PaperCard>
             </div>
@@ -163,9 +155,9 @@ export function Home({
       {/* ================= WHO / WHAT / WHERE / WHY ================= */}
       <ZineSection tone="paper" className="pillars">
         <div className="wrap wrap--wide">
-          <SectionHead number="01" kicker="Who, what, where and why" />
+          <SectionHead number="01" kicker={c.pillars.kicker} />
           <p className="lead pillars__intro">
-            Four ways into the same subject. Take them in any order — or take one and leave.
+            <Rich text={c.pillars.intro} />
           </p>
 
           <div className="pillars__grid">
@@ -186,12 +178,14 @@ export function Home({
                   <p className="pillar__dek">{p.dek}</p>
                   <ul className="pillar__points">
                     {p.points.map((pt) => (
-                      <li key={pt}>{pt}</li>
+                      <li key={pt}>
+                        <Rich text={pt} />
+                      </li>
                     ))}
                   </ul>
                   <div className="pillar__foot">
                     <Link href={`/learn#${p.id}`} className="pillar__link">
-                      Read the long version
+                      {c.pillars.link}
                       <HandArrow size={44} color="ink" className="pillar__arrow" />
                     </Link>
                     <HandwrittenNote color="ink" className="pillar__note" tiltDir={1}>
@@ -208,7 +202,7 @@ export function Home({
       {/* ================= STORIES ================= */}
       <ZineSection tone="ink" torn="both" className="home-stories">
         <div className="wrap wrap--wide">
-          <SectionHead number="02" kicker="Stories from the next generation" />
+          <SectionHead number="02" kicker={c.stories.kicker} />
 
           <div className="home-stories__lead">
             {featured[0] && <ZineArticleCard story={featured[0]} layout="lead" />}
@@ -232,13 +226,13 @@ export function Home({
 
           <div className="home-stories__foot">
             <Link href="/stories" className="btn btn--yellow btn--lg">
-              Read all stories
+              {c.stories.cta}
             </Link>
             <HandwrittenNote color="paper" tiltDir={1}>
-              got one of your own? →
+              {c.stories.note}
             </HandwrittenNote>
             <Sticker to="/stories#submit" color="paper">
-              Tell us your story
+              {c.stories.sticker}
             </Sticker>
           </div>
         </div>
@@ -247,8 +241,8 @@ export function Home({
       {/* ================= PULL QUOTE BREAK ================= */}
       <ZineSection tone="bright" tight className="quote-break">
         <div className="wrap">
-          <PullQuote cite="A community principle, not a slogan">
-            You do not need to have everything figured out before taking part.
+          <PullQuote cite={c.quote.cite}>
+            <Rich text={c.quote.quote} />
           </PullQuote>
         </div>
       </ZineSection>
@@ -256,17 +250,16 @@ export function Home({
       {/* ================= EVENTS ================= */}
       <ZineSection tone="blue" torn="top" className="home-events">
         <div className="wrap wrap--wide">
-          <SectionHead number="03" kicker={nextEvents.length ? 'Coming up' : 'Meetups'} />
+          <SectionHead
+            number="03"
+            kicker={nextEvents.length ? c.events.kickerUpcoming : c.events.kickerNone}
+          />
           <div className="home-events__head">
             <EditorialHeadline size={2}>
-              Come and meet{' '}
-              <br />
-              some people
+              <Rich text={c.events.headline} />
             </EditorialHeadline>
             <p className="lead">
-              {nextEvents.length
-                ? 'Small gatherings, mostly free, mostly informal. Coffee shops and video calls rather than conference rooms.'
-                : 'The first DoKAD meetup has happened. Nothing new is on the calendar yet — when there is, it goes here first.'}
+              <Rich text={nextEvents.length ? c.events.leadUpcoming : c.events.leadNone} />
             </p>
           </div>
 
@@ -278,16 +271,12 @@ export function Home({
             ))}
             {!nextEvents.length && (
               <div className="home-events__empty">
-                <p className="home-events__empty-head">Want the next one?</p>
+                <p className="home-events__empty-head">{c.events.emptyHead}</p>
                 <p>
-                  Tell us you are interested and what would suit you — a time, a place, a kind of
-                  gathering. The first one happened because people asked.
+                  <Rich text={c.events.emptyBody} />
                 </p>
-                <a
-                  href={contactMailto('Interested in the next DoKAD meetup')}
-                  className="btn btn--yellow"
-                >
-                  Email us
+                <a href={contactMailto(c.events.emptySubject)} className="btn btn--yellow">
+                  {c.events.emptyCta}
                 </a>
               </div>
             )}
@@ -295,10 +284,10 @@ export function Home({
 
           <div className="home-events__foot">
             <Link href="/events" className="btn btn--yellow">
-              All events
+              {c.events.all}
             </Link>
             <Link href="/regions/minnesota" className="btn btn--paper">
-              Minnesota DoKADs
+              {c.events.region}
             </Link>
           </div>
         </div>
@@ -309,26 +298,28 @@ export function Home({
         <div className="wrap wrap--wide principle__inner">
           <PaperCard tilt="hair" shadow="slab" className="principle__card">
             <TapeStrip position="top-center" variant="kraft" width={140} />
-            <span className="eyebrow">Our one non-negotiable</span>
+            <span className="eyebrow">{c.principle.eyebrow}</span>
             {/* sentence case is required here, not stylistic — uppercase would
                 flatten the deliberate “DoKAD” / “DoKADs” casing */}
             <EditorialHeadline size={2} sentence className="principle__head">
-              {COMMUNITY_LED_PRINCIPLE.headline}
+              <Rich text={shared.principle.headline} />
             </EditorialHeadline>
-            <p className="measure">{COMMUNITY_LED_PRINCIPLE.body}</p>
+            <p className="measure">
+              <Rich text={shared.principle.body} />
+            </p>
             <div className="principle__ctas">
               <Link href="/about" className="btn btn--ghost">
-                About DOKADS
+                {c.principle.about}
               </Link>
               <Link href="/guidelines" className="btn btn--ghost">
-                Community guidelines
+                {c.principle.guidelines}
               </Link>
             </div>
           </PaperCard>
 
           <div className="principle__aside">
             <HandwrittenNote color="red" tiltDir={-1}>
-              adoptees made this generation possible. we know.
+              {c.principle.note}
             </HandwrittenNote>
             <CollageFrame seed="principle-art" variant="arc" ratio="1 / 1" />
           </div>
@@ -339,38 +330,33 @@ export function Home({
       <ZineSection tone="red" torn="top" className="home-join">
         <div className="wrap wrap--wide home-join__inner">
           <div>
-            <span className="eyebrow">Last thing</span>
+            <span className="eyebrow">{c.join.eyebrow}</span>
             <EditorialHeadline size="display">
-              You belong in{' '}
-              <br />
-              the conversation.
+              <Rich text={c.join.headline} />
             </EditorialHeadline>
             <p className="lead" style={{ marginTop: 'var(--s-5)' }}>
-              A few quick questions — nothing too personal. It helps us work out what to run,
-              where, and when.
+              <Rich text={c.join.lead} />
             </p>
             <div className="home-join__ctas">
               <Link href="/join" className="btn btn--yellow btn--lg">
-                Join DOKADS
+                {c.join.cta}
               </Link>
               <Link href="/share" className="btn btn--ghost">
-                Share it with someone
+                {c.join.share}
               </Link>
             </div>
           </div>
           <div className="home-join__deco" aria-hidden="true">
-            <Sticker color="paper" large>
-              Free
-            </Sticker>
-            <Sticker color="yellow" large tiltDir={1}>
-              All ages
-            </Sticker>
-            <Sticker color="ink" large>
-              No experience required
-            </Sticker>
-            <Sticker color="paper" large tiltDir={1}>
-              Leave whenever
-            </Sticker>
+            {c.join.stickers.map((label, i) => (
+              <Sticker
+                key={label}
+                color={STICKER_COLORS[i % STICKER_COLORS.length]}
+                large
+                tiltDir={i % 2 === 1 ? 1 : undefined}
+              >
+                {label}
+              </Sticker>
+            ))}
           </div>
         </div>
       </ZineSection>

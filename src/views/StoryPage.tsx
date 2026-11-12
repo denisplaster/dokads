@@ -14,12 +14,15 @@ import {
   ZineArticleCard,
   ZineSection,
 } from '../components/zine'
-import { STORY_KINDS } from '../data/stories'
-import { LEGAL_DISCLAIMER } from '../data/topics'
 import type { Story } from '../data/stories'
+import { Rich } from '../components/Rich'
+import { copy } from '../content/copy'
+import { vocab } from '../content/vocab'
 
 export function StoryPage({ story, related }: { story: Story; related: Story[] }) {
-  const kind = STORY_KINDS[story.kind]
+  const kind = vocab.storyKind(story.kind)
+  const t = copy('stories').story
+  const disclaimer = copy('shared').legal.disclaimer
 
   return (
     <>
@@ -27,13 +30,15 @@ export function StoryPage({ story, related }: { story: Story; related: Story[] }
       <ZineSection tone="bright" torn="bottom" className="article-head">
         <div className="wrap wrap--wide">
           <p className="article-head__crumbs">
-            <Link href="/stories">Stories</Link> <span aria-hidden="true">/</span> {kind.label}
+            <Link href="/stories">{t.crumb}</Link> <span aria-hidden="true">/</span> {kind.label}
           </p>
 
           <div className="article-head__meta">
             <CategorySticker kind={story.kind} label={kind.label} />
             <IssueLabel issue={story.issue} />
-            <span className="eyebrow">{story.readingTime} min read</span>
+            <span className="eyebrow">
+              {story.readingTime} {vocab.story.minRead}
+            </span>
             {story.location && <LocationStamp>{story.location}</LocationStamp>}
           </div>
 
@@ -47,7 +52,7 @@ export function StoryPage({ story, related }: { story: Story; related: Story[] }
             {story.byline}
             {!story.byline.toLowerCase().includes('dokads') && (
               <span className="article-head__credit">
-                credited as: {story.bylineStyle}
+                {t.credited} {story.bylineStyle}
               </span>
             )}
           </p>
@@ -58,9 +63,7 @@ export function StoryPage({ story, related }: { story: Story; related: Story[] }
         <div className="wrap wrap--wide">
           <CollageFrame seed={story.slug} variant={story.art} ratio="21 / 9" />
           <p className="caption">
-            <strong>Above</strong> — generated artwork. DOKADS does not use stock photography of
-            Korean or mixed-race families, and does not use AI-generated people in place of real
-            community members.
+            <Rich text={t.artCaption} />
           </p>
         </div>
       </ZineSection>
@@ -70,11 +73,13 @@ export function StoryPage({ story, related }: { story: Story; related: Story[] }
         <div className="wrap">
           {story.sensitive && (
             <PaperCard className="legal-flag" tilt="hair" shadow="lift">
-              <span className="eyebrow">Educational information, not legal advice</span>
-              <p>{LEGAL_DISCLAIMER}</p>
+              <span className="eyebrow">{t.legalEyebrow}</span>
+              <p>
+                <Rich text={disclaimer} />
+              </p>
               {story.lastReviewed && (
                 <p className="legal-flag__date">
-                  Last reviewed against official sources on{' '}
+                  {t.reviewedBefore}{' '}
                   <time dateTime={story.lastReviewed}>
                     {new Date(`${story.lastReviewed}T12:00:00`).toLocaleDateString('en-US', {
                       day: 'numeric',
@@ -82,7 +87,7 @@ export function StoryPage({ story, related }: { story: Story; related: Story[] }
                       year: 'numeric',
                     })}
                   </time>
-                  . Rules change — check the sources at the end before acting on anything here.
+                  {t.reviewedAfter}
                 </p>
               )}
             </PaperCard>
@@ -90,8 +95,7 @@ export function StoryPage({ story, related }: { story: Story; related: Story[] }
 
           {story.isPlaceholder && (
             <PaperCard className="placeholder-flag" tilt="hair" shadow="lift">
-              <strong>Placeholder piece.</strong> This is layout copy, not anyone’s real
-              account.
+              <Rich text={t.placeholder} />
             </PaperCard>
           )}
 
@@ -99,17 +103,19 @@ export function StoryPage({ story, related }: { story: Story; related: Story[] }
             {story.body.map((para, i) =>
               para.startsWith('> ') ? (
                 <PullQuote key={i} className="article-prose__quote">
-                  {para.slice(2)}
+                  <Rich text={para.slice(2)} />
                 </PullQuote>
               ) : (
-                <p key={i}>{para}</p>
+                <p key={i}>
+                  <Rich text={para} />
+                </p>
               ),
             )}
           </div>
 
           {story.sources && story.sources.length > 0 && (
             <aside className="article-sources">
-              <h2 className="eyebrow">Sources</h2>
+              <h2 className="eyebrow">{t.sources}</h2>
               <ul>
                 {story.sources.map((src) => (
                   <li key={src.href}>
@@ -124,16 +130,14 @@ export function StoryPage({ story, related }: { story: Story; related: Story[] }
 
           <div className="article-foot">
             <div className="article-foot__note">
-              <HandwrittenNote tiltDir={-1}>
-                you can withdraw a piece at any time
-              </HandwrittenNote>
+              <HandwrittenNote tiltDir={-1}>{t.footNote}</HandwrittenNote>
             </div>
             <div className="article-foot__actions">
               <Sticker to="/stories#submit" color="red" large>
-                Tell us your story
+                {t.footStory}
               </Sticker>
               <Sticker to="/join" color="yellow" large tiltDir={1}>
-                Join DOKADS
+                {t.footJoin}
               </Sticker>
             </div>
           </div>
@@ -143,7 +147,7 @@ export function StoryPage({ story, related }: { story: Story; related: Story[] }
       {/* related */}
       <ZineSection tone="ink" torn="top" className="article-related">
         <div className="wrap wrap--wide">
-          <SectionHead number="→" kicker="Read this next" />
+          <SectionHead number="→" kicker={t.related} />
           <div className="grid grid--3">
             {related.map((s, i) => (
               <ZineArticleCard key={s.slug} story={s} index={i} layout="text" />

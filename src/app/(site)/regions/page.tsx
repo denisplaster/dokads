@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { copy } from '@/content/copy'
 import { Regions } from '@/views/Regions'
 import { getAllRegions, getRegionEventCounts } from '@/lib/content'
 
@@ -8,10 +9,11 @@ import { getAllRegions, getRegionEventCounts } from '@/lib/content'
  * nothing to pay for, nothing that can be down. See src/lib/site-mode.ts.
  */
 
+const meta = copy('regions').meta
+
 export const metadata: Metadata = {
-  title: 'Local groups',
-  description:
-    'DoKAD communities by region, starting with Minnesota. Korean adoptees were placed across four continents; their descendants are scattered the same way.',
+  title: meta.title,
+  description: meta.description,
 }
 
 export default function Page() {

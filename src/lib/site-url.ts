@@ -17,3 +17,31 @@ export function siteUrl(): string {
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
   return 'http://localhost:5190'
 }
+
+/**
+ * Origins allowed to call the auth API. The production domain is reachable as
+ * both www and apex (one redirects to the other), and Vercel's
+ * VERCEL_PROJECT_PRODUCTION_URL picks whichever is shorter — so trust both
+ * spellings, plus this deployment's own URL for previews.
+ */
+export function trustedOrigins(): string[] {
+  const out = new Set<string>()
+  const add = (url: string | undefined) => {
+    if (!url) return
+    try {
+      const u = new URL(url.startsWith('http') ? url : `https://${url}`)
+      out.add(u.origin)
+      const host = u.hostname.startsWith('www.') ? u.hostname.slice(4) : `www.${u.hostname}`
+      if (!u.hostname.includes('localhost') && !u.hostname.endsWith('.vercel.app')) {
+        out.add(`${u.protocol}//${host}`)
+      }
+    } catch {
+      // ignore malformed values
+    }
+  }
+  add(siteUrl())
+  add(process.env.VERCEL_PROJECT_PRODUCTION_URL)
+  add(process.env.VERCEL_URL)
+  add(process.env.VERCEL_BRANCH_URL)
+  return [...out]
+}

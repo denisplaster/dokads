@@ -35,6 +35,9 @@ export function toStory(r: DbStory): Story {
     featured: r.featured,
     body: r.body ?? [],
     isPlaceholder: r.isPlaceholder,
+    ...(r.sensitive ? { sensitive: true } : {}),
+    ...(r.lastReviewed ? { lastReviewed: r.lastReviewed } : {}),
+    ...(r.sources?.length ? { sources: r.sources } : {}),
   }
 }
 
@@ -66,7 +69,8 @@ export function toEvent(r: DbEvent): DokEvent {
       deadline: r.deadline ?? undefined,
       perk: r.perk ?? undefined,
     },
-    tentativeNotes: r.tentativeNotes ?? undefined,
+    // the column defaults to [], which must read as "nothing unsettled", not an empty box
+    tentativeNotes: r.tentativeNotes?.length ? r.tentativeNotes : undefined,
     needsFoodInfo: r.needsFoodInfo,
     host: r.host ?? undefined,
     recap: r.recap ?? undefined,
@@ -80,9 +84,10 @@ export function toRegion(r: DbRegion): Region {
     country: r.country,
     status: r.status as RegionStatus,
     intro: r.intro ?? undefined,
-    organisers: r.organisers ?? undefined,
-    socials: r.socials ?? undefined,
-    updates: r.updates ?? undefined,
+    // jsonb columns default to [], which means "none" — same as an absent field
+    organisers: r.organisers?.length ? r.organisers : undefined,
+    socials: r.socials?.length ? r.socials : undefined,
+    updates: r.updates?.length ? r.updates : undefined,
   }
 }
 

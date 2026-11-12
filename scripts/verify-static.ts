@@ -71,13 +71,18 @@ async function main() {
     past.every((e) => !e.tentativeNotes?.length && !e.backupDate),
   )
   const eventPage = readFileSync('src/views/EventPage.tsx', 'utf8')
+  const { copy: readCopy } = await import('../src/content/copy')
   check(
     'past events render a recap, not a sign-up',
-    /isPast \? \(/.test(eventPage) && /This one has happened/.test(eventPage),
+    /isPast \? \(/.test(eventPage) &&
+      /side\.pastHead/.test(eventPage) &&
+      readCopy('events').eventSide.pastHead.length > 0,
   )
 
   console.log('\nLEGAL_RULES on sensitive content')
-  const { LEGAL_DISCLAIMER } = await import('../src/data/topics')
+  const { copy } = await import('../src/content/copy')
+  const { legalProblems } = await import('../src/content/legal')
+  const LEGAL_DISCLAIMER = copy('shared').legal.disclaimer
   const sensitive = getPublishedStories().filter((st) => st.sensitive)
   check('at least one sensitive story exists to check', sensitive.length > 0, `${sensitive.length}`)
   check(
@@ -98,9 +103,11 @@ async function main() {
   )
   check(
     'the not-legal-advice disclaimer is rendered, not just stored',
-    /LEGAL_DISCLAIMER/.test(readFileSync('src/views/StoryPage.tsx', 'utf8')) &&
+    /legal\.disclaimer/.test(readFileSync('src/views/StoryPage.tsx', 'utf8')) &&
       LEGAL_DISCLAIMER.toLowerCase().includes('not legal advice'),
   )
+  const problems = sensitive.flatMap((st) => legalProblems(st).map((p) => `${st.slug}: ${p}`))
+  check('every sensitive story passes the admin’s legal checks', problems.length === 0, problems.join(' '))
   // the rule that matters most: never promise eligibility from a relationship alone
   const promises = sensitive.filter((st) => {
     const text = st.body.join(' ').toLowerCase()
@@ -116,8 +123,27 @@ async function main() {
 
   console.log('\nNo network in the public tree')
   const siteFiles = walk('src/app/(site)')
-  const dbImports = siteFiles.filter((f) => /from '@\/db|from '@\/lib\/adapt/.test(readFileSync(f, 'utf8')))
-  check('no public page imports the database', dbImports.length === 0, dbImports.join(', '))
+  // everything a public page can pull in: routes, views, non-admin components,
+  // and the content modules they read (not the build-time snapshot writers)
+  const BUILD_ONLY = /content\/(build-snapshot|meta|write-snapshot)\.ts$/
+  const publicTree = [
+    ...siteFiles,
+    ...walk('src/views'),
+    ...walk('src/components').filter((f) => !f.includes('/admin/')),
+    ...walk('src/content').filter((f) => !BUILD_ONLY.test(f)),
+  ].filter((f) => !/views\/Join\.tsx$|forms\/RegistrationForm\.tsx$/.test(f))
+  const dbImports = publicTree.filter((f) =>
+    /from '(@\/|(\.\.\/)+)(db|lib\/adapt|content\/(build-snapshot|meta))/.test(readFileSync(f, 'utf8')),
+  )
+  check('nothing a public page renders imports the database', dbImports.length === 0, dbImports.join(', '))
+  const vocab = readFileSync('src/content/vocab.ts', 'utf8')
+  check(
+    'the browser-safe vocabulary never loads the full snapshot',
+    !/content\.json|from '\.\/(copy|snapshot)'/.test(vocab),
+  )
+  const clientViews = publicTree.filter((f) => /^'use client'/.test(readFileSync(f, 'utf8')))
+  const clientCopy = clientViews.filter((f) => /from '(\.\.\/)+content\/copy'|from '@\/content\/copy'/.test(readFileSync(f, 'utf8').replace(/import type[^\n]*\n/g, '')))
+  check('no client component imports the page-text reader', clientCopy.length === 0, clientCopy.join(', '))
 
   const dynamicPages = siteFiles.filter((f) => /force-dynamic|export const revalidate/.test(readFileSync(f, 'utf8')))
   check('every public page is static', dynamicPages.length === 0, dynamicPages.join(', '))
@@ -136,14 +162,30 @@ async function main() {
   delete process.env.SITE_MODE
   const mode = await import('../src/lib/site-mode')
   check('defaults to static with no env set', mode.isStatic())
+  check('static mode has no admin and no database content', !mode.adminEnabled() && !mode.contentFromDatabase())
+  process.env.SITE_MODE = 'cms'
+  check(
+    'SITE_MODE=cms: admin and database content, but nothing collected',
+    mode.adminEnabled() && mode.contentFromDatabase() && !mode.collectsData(),
+  )
   process.env.SITE_MODE = 'full'
-  check('SITE_MODE=full turns the database back on', !mode.isStatic())
+  check('SITE_MODE=full turns data collection back on', !mode.isStatic() && mode.collectsData())
   if (prev === undefined) delete process.env.SITE_MODE
   else process.env.SITE_MODE = prev
 
   const mw = readFileSync('src/middleware.ts', 'utf8')
   check('middleware 404s the admin in static mode', /isStatic\(\)/.test(mw) && /404/.test(mw))
   check('middleware also covers the auth API', /api\/auth/.test(mw))
+  check(
+    'the sign-in and password pages are reachable without a session',
+    ['/admin/sign-in', '/admin/forgot-password', '/admin/reset-password'].every((p) => mw.includes(`'${p}'`)),
+  )
+  const views = walk('src/views').map((f) => readFileSync(f, 'utf8')).join('\n')
+  check(
+    'forms and email only render in full mode',
+    /collectsData\(\) \? <Join/.test(readFileSync('src/app/(site)/join/page.tsx', 'utf8')) &&
+      /!collectsData\(\)/.test(views),
+  )
 
   console.log(failures === 0 ? '\nAll static-mode checks passed.\n' : `\n${failures} FAILED.\n`)
   process.exit(failures === 0 ? 0 : 1)

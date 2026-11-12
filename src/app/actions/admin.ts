@@ -2,10 +2,11 @@
 
 import { randomUUID } from 'node:crypto'
 import { eq } from 'drizzle-orm'
-import { revalidatePath, updateTag } from 'next/cache'
+import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { db } from '@/db'
-import { CACHE_TAGS } from '@/db/queries'
+import { touchContent } from '@/content/meta'
+import { legalProblems } from '@/content/legal'
 import {
   eventRegistrations,
   events,
@@ -16,6 +17,7 @@ import {
   submissions,
 } from '@/db/schema'
 import { requireStaff, regionScope } from '@/lib/auth-guard'
+import type { Staff } from '@/lib/auth-guard'
 import type { ActionResult } from './public'
 
 /* Every action re-checks the session. Middleware is not a security boundary. */
@@ -28,23 +30,27 @@ function err(message: string): ActionResult {
 }
 
 /**
- * Refresh every public surface an edit could touch.
+ * Record that public content changed.
  *
- * Two layers have to be busted, not one. `revalidatePath` drops the rendered
- * route, but the public reads in db/queries.ts are cached separately by tag —
- * without clearing those a re-render would just refill the page from a stale
- * query result. Tags are cheap and edits are rare, so we clear all of them
- * rather than trying to guess which read a given edit invalidates.
- *
- * `updateTag`, not `revalidateTag`: these run inside Server Actions, and only
- * updateTag gives read-your-own-writes. An admin who saves a story and lands
- * back on the public page must see the story, not the pre-save cache entry.
+ * The public site is prerendered from a snapshot taken at build time, so an
+ * edit is not live until someone presses Publish (which rebuilds). This marks
+ * the change so the admin can say "you have unpublished changes", and
+ * refreshes the admin so the banner appears straight away.
  */
-function revalidatePublic(paths: string[] = []) {
-  revalidatePath('/')
-  for (const p of paths) revalidatePath(p)
-  for (const tag of Object.values(CACHE_TAGS)) updateTag(tag)
+async function changed(staff: Staff, what: string) {
+  await touchContent(staff.email, what)
+  revalidatePath('/admin', 'layout')
 }
+
+const optionalText = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .optional()
+    .nullable()
+    .or(z.literal(''))
+    .transform((v) => (v ? v : null))
 
 /* ==========================================================================
    EVENTS
@@ -97,6 +103,16 @@ const eventSchema = z.object({
   perk: z.string().trim().max(300).optional().nullable().or(z.literal('')).transform((v) => (v ? v : null)),
   tentativeNotes: z.array(z.string().trim().max(500)).max(20).default([]),
   needsFoodInfo: z.boolean().default(false),
+  hostName: optionalText(200),
+  hostHref: z
+    .string()
+    .trim()
+    .url('The host’s page must be a full web address, starting https://')
+    .optional()
+    .nullable()
+    .or(z.literal(''))
+    .transform((v) => (v ? v : null)),
+  recap: optionalText(3000),
 })
 
 export async function saveEvent(input: unknown): Promise<ActionResult> {
@@ -109,8 +125,11 @@ export async function saveEvent(input: unknown): Promise<ActionResult> {
       return err('You can only manage events in your own region.')
     }
 
+    const { hostName, hostHref, ...rest } = data
+    if (hostName && !hostHref) return err('Add a link to the host’s page for this event, or clear the host name.')
     const values = {
-      ...data,
+      ...rest,
+      host: hostName && hostHref ? { name: hostName, href: hostHref } : null,
       tentativeNotes: data.tentativeNotes.filter(Boolean),
       updatedAt: new Date(),
     }
@@ -121,8 +140,7 @@ export async function saveEvent(input: unknown): Promise<ActionResult> {
       await db.insert(events).values({ ...values, id: randomUUID() })
     }
 
-    revalidatePublic(['/events', `/events/${data.slug}`, `/regions/${data.regionSlug}`])
-    revalidatePath('/admin/events')
+    await changed(staff, `event “${data.title}”`)
     return ok()
   } catch (e) {
     if (e instanceof z.ZodError) return err(e.issues[0]?.message ?? 'Check the form.')
@@ -133,14 +151,13 @@ export async function saveEvent(input: unknown): Promise<ActionResult> {
 
 /** The operation that actually matters day to day. */
 export async function setEventStatus(id: string, status: string): Promise<ActionResult> {
-  await requireStaff()
+  const staff = await requireStaff()
   if (!(STATUSES as readonly string[]).includes(status)) return err('Unknown status.')
   const [row] = await db.select().from(events).where(eq(events.id, id)).limit(1)
   if (!row) return err('That event no longer exists.')
 
   await db.update(events).set({ status, updatedAt: new Date() }).where(eq(events.id, id))
-  revalidatePublic(['/events', `/events/${row.slug}`, `/regions/${row.regionSlug}`])
-  revalidatePath('/admin/events')
+  await changed(staff, `status of “${row.title}”`)
   return ok()
 }
 
@@ -150,8 +167,7 @@ export async function deleteEvent(id: string): Promise<ActionResult> {
   const [row] = await db.select().from(events).where(eq(events.id, id)).limit(1)
   if (!row) return ok()
   await db.delete(events).where(eq(events.id, id))
-  revalidatePublic(['/events', `/regions/${row.regionSlug}`])
-  revalidatePath('/admin/events')
+  await changed(staff, `deleted event “${row.title}”`)
   return ok()
 }
 
@@ -180,10 +196,34 @@ const storySchema = z.object({
   bodyText: z.string().default(''),
   status: z.enum(['draft', 'published']),
   isPlaceholder: z.boolean().default(false),
+  sensitive: z.boolean().default(false),
+  lastReviewed: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'The review date must be a date.')
+    .optional()
+    .nullable()
+    .or(z.literal(''))
+    .transform((v) => (v ? v : null)),
+  /** one source per line: "Label | https://…" */
+  sourcesText: z.string().max(5000).default(''),
+  sortOrder: z.coerce.number().int().min(0).max(10000).default(100),
 })
 
+/** "Label | https://address" per line → sources; a bare address uses itself as the label. */
+function parseSources(text: string): { label: string; href: string }[] {
+  return text
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((l) => {
+      const at = l.lastIndexOf('|')
+      if (at === -1) return { label: l, href: l }
+      return { label: l.slice(0, at).trim() || l.slice(at + 1).trim(), href: l.slice(at + 1).trim() }
+    })
+}
+
 export async function saveStory(input: unknown): Promise<ActionResult> {
-  await requireStaff()
+  const staff = await requireStaff()
   try {
     const data = storySchema.parse(input)
     // one paragraph per blank-line-separated block; "> " marks a pull quote
@@ -191,6 +231,18 @@ export async function saveStory(input: unknown): Promise<ActionResult> {
       .split(/\n\s*\n/)
       .map((p) => p.trim())
       .filter(Boolean)
+    const sources = parseSources(data.sourcesText)
+    if (sources.some((s) => !/^https?:\/\//.test(s.href))) {
+      return err('Each source needs a web address: “Label | https://…”, one per line.')
+    }
+
+    // the rules the site states publicly for legal and immigration content
+    if (data.status === 'published') {
+      const problems = legalProblems({ sensitive: data.sensitive, lastReviewed: data.lastReviewed, sources, body })
+      if (problems.length) {
+        return err(`This story is marked legal / immigration, so before it can be published: ${problems.join(' ')}`)
+      }
+    }
 
     const values = {
       slug: data.slug,
@@ -208,6 +260,10 @@ export async function saveStory(input: unknown): Promise<ActionResult> {
       body,
       status: data.status,
       isPlaceholder: data.isPlaceholder,
+      sensitive: data.sensitive,
+      lastReviewed: data.lastReviewed,
+      sources,
+      sortOrder: data.sortOrder,
       publishedAt: data.status === 'published' ? new Date() : null,
       updatedAt: new Date(),
     }
@@ -218,8 +274,7 @@ export async function saveStory(input: unknown): Promise<ActionResult> {
       await db.insert(stories).values(values)
     }
 
-    revalidatePublic(['/stories', `/stories/${data.slug}`])
-    revalidatePath('/admin/stories')
+    await changed(staff, `story “${data.title}”`)
     return ok()
   } catch (e) {
     if (e instanceof z.ZodError) return err(e.issues[0]?.message ?? 'Check the form.')
@@ -232,8 +287,7 @@ export async function deleteStory(slug: string): Promise<ActionResult> {
   const staff = await requireStaff()
   if (staff.role !== 'admin') return err('Only an admin can delete a story.')
   await db.delete(stories).where(eq(stories.slug, slug))
-  revalidatePublic(['/stories'])
-  revalidatePath('/admin/stories')
+  await changed(staff, `deleted story ${slug}`)
   return ok()
 }
 
@@ -255,7 +309,7 @@ const resourceSchema = z.object({
 })
 
 export async function saveResource(input: unknown): Promise<ActionResult> {
-  await requireStaff()
+  const staff = await requireStaff()
   try {
     const data = resourceSchema.parse(input)
     const values = { ...data, status: data.link ? 'listed' : 'open call', updatedAt: new Date() }
@@ -264,8 +318,7 @@ export async function saveResource(input: unknown): Promise<ActionResult> {
     } else {
       await db.insert(resources).values({ ...values, id: randomUUID() })
     }
-    revalidatePublic(['/resources'])
-    revalidatePath('/admin/resources')
+    await changed(staff, `resource “${data.title}”`)
     return ok()
   } catch (e) {
     if (e instanceof z.ZodError) return err(e.issues[0]?.message ?? 'Check the form.')
@@ -278,8 +331,7 @@ export async function deleteResource(id: string): Promise<ActionResult> {
   const staff = await requireStaff()
   if (staff.role !== 'admin') return err('Only an admin can delete a resource.')
   await db.delete(resources).where(eq(resources.id, id))
-  revalidatePublic(['/resources'])
-  revalidatePath('/admin/resources')
+  await changed(staff, 'deleted a resource')
   return ok()
 }
 
@@ -340,8 +392,7 @@ export async function saveRegion(input: unknown): Promise<ActionResult> {
       await db.insert(regions).values(values)
     }
 
-    revalidatePublic(['/regions', `/regions/${data.slug}`])
-    revalidatePath('/admin/regions')
+    await changed(staff, `region “${data.name}”`)
     return ok()
   } catch (e) {
     if (e instanceof z.ZodError) return err(e.issues[0]?.message ?? 'Check the form.')

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { copy } from '@/content/copy'
 import { Resources } from '@/views/Resources'
 import { getPublishedResources } from '@/lib/content'
 
@@ -8,12 +9,13 @@ import { getPublishedResources } from '@/lib/content'
  * nothing to pay for, nothing that can be down. See src/lib/site-mode.ts.
  */
 
+const meta = copy('resources').meta
+
 export const metadata: Metadata = {
-  title: 'Resources',
-  description:
-    'A community-built reading pile: books, films, podcasts, organisations, and the practical things nobody hands you.',
+  title: meta.title,
+  description: meta.description,
 }
 
 export default function Page() {
-  return <Resources resources={getPublishedResources()} />
+  return <Resources resources={getPublishedResources()} text={copy('resources')} />
 }

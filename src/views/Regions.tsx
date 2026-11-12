@@ -12,6 +12,9 @@ import {
 } from '../components/zine'
 import { REGION_STATUS_META } from '../data/regions'
 import type { Region } from '../data/regions'
+import { Rich } from '../components/Rich'
+import { copy } from '../content/copy'
+import { vocab } from '../content/vocab'
 
 export function Regions({
   regions,
@@ -20,6 +23,7 @@ export function Regions({
   regions: Region[]
   eventCounts: Record<string, number>
 }) {
+  const c = copy('regions')
   const live = regions.filter((r) => r.status !== 'interest')
   const waiting = regions.filter((r) => r.status === 'interest')
 
@@ -29,18 +33,14 @@ export function Regions({
         <div className="wrap wrap--wide">
           <IssueLabel />
           <EditorialHeadline size="display" className="page-hero__head">
-            Where{' '}
-            <br />
-            we are.
+            <Rich text={c.hero.headline} />
           </EditorialHeadline>
           <p className="lead page-hero__lead">
-            Korean adoptees were placed across four continents, so their descendants are
-            scattered the same way. Most of us live nowhere near another DoKAD — which is why
-            the online group is the real home base, and local chapters are a bonus.
+            <Rich text={c.hero.lead} />
           </p>
           <p className="page-hero__aside">
             <HandwrittenNote color="blue" tiltDir={1}>
-              your city isn’t here? start it. →
+              {c.hero.note}
             </HandwrittenNote>
           </p>
         </div>
@@ -48,10 +48,10 @@ export function Regions({
 
       <ZineSection tone="paper" className="regions-live">
         <div className="wrap wrap--wide">
-          <SectionHead number="01" kicker="Up and running" />
+          <SectionHead number="01" kicker={c.live.kicker} />
           <div className="grid grid--2">
             {live.map((r, i) => {
-              const meta = REGION_STATUS_META[r.status]
+              const meta = { ...REGION_STATUS_META[r.status], ...vocab.regionStatus(r.status) }
               const count = eventCounts[r.slug] ?? 0
               return (
                 <PaperCard
@@ -71,12 +71,16 @@ export function Regions({
                     </Sticker>
                   </div>
                   <h3 className="region-card__name">{r.name}</h3>
-                  {r.intro && <p className="region-card__intro">{r.intro}</p>}
+                  {r.intro && (
+                    <p className="region-card__intro">
+                      <Rich text={r.intro} />
+                    </p>
+                  )}
                   <p className="region-card__count">
-                    {count} {count === 1 ? 'event' : 'events'} listed
+                    {count} {count === 1 ? c.live.one : c.live.many} {c.live.listed}
                   </p>
                   <Link href={`/regions/${r.slug}`} className="btn btn--ghost">
-                    Open {r.name}
+                    {c.live.open} {r.name}
                   </Link>
                 </PaperCard>
               )
@@ -87,26 +91,24 @@ export function Regions({
 
       <ZineSection tone="ink" torn="both" className="regions-waiting">
         <div className="wrap wrap--wide">
-          <SectionHead number="02" kicker="No organisers yet" />
+          <SectionHead number="02" kicker={c.waiting.kicker} />
           <p className="lead">
-            These are on the map because people have asked, not because anything exists. A
-            region only gets a real page when actual organisers and confirmed information are
-            behind it — we are not going to fake a chapter into being.
+            <Rich text={c.waiting.lead} />
           </p>
           <ul className="regions-waiting__list">
             {waiting.map((r, i) => (
               <li key={r.slug} style={rot('hair', i % 2 === 0 ? 1 : -1)}>
                 <span className="regions-waiting__name">{r.name}</span>
-                <span className="regions-waiting__status">gathering interest</span>
+                <span className="regions-waiting__status">{c.waiting.status}</span>
               </li>
             ))}
           </ul>
           <div className="regions-waiting__cta">
             <Link href="/join" className="btn btn--yellow btn--lg">
-              Put your city on the map
+              {c.waiting.cta}
             </Link>
             <HandwrittenNote color="paper" tiltDir={1}>
-              two people is enough to start
+              {c.waiting.note}
             </HandwrittenNote>
           </div>
         </div>

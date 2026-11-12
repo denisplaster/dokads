@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from 'react'
 import type { Route } from 'next'
 import Link from 'next/link'
 import { rot } from './Paper'
+import { vocab } from '../../content/vocab'
 
 export type StickerColor =
   | 'yellow'
@@ -88,9 +89,9 @@ export function CategorySticker({
   return <span className={`cat-sticker cat--${kind} ${className}`}>{label}</span>
 }
 
-/** DOKADS / ISSUE 001 */
+/** DOKADS / ISSUE 001 — the number is editable under Labels and statuses → Masthead. */
 export function IssueLabel({
-  issue = '001',
+  issue = vocab.brand.issue,
   prefix = 'DOKADS',
   className = '',
 }: {

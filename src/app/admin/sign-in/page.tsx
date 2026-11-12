@@ -14,8 +14,8 @@ export default function SignInPage() {
       <div className="adm-signin__box">
         <h1>DOKADS admin</h1>
         <p>
-          For organisers. There is no public sign-up — accounts are created from the command
-          line with <code>npm run admin:create</code>.
+          For the people who edit this site. There is no public sign-up — an existing editor
+          adds you under Editors and sends you a link to choose your password.
         </p>
         {/* the form reads ?next= to bounce back after signing in */}
         <Suspense fallback={<p className="adm-field__help">Loading…</p>}>

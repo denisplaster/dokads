@@ -8,7 +8,7 @@
 .next
 .vercel
 build
-drizzle/meta
 next-env.d.ts
 node_modules
 out
+src/generated

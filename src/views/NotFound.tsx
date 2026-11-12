@@ -6,38 +6,39 @@ import {
   Sticker,
   ZineSection,
 } from '../components/zine'
+import { Rich } from '../components/Rich'
+import { copy } from '../content/copy'
 
 export function NotFound() {
+  const t = copy('shared').notFound
   return (
     <ZineSection tone="ink" className="notfound">
       <div className="wrap notfound__inner">
-        <p className="eyebrow">Error 404</p>
+        <p className="eyebrow">{t.eyebrow}</p>
         <EditorialHeadline size="mega" className="notfound__head">
-          Not{' '}
-          <br />
-          here.
+          <Rich text={t.headline} />
         </EditorialHeadline>
         <ScribbleUnderline color="red" variant={2} />
         <p className="lead" style={{ marginTop: 'var(--s-5)' }}>
-          This page does not exist, or it moved, or it was never made. Happens.
+          <Rich text={t.lead} />
         </p>
         <p style={{ marginTop: 'var(--s-4)' }}>
           <HandwrittenNote color="paper" tiltDir={1}>
-            try one of these instead →
+            {t.note}
           </HandwrittenNote>
         </p>
         <div className="notfound__links">
           <Link href="/" className="btn btn--yellow btn--lg">
-            Home
+            {t.links[0]?.label}
           </Link>
           <Sticker to="/am-i-a-dokad" color="red" large>
-            Am I a DoKAD?
+            {t.links[1]?.label}
           </Sticker>
           <Sticker to="/stories" color="paper" large tiltDir={1}>
-            Stories
+            {t.links[2]?.label}
           </Sticker>
           <Sticker to="/events" color="pink" large>
-            Events
+            {t.links[3]?.label}
           </Sticker>
         </div>
       </div>

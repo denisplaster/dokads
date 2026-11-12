@@ -1,12 +1,14 @@
 import type { Metadata } from 'next'
 import { AmIaDokad } from '@/views/AmIaDokad'
+import { copy } from '@/content/copy'
+
+const meta = copy('am-i-a-dokad').meta
 
 export const metadata: Metadata = {
-  title: 'Am I a DoKAD?',
-  description:
-    'A DoKAD is a descendant of a Korean adoptee. If your parent or grandparent was adopted from Korea, that is you. No test to pass.',
+  title: meta.title,
+  description: meta.description,
 }
 
 export default function Page() {
-  return <AmIaDokad />
+  return <AmIaDokad definition={copy('shared').definition} text={copy('am-i-a-dokad')} />
 }

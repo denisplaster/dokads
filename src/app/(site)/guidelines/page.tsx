@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
+import { copy } from '@/content/copy'
 import { Guidelines } from '@/views/Guidelines'
 
+const meta = copy('guidelines').meta
+
 export const metadata: Metadata = {
-  title: 'Community guidelines',
-  description:
-    'Short, and mostly about not making anyone justify their own family.',
+  title: meta.title,
+  description: meta.description,
 }
 
 export default function Page() {

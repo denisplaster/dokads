@@ -4,8 +4,20 @@
     {
       "name": "dokads",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 5190
+    },
+    {
+      "name": "dokads-cms",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": [
+        "-c",
+        "export SITE_MODE=cms DATABASE_URL=pglite://.data/cms BETTER_AUTH_URL=http://localhost:5191; npx tsx scripts/snapshot.ts && npx next dev --port 5191"
+      ],
+      "port": 5191
     }
   ]
 }

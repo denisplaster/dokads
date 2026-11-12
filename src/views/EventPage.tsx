@@ -11,14 +11,22 @@ import {
   TapeStrip,
   ZineSection,
 } from '../components/zine'
-import { AUDIENCE_META, EVENT_TYPES, STATUS_META, formatEventDate } from '../data/events'
+import { formatEventDate } from '../data/events'
 import type { DokEvent } from '../data/events'
 import type { Region } from '../data/regions'
 import { RegistrationForm } from '../components/forms/RegistrationForm'
-import { CONTACT_EMAIL, isStatic } from '../lib/site-mode'
+import { CONTACT_EMAIL, collectsData } from '../lib/site-mode'
+import { Rich } from '../components/Rich'
+import { copy } from '../content/copy'
+import { vocab } from '../content/vocab'
 
 export function EventPage({ event, region }: { event: DokEvent; region?: Region }) {
-  const status = STATUS_META[event.status]
+  const c = copy('events')
+  const d = c.eventPage
+  const r = c.eventRules
+  const side = c.eventSide
+  const status = vocab.status(event.status)
+  const audience = vocab.audience(event.audience)
   const registrationOpen =
     event.status === 'registration open' || event.status === 'waitlist'
   // sign-up rules, the guidelines-on-registration note and any sign-up route
@@ -30,13 +38,13 @@ export function EventPage({ event, region }: { event: DokEvent; region?: Region 
       <ZineSection tone="paper" torn="bottom" className="event-head">
         <div className="wrap wrap--wide">
           <p className="article-head__crumbs">
-            <Link href="/events">Events</Link> <span aria-hidden="true">/</span>{' '}
-            {EVENT_TYPES[event.type]}
+            <Link href="/events">{d.crumb}</Link> <span aria-hidden="true">/</span>{' '}
+            {vocab.eventType(event.type)}
           </p>
 
           <div className="event-head__badges">
             <EventStatusBadge status={event.status} />
-            <IssueLabel prefix="DOKADS" issue="001" />
+            <IssueLabel />
           </div>
 
           <EditorialHeadline size="display" className="event-head__title">
@@ -48,23 +56,23 @@ export function EventPage({ event, region }: { event: DokEvent; region?: Region 
           <div className="event-head__ticket">
             <dl className="ticket">
               <div>
-                <dt>Date</dt>
+                <dt>{d.date}</dt>
                 <dd>{formatEventDate(event.date, { long: true })}</dd>
               </div>
               {event.backupDate && (
                 <div>
-                  <dt>Backup date</dt>
+                  <dt>{d.backupDate}</dt>
                   <dd>{formatEventDate(event.backupDate, { long: true })}</dd>
                 </div>
               )}
               <div>
-                <dt>Time</dt>
+                <dt>{d.time}</dt>
                 <dd>
                   {event.time} {event.timezone}
                 </dd>
               </div>
               <div>
-                <dt>Where</dt>
+                <dt>{d.where}</dt>
                 <dd>
                   {event.location}
                   <br />
@@ -72,24 +80,24 @@ export function EventPage({ event, region }: { event: DokEvent; region?: Region 
                 </dd>
               </div>
               <div>
-                <dt>Who it’s for</dt>
-                <dd>{AUDIENCE_META[event.audience].label}</dd>
+                <dt>{d.who}</dt>
+                <dd>{audience.label}</dd>
               </div>
               <div>
-                <dt>Ages</dt>
+                <dt>{d.ages}</dt>
                 <dd>{event.agePolicy}</dd>
               </div>
               <div>
-                <dt>Cost</dt>
+                <dt>{d.cost}</dt>
                 <dd>{event.cost}</dd>
               </div>
               <div>
-                <dt>Region</dt>
+                <dt>{d.region}</dt>
                 <dd>
                   {region ? (
                     <Link href={`/regions/${region.slug}`}>{region.name}</Link>
                   ) : (
-                    'Online'
+                    d.online
                   )}
                 </dd>
               </div>
@@ -99,10 +107,10 @@ export function EventPage({ event, region }: { event: DokEvent; region?: Region 
       </ZineSection>
 
       {/* what is and is not settled */}
-      {event.tentativeNotes && (
+      {event.tentativeNotes?.length ? (
         <ZineSection tone="yellow" className="event-tentative">
           <div className="wrap wrap--wide">
-            <SectionHead number="!" kicker={`${status.label} — here is what that means`} />
+            <SectionHead number="!" kicker={`${status.label} ${d.tentativeSuffix}`} />
             <div className="event-tentative__grid">
               <ul className="event-tentative__list">
                 {event.tentativeNotes.map((n) => (
@@ -110,72 +118,69 @@ export function EventPage({ event, region }: { event: DokEvent; region?: Region 
                 ))}
               </ul>
               <HandwrittenNote color="red" tiltDir={1}>
-                we’ll tell you the moment it’s real
+                {d.tentativeNote}
               </HandwrittenNote>
             </div>
           </div>
         </ZineSection>
-      )}
+      ) : null}
 
       {/* rules + who it's for */}
       <ZineSection tone="bright" torn="both" className="event-detail">
         <div className="wrap wrap--wide event-detail__inner">
           <div className="event-detail__body">
-            <SectionHead number="01" kicker="Who this is for" />
-            <p className="prose">{AUDIENCE_META[event.audience].detail}</p>
+            <SectionHead number="01" kicker={d.whoKicker} />
+            <p className="prose">
+              <Rich text={audience.detail} />
+            </p>
 
             {!isPast && (
             <>
-            <h3 className="event-detail__sub">The rules for this one</h3>
+            <h3 className="event-detail__sub">{r.heading}</h3>
             <ul className="event-detail__rules">
               <li>
-                <strong>Plus-ones:</strong>{' '}
-                {event.rules.plusOnes
-                  ? 'Bring someone if you like.'
-                  : 'Not for this one — we are keeping the first gatherings small enough to actually talk.'}
+                <strong>{r.plusOnes}</strong> {event.rules.plusOnes ? r.plusYes : r.plusNo}
               </li>
               {event.rules.capacity && (
                 <li>
-                  <strong>Capacity:</strong> {event.rules.capacity} people.
+                  <strong>{r.capacity}</strong> {event.rules.capacity} {r.people}
                 </li>
               )}
               <li>
-                <strong>Waitlist:</strong>{' '}
-                {event.rules.waitlist ? 'Yes, if it fills up.' : 'No waitlist.'}
+                <strong>{r.waitlist}</strong> {event.rules.waitlist ? r.waitYes : r.waitNo}
               </li>
               {event.rules.minAge && (
                 <li>
-                  <strong>Minimum age:</strong> {event.rules.minAge}.
+                  <strong>{r.minAge}</strong> {event.rules.minAge}.
                 </li>
               )}
               {event.rules.guardianConsentUnder && (
                 <li>
-                  <strong>Under {event.rules.guardianConsentUnder}:</strong> a parent or
-                  guardian needs to confirm by email.
+                  <strong>
+                    {r.under} {event.rules.guardianConsentUnder}:
+                  </strong>{' '}
+                  {r.guardian}
                 </li>
               )}
               {event.rules.deadline && (
                 <li>
-                  <strong>Register by:</strong> {formatEventDate(event.rules.deadline)}.
+                  <strong>{r.deadline}</strong> {formatEventDate(event.rules.deadline)}.
                 </li>
               )}
               {event.rules.perk && (
                 <li>
-                  <strong>Hoping to offer:</strong> {event.rules.perk}.{' '}
-                  {event.status === 'tentative' && (
-                    <em>Not confirmed — do not count on it yet.</em>
-                  )}
+                  <strong>{r.perk}</strong> {event.rules.perk}.{' '}
+                  {event.status === 'tentative' && <em>{r.perkTentative}</em>}
                 </li>
               )}
             </ul>
 
             <PaperCard className="event-detail__guidelines" tilt="hair" shadow="lift">
               <p>
-                <strong>Everyone who registers agrees to the community guidelines.</strong> They
-                are short, and they are mostly about not making anyone justify their own family.
+                <Rich text={r.guidelines} />
               </p>
               <Link href="/guidelines" className="btn btn--ghost" style={{ marginTop: 'var(--s-3)' }}>
-                Read the guidelines
+                {r.guidelinesCta}
               </Link>
             </PaperCard>
             </>
@@ -186,48 +191,47 @@ export function EventPage({ event, region }: { event: DokEvent; region?: Region 
             {isPast ? (
               <PaperCard className="reg-closed" shadow="slab">
                 <h3 className="reg-form__head">
-                  {event.status === 'cancelled' ? 'This one was cancelled' : 'This one has happened'}
+                  {event.status === 'cancelled' ? side.cancelledHead : side.pastHead}
                 </h3>
                 {event.recap && <p>{event.recap}</p>}
                 {event.status === 'completed' && event.rules.perk && <p>{event.rules.perk}.</p>}
                 {event.host && (
                   <p>
                     <a href={event.host.href} target="_blank" rel="noreferrer">
-                      {event.host.name}’s page for this event ↗
+                      {event.host.name}
+                      {side.hostLink}
                     </a>
                   </p>
                 )}
                 <p style={{ marginTop: 'var(--s-4)' }}>
                   <a
-                    href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Interested in the next DoKAD meetup')}`}
+                    href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(side.nextSubject)}`}
                     className="btn btn--red btn--lg btn--block"
                   >
-                    Tell us you want the next one
+                    {side.next}
                   </a>
                 </p>
               </PaperCard>
-            ) : isStatic() ? (
+            ) : !collectsData() ? (
               /* static mode collects nothing — a real address beats a dead form */
               <PaperCard className="reg-closed" shadow="slab">
-                <h3 className="reg-form__head">Want to come?</h3>
+                <h3 className="reg-form__head">{side.comeHead}</h3>
                 <p className="reg-form__notice">
-                  {AUDIENCE_META[event.audience].detail}
+                  <Rich text={audience.detail} />
                 </p>
                 <p>
-                  Online sign-ups are not open yet. Email us and we will put you on the list by
-                  hand — tell us your name and anything we should know, like access needs.
+                  <Rich text={side.comeBody} />
                 </p>
                 <p style={{ marginTop: 'var(--s-4)' }}>
                   <a
-                    href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Interested: ${event.title}`)}`}
+                    href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`${side.comeSubject} ${event.title}`)}`}
                     className="btn btn--red btn--lg btn--block"
                   >
-                    Email {CONTACT_EMAIL}
+                    {side.comeEmail} {CONTACT_EMAIL}
                   </a>
                 </p>
                 <p className="reg-form__foot">
-                  Nothing you send is stored on this website. Ask us to forget you at any time
-                  and that is the end of it.
+                  <Rich text={side.comeFoot} />
                 </p>
               </PaperCard>
             ) : (
@@ -245,14 +249,18 @@ export function EventPage({ event, region }: { event: DokEvent; region?: Region 
 
       <ZineSection tone="ink" className="event-close">
         <div className="wrap event-close__inner">
-          <EditorialHeadline size={2}>{isPast ? 'Missed it?' : 'Not this one?'}</EditorialHeadline>
-          <p className="lead">There will be others, and you can help decide what they are.</p>
+          <EditorialHeadline size={2}>
+            {isPast ? c.eventClose.pastHead : c.eventClose.head}
+          </EditorialHeadline>
+          <p className="lead">
+            <Rich text={c.eventClose.lead} />
+          </p>
           <div className="event-close__ctas">
             <Link href="/events" className="btn btn--yellow">
-              All events
+              {c.eventClose.cta}
             </Link>
             <Sticker to="/join" color="paper" large>
-              Tell us what to run
+              {c.eventClose.sticker}
             </Sticker>
           </div>
         </div>

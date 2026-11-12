@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { copy } from '@/content/copy'
 import { Stories } from '@/views/Stories'
 import { getPublishedStories } from '@/lib/content'
 
@@ -8,12 +9,13 @@ import { getPublishedStories } from '@/lib/content'
  * nothing to pay for, nothing that can be down. See src/lib/site-mode.ts.
  */
 
+const meta = copy('stories').meta
+
 export const metadata: Metadata = {
-  title: 'Stories',
-  description:
-    'Essays, interviews, poems, photographs, and open questions from descendants of Korean adoptees.',
+  title: meta.title,
+  description: meta.description,
 }
 
 export default function Page() {
-  return <Stories stories={getPublishedStories()} />
+  return <Stories stories={getPublishedStories()} text={copy('stories')} />
 }

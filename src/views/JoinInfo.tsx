@@ -13,8 +13,16 @@ import {
   rot,
 } from '../components/zine'
 import { DokadDefinition } from '../components/DokadDefinition'
+import { copy } from '../content/copy'
 import { CONTACT_EMAIL } from '../lib/site-mode'
-import { REASSURANCES } from '../data/community'
+import { Rich } from '../components/Rich'
+import type { Route } from 'next'
+
+const CARD_TARGETS: { to: Route; tilt: 'hair' | 'nudge'; dir?: 1 | -1 }[] = [
+  { to: '/stories', tilt: 'hair' },
+  { to: '/resources', tilt: 'nudge', dir: -1 },
+  { to: '/events', tilt: 'hair', dir: -1 },
+]
 
 /**
  * The static stand-in for the join questionnaire.
@@ -25,7 +33,9 @@ import { REASSURANCES } from '../data/community'
  * a form that goes nowhere. The questionnaire itself still lives in Join.tsx.
  */
 export function JoinInfo() {
-  const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('I’d like to hear about DOKADS')}`
+  const c = copy('join')
+  const shared = copy('shared')
+  const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(c.hero.emailSubject)}`
 
   return (
     <>
@@ -34,73 +44,50 @@ export function JoinInfo() {
           <div>
             <IssueLabel />
             <EditorialHeadline size="display" sentence className="join-head__title">
-              Want in? Email us.
+              <Rich text={c.hero.headline} />
             </EditorialHeadline>
             <ScribbleUnderline color="red" variant={2} />
             <p className="lead" style={{ marginTop: 'var(--s-5)' }}>
-              Sign-ups are not open yet. Until they are, the whole site is here to read — and
-              the fastest way to hear when something starts is simply to send us a note.
+              <Rich text={c.hero.lead} />
             </p>
             <p className="join-head__note">
               <HandArrow turn={14} size={60} color="blue" />
-              <HandwrittenNote>no form, no account, no newsletter machine</HandwrittenNote>
+              <HandwrittenNote>{c.hero.note}</HandwrittenNote>
             </p>
             <div className="hero__ctas" style={{ marginTop: 'var(--s-5)' }}>
               <a href={mailto} className="btn btn--red btn--lg">
-                Email {CONTACT_EMAIL}
+                {c.hero.emailLabel} {CONTACT_EMAIL}
               </a>
               <Link href="/am-i-a-dokad" className="btn btn--paper btn--lg">
-                Am I a DoKAD?
+                {c.hero.amI}
               </Link>
             </div>
           </div>
-          <DokadDefinition showCta={false} />
+          <DokadDefinition text={shared.definition} showCta={false} />
         </div>
       </ZineSection>
 
       <ZineSection tone="bright" className="join-info">
         <div className="wrap wrap--wide">
-          <SectionHead number="01" kicker="What there is to do right now" />
+          <SectionHead number="01" kicker={c.now.kicker} />
           <div className="grid grid--3">
-            <PaperCard tilt="hair" pickup>
-              <span className="route-card__num">01</span>
-              <h3 className="route-card__title">Read the explainers</h3>
-              <p className="route-card__body">
-                A short history of Korean adoption, what the term means, why descendants
-                experience it differently, and how to talk to an adoptee parent about it.
-              </p>
-              <div className="route-card__foot">
-                <Link href="/stories" className="btn btn--ghost">
-                  Read stories
-                </Link>
-              </div>
-            </PaperCard>
-            <PaperCard tilt="nudge" tiltDir={-1} pickup>
-              <span className="route-card__num">02</span>
-              <h3 className="route-card__title">Take the reading pile</h3>
-              <p className="route-card__body">
-                Memoirs, documentaries, podcasts, and the adoptee-led organisations that have
-                been doing this work far longer than we have.
-              </p>
-              <div className="route-card__foot">
-                <Link href="/resources" className="btn btn--ghost">
-                  Open resources
-                </Link>
-              </div>
-            </PaperCard>
-            <PaperCard tilt="hair" tiltDir={-1} pickup>
-              <span className="route-card__num">03</span>
-              <h3 className="route-card__title">Meetups</h3>
-              <p className="route-card__body">
-                The first DoKAD meetup happened in Edina in September. Nothing new is scheduled
-                yet — email us if you want to hear the moment something is.
-              </p>
-              <div className="route-card__foot">
-                <Link href="/events" className="btn btn--ghost">
-                  See events
-                </Link>
-              </div>
-            </PaperCard>
+            {CARD_TARGETS.map((slot, i) => {
+              const card = c.now.cards[i]
+              return (
+                <PaperCard key={slot.to} tilt={slot.tilt} tiltDir={slot.dir} pickup>
+                  <span className="route-card__num">{String(i + 1).padStart(2, '0')}</span>
+                  <h3 className="route-card__title">{card?.title}</h3>
+                  <p className="route-card__body">
+                    <Rich text={card?.body ?? ''} />
+                  </p>
+                  <div className="route-card__foot">
+                    <Link href={slot.to} className="btn btn--ghost">
+                      {card?.cta}
+                    </Link>
+                  </div>
+                </PaperCard>
+              )
+            })}
           </div>
         </div>
       </ZineSection>
@@ -108,23 +95,18 @@ export function JoinInfo() {
       <ZineSection tone="acid" torn="both" className="join-info-promise">
         <div className="wrap wrap--wide join-info-promise__inner">
           <div>
-            <SectionHead number="02" kicker="When sign-ups do open" />
+            <SectionHead number="02" kicker={c.promise.kicker} />
             <div className="prose">
-              <p>
-                It will be a few short questions — what connects you to Korean adoption, what
-                you would like this community to run, and when you could actually come. Nothing
-                harder than that, and most of it optional.
-              </p>
-              <p>
-                <strong>The first question will never be “do you identify as a DoKAD?”</strong>{' '}
-                It will be “was your parent or grandparent adopted from Korea?” — because plenty
-                of people belong here long before they would use the word about themselves.
-              </p>
+              {c.promise.body.map((para) => (
+                <p key={para.slice(0, 32)}>
+                  <Rich text={para} />
+                </p>
+              ))}
             </div>
             <ul className="reassure">
-              {REASSURANCES.slice(0, 4).map((r, i) => (
+              {shared.reassurances.items.slice(0, 4).map((r, i) => (
                 <li key={r} style={rot('hair', i % 2 === 0 ? 1 : -1)}>
-                  {r}
+                  <Rich text={r} />
                 </li>
               ))}
             </ul>
@@ -132,24 +114,17 @@ export function JoinInfo() {
 
           <PaperCard tilt="nudge" tiltDir={-1} shadow="slab" className="join-info-promise__card">
             <TapeStrip position="top-center" variant="clear" width={130} />
-            <span className="eyebrow">What we are not doing</span>
+            <span className="eyebrow">{c.promise.cardTitle}</span>
             <ul className="submit-card__list" style={{ marginTop: 'var(--s-3)' }}>
-              <li>
-                <strong>No account.</strong> Nothing to sign up for or log into.
-              </li>
-              <li>
-                <strong>No tracking.</strong> No analytics, no pixels, no cookies.
-              </li>
-              <li>
-                <strong>No list.</strong> We are not storing anything about you at all.
-              </li>
-              <li>
-                <strong>No newsletter.</strong> If you email us, a person reads it.
-              </li>
+              {c.promise.cardList.map((item) => (
+                <li key={item.lead}>
+                  <strong>{item.lead}</strong> <Rich text={item.rest} />
+                </li>
+              ))}
             </ul>
             <div className="submit-card__foot">
               <Sticker to="/privacy" color="paper">
-                Read the privacy page
+                {c.promise.cardCta}
               </Sticker>
             </div>
           </PaperCard>
@@ -160,18 +135,18 @@ export function JoinInfo() {
         <div className="wrap start-close__inner">
           <div>
             <EditorialHeadline size={1} sentence>
-              You do not need to have everything figured out to say hello.
+              <Rich text={c.close.headline} />
             </EditorialHeadline>
             <p className="lead" style={{ marginTop: 'var(--s-4)' }}>
-              Tell us as much or as little as you want. Share only what feels comfortable.
+              <Rich text={c.close.lead} />
             </p>
           </div>
           <div className="start-close__ctas">
             <a href={mailto} className="btn btn--yellow btn--lg">
-              Email {CONTACT_EMAIL}
+              {c.hero.emailLabel} {CONTACT_EMAIL}
             </a>
             <Sticker to="/guidelines" color="paper">
-              Community guidelines
+              {c.close.sticker}
             </Sticker>
           </div>
         </div>

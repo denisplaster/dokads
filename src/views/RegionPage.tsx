@@ -13,15 +13,20 @@ import {
   TapeStrip,
   ZineSection,
 } from '../components/zine'
-import { REGION_STATUS_META } from '../data/regions'
 import type { Region } from '../data/regions'
 import { formatEventDate } from '../data/events'
 import type { DokEvent } from '../data/events'
-import { COMMUNITY_LED_PRINCIPLE } from '../data/community'
 import { contactMailto } from '../lib/site-mode'
+import { Rich } from '../components/Rich'
+import { copy } from '../content/copy'
+import { vocab } from '../content/vocab'
 
 export function RegionPage({ region, events }: { region: Region; events: DokEvent[] }) {
-  const meta = REGION_STATUS_META[region.status]
+  const c = copy('regions')
+  const g = c.group
+  const mn = c.minnesota
+  const principle = copy('shared').principle
+  const meta = vocab.regionStatus(region.status)
   const list = events
   const isMinnesota = region.slug === 'minnesota'
 
@@ -37,11 +42,15 @@ export function RegionPage({ region, events }: { region: Region; events: DokEven
           <EditorialHeadline size="display" className="page-hero__head">
             {region.name}
           </EditorialHeadline>
-          {region.intro && <p className="lead page-hero__lead">{region.intro}</p>}
-          {isMinnesota && (
+          {region.intro && (
+            <p className="lead page-hero__lead">
+              <Rich text={region.intro} />
+            </p>
+          )}
+          {isMinnesota && mn.note && (
             <p className="page-hero__aside">
               <HandwrittenNote color="paper" tiltDir={1}>
-                the first one happened — September 2026
+                {mn.note}
               </HandwrittenNote>
             </p>
           )}
@@ -51,14 +60,14 @@ export function RegionPage({ region, events }: { region: Region; events: DokEven
       {/* events */}
       <ZineSection tone="paper" className="region-events">
         <div className="wrap wrap--wide">
-          <SectionHead number="01" kicker="Upcoming here" />
+          <SectionHead number="01" kicker={g.upcoming} />
           {list.length === 0 ? (
             <PaperCard className="empty" tilt="nudge">
               <p>
-                <strong>Nothing scheduled yet.</strong> Join the list and you will hear first.
+                <Rich text={g.empty} />
               </p>
               <Link href="/join" className="btn btn--red" style={{ marginTop: 'var(--s-4)' }}>
-                Join DOKADS
+                {g.emptyCta}
               </Link>
             </PaperCard>
           ) : (
@@ -77,7 +86,7 @@ export function RegionPage({ region, events }: { region: Region; events: DokEven
       <ZineSection tone="bright" torn="both" className="region-people">
         <div className="wrap wrap--wide region-people__inner">
           <div>
-            <SectionHead number="02" kicker="Who is running this" />
+            <SectionHead number="02" kicker={g.who} />
             {region.organisers?.length ? (
               <ul className="region-people__list">
                 {region.organisers.map((o) => (
@@ -88,45 +97,42 @@ export function RegionPage({ region, events }: { region: Region; events: DokEven
                 ))}
               </ul>
             ) : (
-              <p className="prose">Nobody yet. That could be you.</p>
+              <p className="prose">
+                <Rich text={g.nobody} />
+              </p>
             )}
             <PaperCard className="region-people__volunteer" tilt="hair" shadow="lift">
               <TapeStrip position="top-right" variant="kraft" width={90} />
-              <h3>Want to help organise?</h3>
+              <h3>{g.volunteerHead}</h3>
               <p>
-                You do not need experience, a venue, or a plan. The first meetups are mostly
-                about picking a coffee shop and showing up.
+                <Rich text={g.volunteerBody} />
               </p>
-              <a href={contactMailto('I would like to help organise')} className="btn btn--red">
-                Volunteer
+              <a href={contactMailto(g.volunteerSubject)} className="btn btn--red">
+                {g.volunteerCta}
               </a>
             </PaperCard>
           </div>
 
           <div>
-            <SectionHead number="03" kicker="Where the day-to-day happens" />
+            <SectionHead number="03" kicker={g.socials} />
             <ul className="region-people__socials">
               {(region.socials ?? []).map((s) => (
                 <li key={s.label}>
                   <span className="region-people__social-label">{s.label}</span>
                   {s.href?.startsWith('mailto:') ? (
-                    <a href={s.href}>Email us →</a>
+                    <a href={s.href}>{g.email}</a>
                   ) : s.href ? (
                     <a href={s.href} target="_blank" rel="noreferrer">
-                      Open →
+                      {g.open}
                     </a>
                   ) : (
-                    <span className="region-people__pending">{s.note ?? 'Coming soon'}</span>
+                    <span className="region-people__pending">{s.note ?? g.soon}</span>
                   )}
                 </li>
               ))}
             </ul>
             <p className="region-people__privacy">
-              <strong>A note on outside platforms.</strong> Facebook and Instagram groups are
-              run on someone else’s infrastructure, under their privacy terms and their data
-              collection — not ours. Anything you post there is subject to their rules. This
-              website stays the permanent, searchable home for information; the social groups
-              are just where conversation happens day to day.
+              <Rich text={g.privacy} />
             </p>
           </div>
         </div>
@@ -136,12 +142,14 @@ export function RegionPage({ region, events }: { region: Region; events: DokEven
       {region.updates?.length ? (
         <ZineSection tone="acid" className="region-updates">
           <div className="wrap wrap--wide">
-            <SectionHead number="04" kicker="Community updates" />
+            <SectionHead number="04" kicker={g.updates} />
             <ol className="region-updates__list">
               {region.updates.map((u) => (
                 <li key={u.date}>
                   <span className="region-updates__date">{formatEventDate(u.date)}</span>
-                  <span>{u.text}</span>
+                  <span>
+                    <Rich text={u.text} />
+                  </span>
                 </li>
               ))}
             </ol>
@@ -154,37 +162,25 @@ export function RegionPage({ region, events }: { region: Region; events: DokEven
         <ZineSection tone="paper" torn="top" className="region-partners">
           <div className="wrap wrap--wide region-partners__inner">
             <div>
-              <SectionHead number="05" kicker="On other organisations" />
+              <SectionHead number="05" kicker={mn.partnersKicker} />
               <div className="prose">
-                <p>
-                  Minnesota has one of the largest Korean adoptee populations anywhere, and
-                  adoptee-led organisations here have been doing this work far longer than we
-                  have. One of them is why this site exists:{' '}
-                  <strong>
-                    DOKADS is powered by{' '}
-                    <a href="https://www.akconnection.com" target="_blank" rel="noreferrer">
-                      AK Connection
-                    </a>
-                  </strong>
-                  , the Minnesota community organisation for adult Korean adoptees.
-                </p>
-                <p>
-                  That support looks exactly like our community-led principle: adoptees backing
-                  the next generation’s space without directing it. DoKAD programming is still
-                  shaped and led by DoKADs, and{' '}
-                  <strong>
-                    being here does not require any prior connection to AK Connection
-                  </strong>{' '}
-                  or any other organisation.
-                </p>
+                {mn.partners.map((para) => (
+                  <p key={para.slice(0, 32)}>
+                    <Rich text={para} />
+                  </p>
+                ))}
               </div>
             </div>
             <PaperCard className="region-partners__card" tilt="nudge" tiltDir={-1} shadow="slab">
-              <span className="eyebrow">Community principle</span>
-              <PullQuote body>{COMMUNITY_LED_PRINCIPLE.headline}</PullQuote>
-              <p style={{ marginTop: 'var(--s-4)' }}>{COMMUNITY_LED_PRINCIPLE.body}</p>
+              <span className="eyebrow">{mn.cardEyebrow}</span>
+              <PullQuote body>
+                <Rich text={principle.headline} />
+              </PullQuote>
+              <p style={{ marginTop: 'var(--s-4)' }}>
+                <Rich text={principle.body} />
+              </p>
               <Link href="/about" className="btn btn--ghost" style={{ marginTop: 'var(--s-4)' }}>
-                Read more
+                {mn.cardCta}
               </Link>
             </PaperCard>
           </div>
@@ -193,12 +189,14 @@ export function RegionPage({ region, events }: { region: Region; events: DokEven
 
       <ZineSection tone="red" className="region-close">
         <div className="wrap region-close__inner">
-          <EditorialHeadline size={1}>Get {region.name} updates</EditorialHeadline>
+          <EditorialHeadline size={1}>
+            {g.closeBefore} {region.name} {g.closeAfter}
+          </EditorialHeadline>
           <p className="lead">
-            Local email updates only — you can pick this region specifically on the join form.
+            <Rich text={g.closeLead} />
           </p>
           <Link href="/join" className="btn btn--yellow btn--lg">
-            Join DOKADS
+            {g.closeCta}
           </Link>
         </div>
       </ZineSection>

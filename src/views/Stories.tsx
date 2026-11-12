@@ -16,13 +16,18 @@ import {
 import { STORY_KINDS } from '../data/stories'
 import { contactMailto } from '../lib/site-mode'
 import type { Story, StoryKind } from '../data/stories'
+import { Rich } from '../components/Rich'
+import { vocab } from '../content/vocab'
+import type { Copy } from '../content/copy'
+
+export type StoriesText = Copy<'stories'>
 
 const KIND_ORDER = Object.keys(STORY_KINDS) as StoryKind[]
 
 /** Deliberately irregular — the blog must not read as a grid of clones. */
 const LAYOUTS = ['standard', 'text', 'quote', 'boxed', 'standard', 'note', 'text', 'boxed'] as const
 
-export function Stories({ stories }: { stories: Story[] }) {
+export function Stories({ stories, text: c }: { stories: Story[]; text: StoriesText }) {
   const [kind, setKind] = useState<StoryKind | 'all'>('all')
   const featured = stories.find((s) => s.featured)
   const list = stories.filter((s) => (kind === 'all' ? true : s.kind === kind))
@@ -33,17 +38,16 @@ export function Stories({ stories }: { stories: Story[] }) {
         <div className="wrap wrap--wide">
           <IssueLabel />
           <EditorialHeadline size="display" className="page-hero__head">
-            Stories from the{' '}
+            {c.hero.headline}{' '}
             <br />
-            <span className="knock">next generation</span>
+            <span className="knock">{c.hero.knockout}</span>
           </EditorialHeadline>
           <p className="lead page-hero__lead">
-            Essays, interviews, poems, photographs, and open questions from descendants of
-            Korean adoptees. Written by us, about us, on our own terms.
+            <Rich text={c.hero.lead} />
           </p>
           <p className="page-hero__aside">
             <HandwrittenNote color="ink" tiltDir={1}>
-              anonymous is a real option →
+              {c.hero.note}
             </HandwrittenNote>
           </p>
         </div>
@@ -54,17 +58,12 @@ export function Stories({ stories }: { stories: Story[] }) {
         <div className="wrap wrap--wide">
           <PaperCard className="editor-note" tilt="hair" tiltDir={-1} shadow="lift" ruled>
             <TapeStrip position="top-left" variant="kraft" width={120} />
-            <span className="eyebrow">Editor’s note</span>
-            <p>
-              <strong>The explainers and guides below are real</strong> — researched and
-              written by the DOKADS editorial team, with sources on our Resources page. What
-              Issue 001 still needs is the part we will never write for you: personal stories
-              from actual DoKADs.
-            </p>
-            <p>
-              Essays, interviews, poems, photo stories — anonymous and pseudonymous both
-              welcome. Submission details are at the bottom of this page.
-            </p>
+            <span className="eyebrow">{c.note.eyebrow}</span>
+            {c.note.body.map((para) => (
+              <p key={para.slice(0, 32)}>
+                <Rich text={para} />
+              </p>
+            ))}
           </PaperCard>
         </div>
       </ZineSection>
@@ -73,7 +72,7 @@ export function Stories({ stories }: { stories: Story[] }) {
       {featured && (
         <ZineSection tone="bright" className="stories-featured">
           <div className="wrap wrap--wide">
-            <SectionHead number="01" kicker="Featured" />
+            <SectionHead number="01" kicker={c.list.featured} />
             <ZineArticleCard story={featured} layout="lead" />
           </div>
         </ZineSection>
@@ -82,7 +81,7 @@ export function Stories({ stories }: { stories: Story[] }) {
       {/* filter + mixed grid */}
       <ZineSection tone="paper" torn="top" className="stories-list">
         <div className="wrap wrap--wide">
-          <SectionHead number="02" kicker="Everything else" />
+          <SectionHead number="02" kicker={c.list.kicker} />
 
           <div className="filterbar" role="group" aria-label="Filter stories by type">
             <button
@@ -92,7 +91,7 @@ export function Stories({ stories }: { stories: Story[] }) {
               onClick={() => setKind('all')}
               style={rot('hair', -1)}
             >
-              Everything
+              {c.list.all}
             </button>
             {KIND_ORDER.map((k, i) => (
               <button
@@ -103,21 +102,20 @@ export function Stories({ stories }: { stories: Story[] }) {
                 onClick={() => setKind(k)}
                 style={rot('hair', i % 2 === 0 ? 1 : -1)}
               >
-                {STORY_KINDS[k].label}
+                {vocab.storyKind(k).label}
               </button>
             ))}
           </div>
 
           <p className="filterbar__count" aria-live="polite">
-            {list.length} {list.length === 1 ? 'piece' : 'pieces'}
-            {kind !== 'all' && ` · ${STORY_KINDS[kind].note}`}
+            {list.length} {list.length === 1 ? c.list.one : c.list.many}
+            {kind !== 'all' && ` · ${vocab.storyKind(kind).note}`}
           </p>
 
           {list.length === 0 ? (
             <PaperCard className="empty" tilt="nudge">
               <p>
-                <strong>Nothing here yet.</strong> This format is open — if you have one, it
-                could be the first.
+                <Rich text={c.list.empty} />
               </p>
             </PaperCard>
           ) : (
@@ -139,55 +137,34 @@ export function Stories({ stories }: { stories: Story[] }) {
       <ZineSection tone="ink" torn="top" id="submit" className="stories-submit">
         <div className="wrap wrap--wide stories-submit__inner">
           <div>
-            <SectionHead number="03" kicker="Tell us your story" />
+            <SectionHead number="03" kicker={c.submit.kicker} />
             <EditorialHeadline size={1}>
-              You do not have to be{' '}
-              <br />
-              a writer.
+              <Rich text={c.submit.headline} />
             </EditorialHeadline>
             <div className="prose" style={{ marginTop: 'var(--s-5)' }}>
-              <p>
-                Send four hundred words or four thousand. Send a poem, a voice memo, a scan of
-                something from a box in your parents’ basement, or a question you have never
-                asked out loud.
-              </p>
-              <p>
-                <strong>You choose how you are credited</strong> — full name, first name only, a
-                pseudonym, or anonymous. You can change that later, and you can withdraw a
-                piece after it runs.
-              </p>
-              <p>
-                If your piece names other people in your family, we will ask whether they know.
-                Nothing about birth family, adoption records, or family relationships gets
-                published without you saying so explicitly.
-              </p>
+              {c.submit.body.map((para) => (
+                <p key={para.slice(0, 32)}>
+                  <Rich text={para} />
+                </p>
+              ))}
             </div>
           </div>
 
           <PaperCard className="submit-card" tilt="tilt" tiltDir={-1} shadow="slab">
             <TapeStrip position="top-center" variant="clear" width={130} />
-            <h3 className="submit-card__head">Ways to be credited</h3>
+            <h3 className="submit-card__head">{c.submit.cardTitle}</h3>
             <ul className="submit-card__list">
-              <li>
-                <strong>Full name</strong> — the whole thing
-              </li>
-              <li>
-                <strong>First name</strong> — “By Nari”
-              </li>
-              <li>
-                <strong>Pseudonym</strong> — pick anything
-              </li>
-              <li>
-                <strong>Anonymous</strong> — no byline at all
-              </li>
+              {c.submit.cardList.map((item) => (
+                <li key={item.lead}>
+                  <strong>{item.lead}</strong> <Rich text={item.rest} />
+                </li>
+              ))}
             </ul>
             <div className="submit-card__foot">
-              <Sticker color="red" large href={contactMailto('Story pitch for DOKADS')}>
-                Pitch a story
+              <Sticker color="red" large href={contactMailto(c.submit.subject)}>
+                {c.submit.cta}
               </Sticker>
-              <HandwrittenNote tiltDir={1}>
-                email us — a person reads it
-              </HandwrittenNote>
+              <HandwrittenNote tiltDir={1}>{c.submit.note}</HandwrittenNote>
             </div>
           </PaperCard>
         </div>

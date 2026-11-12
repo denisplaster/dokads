@@ -36,6 +36,7 @@ export function EventForm({
   const router = useRouter()
 
   const provisional = status === 'draft' || status === 'tentative'
+  const past = status === 'completed' || status === 'cancelled'
 
   return (
     <form
@@ -76,6 +77,9 @@ export function EventForm({
             perk: String(f.get('perk') ?? ''),
             tentativeNotes: notes.split('\n').map((s) => s.trim()).filter(Boolean),
             needsFoodInfo: f.get('needsFoodInfo') === 'on',
+            hostName: String(f.get('hostName') ?? ''),
+            hostHref: String(f.get('hostHref') ?? ''),
+            recap: String(f.get('recap') ?? ''),
           })
           if (!res.ok) setError(res.error)
           else {
@@ -281,12 +285,51 @@ export function EventForm({
         </div>
       )}
 
+      <div className="adm-grid-2">
+        <div className="adm-field">
+          <label htmlFor="ev-host">Hosted by (optional)</label>
+          <input id="ev-host" name="hostName" type="text" defaultValue={event?.host?.name ?? ''} />
+          <span className="adm-field__help">
+            When another organisation runs the event, name it here.
+          </span>
+        </div>
+        <div className="adm-field">
+          <label htmlFor="ev-host-href">Host’s page for this event</label>
+          <input
+            id="ev-host-href"
+            name="hostHref"
+            type="url"
+            placeholder="https://"
+            defaultValue={event?.host?.href ?? ''}
+          />
+          <span className="adm-field__help">
+            Their own page is the source of truth for details — check the date, place and price
+            against it before publishing.
+          </span>
+        </div>
+      </div>
+
+      <div className="adm-field">
+        <label htmlFor="ev-recap">What happened (after the event)</label>
+        <textarea
+          id="ev-recap"
+          name="recap"
+          defaultValue={event?.recap ?? ''}
+          style={{ minHeight: '5rem' }}
+        />
+        <span className="adm-field__help">
+          {past
+            ? 'Shown on the Events page and the event’s own page now that it is over.'
+            : 'Fill this in once the event has happened and its status is “completed”.'}
+        </span>
+      </div>
+
       {error && (
         <p className="adm-error" role="alert">
           {error}
         </p>
       )}
-      {saved && <p className="adm-ok">Saved.</p>}
+      {saved && <p className="adm-ok">Saved. It goes live on the public site when you publish.</p>}
 
       <div className="adm-actions">
         <button type="submit" className="adm-btn" disabled={pending}>

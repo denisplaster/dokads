@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { copy } from '@/content/copy'
 import { Events } from '@/views/Events'
 import { getAllRegions, getPastEvents, getUpcomingEvents } from '@/lib/content'
 
@@ -8,14 +9,20 @@ import { getAllRegions, getPastEvents, getUpcomingEvents } from '@/lib/content'
  * nothing to pay for, nothing that can be down. See src/lib/site-mode.ts.
  */
 
+const meta = copy('events').meta
+
 export const metadata: Metadata = {
-  title: 'Events',
-  description:
-    'Coffee meetups, online gatherings, and guided conversations for descendants of Korean adoptees. Mostly free, mostly informal.',
+  title: meta.title,
+  description: meta.description,
 }
 
 export default function Page() {
   return (
-    <Events upcoming={getUpcomingEvents()} past={getPastEvents()} regions={getAllRegions()} />
+    <Events
+      upcoming={getUpcomingEvents()}
+      past={getPastEvents()}
+      regions={getAllRegions()}
+      text={copy('events')}
+    />
   )
 }

@@ -6,26 +6,25 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Wordmark } from '../zine/Wordmark'
 import { HandwrittenNote, Sticker, IssueLabel } from '../zine'
+import type { Copy } from '../../content/copy'
 
-/** Primary nav — kept to five so it still scans at a glance. */
-const LINKS: { to: Route; label: string; num: string; note?: string }[] = [
-  { to: '/start', label: 'Start here', num: '01', note: 'new? this one' },
-  { to: '/am-i-a-dokad', label: 'Am I a DoKAD?', num: '02', note: 'takes 30 seconds' },
-  { to: '/stories', label: 'Stories', num: '03', note: 'the good stuff' },
-  { to: '/events', label: 'Events', num: '04' },
-  { to: '/resources', label: 'Resources', num: '05', note: 'reading list' },
-]
+/** Primary nav — kept to five so it still scans at a glance. Words are editable. */
+const LINK_TARGETS: Route[] = ['/start', '/am-i-a-dokad', '/stories', '/events', '/resources']
 
 /** Secondary — full-screen menu only. */
-const MORE: { to: Route; label: string }[] = [
-  { to: '/regions', label: 'Local groups' },
-  { to: '/learn', label: 'Learn' },
-  { to: '/about', label: 'About' },
-  { to: '/guidelines', label: 'Guidelines' },
-  { to: '/share', label: 'Share DOKADS' },
-]
+const MORE_TARGETS: Route[] = ['/regions', '/learn', '/about', '/guidelines', '/share']
 
-export function Nav() {
+export type NavText = Copy<'shared'>['nav']
+
+export function Nav({ text }: { text: NavText }) {
+  const LINKS = LINK_TARGETS.map((to, i) => ({
+    to,
+    num: String(i + 1).padStart(2, '0'),
+    label: text.main[i]?.label ?? '',
+    note: text.main[i]?.note || undefined,
+  }))
+  const MORE = MORE_TARGETS.map((to, i) => ({ to, label: text.moreLinks[i]?.label ?? '' }))
+
   const [open, setOpen] = useState(false)
   const pathname = usePathname()
   const closeRef = useRef<HTMLButtonElement>(null)
@@ -81,7 +80,7 @@ export function Nav() {
 
           <div className="site-nav__actions">
             <Sticker to="/join" color="red" large className="site-nav__join">
-              Join DOKADS
+              {text.join}
             </Sticker>
             <button
               ref={toggleRef}
@@ -120,7 +119,7 @@ export function Nav() {
         </div>
 
         <nav className="zine-menu__body wrap" aria-label="Site contents">
-          <p className="zine-menu__label">Contents</p>
+          <p className="zine-menu__label">{text.contents}</p>
           <ul className="zine-menu__list">
             {LINKS.map((l) => (
               <li key={l.to}>
@@ -142,12 +141,12 @@ export function Nav() {
                 <span className="zine-menu__num" aria-hidden="true">
                   06
                 </span>
-                <span>Join DOKADS</span>
+                <span>{text.join}</span>
               </Link>
             </li>
           </ul>
 
-          <p className="zine-menu__label zine-menu__label--more">Also inside</p>
+          <p className="zine-menu__label zine-menu__label--more">{text.more}</p>
           <ul className="zine-menu__more">
             {MORE.map((m) => (
               <li key={m.to}>
@@ -158,11 +157,9 @@ export function Nav() {
         </nav>
 
         <div className="zine-menu__foot wrap">
-          <p className="zine-menu__tag">
-            A space for descendants of Korean adoptees. Still figuring it out? Same.
-          </p>
+          <p className="zine-menu__tag">{text.tagline}</p>
           <Sticker to="/join" color="yellow" large>
-            Get in touch
+            {text.contact}
           </Sticker>
         </div>
       </div>
