@@ -34,7 +34,7 @@ export const amIaDokad = definePage({
         kicker: line('Section label', 'The short version'),
         body: paras('Text', [
           'A DoKAD is a **descendant of a Korean adoptee**. If your parent or your grandparent was adopted from Korea, you are one.',
-          'That is the entire definition. It does not depend on whether you speak Korean, whether you have been to Korea, whether people read you as Korean, whether you are mixed race, whether you know anything about your family before the adoption, or whether you have ever thought about any of this before today.',
+          'That is how we use the word here — it is new, and not everyone draws the line in the same place. It does not depend on whether you speak Korean, whether you have been to Korea, whether people read you as Korean, whether you are mixed race, whether you know anything about your family before the adoption, or whether you have ever thought about any of this before today.',
           'Some people use the word about themselves straight away. Some never use it and just come to things. Both are completely normal.',
         ]),
       },

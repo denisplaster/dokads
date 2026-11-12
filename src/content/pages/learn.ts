@@ -76,7 +76,7 @@ export const learn = definePage({
           },
         ),
         sensitiveFlag: line(
-          'Note before the legal disclaimer on legal topics',
+          'Note before the legal disclaimer on legal topics that are not published yet',
           'Held back on purpose.',
         ),
         list: items(

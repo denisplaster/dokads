@@ -151,7 +151,7 @@ export function Learn() {
                         </p>
                         {t.sensitive === 'yes' && (
                           <p className="topic-card__flag">
-                            {c.topics.sensitiveFlag && (
+                            {t.status !== 'published' && c.topics.sensitiveFlag && (
                               <>
                                 <strong>{c.topics.sensitiveFlag}</strong>{' '}
                               </>
