@@ -121,6 +121,16 @@ async function main() {
   const snap = await snapshotFromDb(db)
   write(snap)
   console.log(`content: ${summary(snap)}`)
+
+  // a count only — enough to tell "nobody can sign in" from the build log
+  const schema = await import('../src/db/schema')
+  const { count } = await import('drizzle-orm')
+  const [{ n }] = await db.select({ n: count() }).from(schema.user)
+  console.log(
+    n
+      ? `content: ${n} editor account${n === 1 ? '' : 's'} can sign in to /admin`
+      : 'content: no editor accounts yet — run `npm run admin:link` (see README → Editors and access)',
+  )
   await close()
 }
 
